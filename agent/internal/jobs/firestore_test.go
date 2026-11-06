@@ -38,41 +38,35 @@ func TestFirestoreLeaseReplicasTakeover(t *testing.T) {
 	var wg sync.WaitGroup
 	for i := 0; i < 3; i++ {
 		wg.Add(1)
-		go func(i int) {
+		go func() {
 			defer wg.Done()
-			ok, err := leases.Acquire(ctx, "refresh", fmt.Sprint(i), "slot", now, time.Minute)
-			if err != nil {
-				t.Error(err)
-			}
-			if ok {
+			if leases.Acquire(ctx, "refresh", "slot", now, time.Minute) {
 				acquired.Add(1)
 			}
-		}(i)
+		}()
 	}
 	wg.Wait()
 	if acquired.Load() != 1 {
 		t.Fatal(acquired.Load())
 	}
-	ok, err := leases.Acquire(ctx, "refresh", "takeover", "slot", now.Add(time.Minute), time.Minute)
-	if err != nil || !ok {
-		t.Fatal(ok, err)
+	if !leases.Acquire(ctx, "refresh", "slot", now.Add(time.Minute), time.Minute) {
+		t.Fatal("expired lease not taken over")
 	}
-	if err := leases.Finish(ctx, "refresh", "stale", "slot", true); err == nil {
-		t.Fatal("stale owner finished")
+	leases.Finish(ctx, "refresh", "slot", false)
+	if !leases.Acquire(ctx, "refresh", "slot", now.Add(time.Minute), time.Minute) {
+		t.Fatal("failed slot not retried")
 	}
-	if err := leases.Finish(ctx, "refresh", "takeover", "slot", false); err != nil {
-		t.Fatal(err)
+	leases.Finish(ctx, "refresh", "slot", true)
+	if leases.Acquire(ctx, "refresh", "slot", now.Add(24*time.Hour), time.Minute) {
+		t.Fatal("completed slot ran again")
 	}
-	ok, err = leases.Acquire(ctx, "refresh", "retry", "slot", now.Add(time.Minute), time.Minute)
-	if err != nil || !ok {
-		t.Fatal(ok, err)
+	if !leases.Acquire(ctx, "refresh", "next", now.Add(time.Minute), time.Minute) {
+		t.Fatal("next slot not taken after completion")
 	}
-	if err := leases.Finish(ctx, "refresh", "retry", "slot", true); err != nil {
-		t.Fatal(err)
-	}
-	ok, err = leases.Acquire(ctx, "refresh", "duplicate", "slot", now.Add(24*time.Hour), time.Minute)
-	if err != nil || ok {
-		t.Fatal(ok, err)
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	if leases.Acquire(canceled, "other", "slot", now, time.Minute) {
+		t.Fatal("unconfirmed lease reported as held")
 	}
 }
 func TestFirestoreCleanupIdempotencyAndActivity(t *testing.T) {

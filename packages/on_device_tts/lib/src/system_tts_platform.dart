@@ -44,6 +44,10 @@ class SystemTtsPlatform {
     'fileName': fileName,
     'isFullPath': isFullPath,
   });
+
+  /// Android only: plays a synthesized file, completing when it ends.
+  Future<Object?> playFile(String path) =>
+      _channel.invokeMethod('playFile', {'path': path});
   Future<Object?> stop() => _channel.invokeMethod('stop');
   Future<Object?> get getVoices => _channel.invokeMethod('getVoices');
 }

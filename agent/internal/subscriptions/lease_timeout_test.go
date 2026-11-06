@@ -64,3 +64,38 @@ func TestSubscribeReturnsRetryableErrorForBusyLease(t *testing.T) {
 		})
 	}
 }
+
+// A reconcile holds a broadcaster's lease for the EventSub creation an earlier
+// open queued, often longer than subscribe waits. Subscribe does none of that
+// work under the lease, so it runs beside a reconcile instead of failing.
+func TestSubscribeRunsBesideReconcile(t *testing.T) {
+	db := database(t)
+	ctx := context.Background()
+	if _, err := db.Collection("profiles").Doc("owner").Set(ctx, map[string]interface{}{"twitch": map[string]interface{}{"id": "123", "login": "owner"}, "lastActiveAt": time.Now()}); err != nil {
+		t.Fatal(err)
+	}
+	lease := map[string]interface{}{"owner": "reconcile-worker", "until": time.Now().Add(90 * time.Second), "job": "reconcile"}
+	if _, err := db.Collection("subscriptionLeases").Doc("twitch:123").Set(ctx, lease); err != nil {
+		t.Fatal(err)
+	}
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, `{"data":[{"id":"123","login":"owner"}]}`) }))
+	defer upstream.Close()
+	service := &Service{DB: db, TwitchSecret: "signing-secret", API: &API{Tokens: fakeTokens{}, Client: upstream.Client(), TwitchURL: upstream.URL}}
+	service.Queue = NewTwitchQueue(service)
+	started := time.Now()
+	response := call(service, "subscribe", "owner", `{"provider":"twitch","channelId":"123"}`)
+	if response.Code != http.StatusOK || time.Since(started) > 2*time.Second {
+		t.Fatalf("subscribe beside a reconcile returned %d after %s: %s", response.Code, time.Since(started), response.Body.String())
+	}
+	held, err := db.Collection("subscriptionLeases").Doc("twitch:123").Get(ctx)
+	if err != nil || held.Data()["owner"] != "reconcile-worker" {
+		t.Fatalf("subscribe took or released the reconcile's lease: %v %v", held.Data(), err)
+	}
+	if depth(service.Queue) != 1 {
+		t.Fatal("subscribe beside a reconcile queued no follow-up reconcile")
+	}
+	channel, err := db.Collection("channels").Doc("twitch:123").Get(ctx)
+	if err != nil || channel.Data()["lastActiveAt"] == nil {
+		t.Fatalf("channel activity not recorded: %v", err)
+	}
+}

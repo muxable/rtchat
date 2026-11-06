@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/scanner_error.dart';
-import 'package:rtchat/components/scanner_settings.dart';
+import 'package:rtchat/components/qr_scanner.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
@@ -41,11 +39,6 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
   final _labelEditingController = TextEditingController();
   String _activeIcon = "view_list";
   String _url = "";
-  MobileScannerController _scanController = MobileScannerController(
-    // facing: CameraFacing.back,
-    // torchEnabled: false,
-    detectionSpeed: DetectionSpeed.noDuplicates,
-  );
 
   @override
   void initState() {
@@ -165,89 +158,11 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                                   hintText: AppLocalizations.of(context)!.url,
                                   suffixIcon: IconButton(
                                     icon: const Icon(Icons.qr_code_scanner),
-                                    onPressed: () {
-                                      final messenger = ScaffoldMessenger.of(
-                                        context,
-                                      );
-
-                                      showModalBottomSheet(
-                                        isScrollControlled: true,
-                                        context: context,
-                                        builder: (ctx) {
-                                          return Stack(
-                                            children: [
-                                              MobileScanner(
-                                                errorBuilder: (context, error) {
-                                                  return ScannerErrorWidget(
-                                                    error: error,
-                                                  );
-                                                },
-                                                controller: _scanController,
-                                                onDetect: (capture) {
-                                                  final List<Barcode> barcodes =
-                                                      capture.barcodes;
-
-                                                  if (barcodes.isEmpty) {
-                                                    messenger.showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          AppLocalizations.of(
-                                                            context,
-                                                          )!.invalidUrlErrorText,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }
-
-                                                  final barcode =
-                                                      barcodes.first;
-
-                                                  if (barcode.rawValue ==
-                                                          null ||
-                                                      barcode
-                                                          .rawValue!
-                                                          .isEmpty) {
-                                                    messenger.showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          AppLocalizations.of(
-                                                            context,
-                                                          )!.invalidUrlErrorText,
-                                                        ),
-                                                      ),
-                                                    );
-
-                                                    Navigator.pop(ctx);
-                                                  }
-
-                                                  _textEditingController.text =
-                                                      '${barcode.rawValue}';
-
-                                                  Navigator.pop(ctx);
-                                                },
-                                              ),
-                                              Positioned(
-                                                top: 50,
-                                                left: 0,
-                                                right: 0,
-                                                child: ScannerSettings(
-                                                  scanController:
-                                                      _scanController,
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      ).then((value) {
-                                        _scanController.dispose();
-
-                                        //re initialize controller
-                                        _scanController =
-                                            MobileScannerController(
-                                              detectionSpeed:
-                                                  DetectionSpeed.noDuplicates,
-                                            );
-                                      });
+                                    onPressed: () async {
+                                      final value = await scanQrCode(context);
+                                      if (value != null) {
+                                        _textEditingController.text = value;
+                                      }
                                     },
                                   ),
                                 ),

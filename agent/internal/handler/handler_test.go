@@ -92,3 +92,17 @@ func TestCanceledAnonymousJoinStopsFallbacks(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// Every identity gets the same silence for a channel Twitch doesn't have.
+func TestMissingChannelStopsFallbacks(t *testing.T) {
+	_, err := newClientWithFallbacks(testRequest(), func(string) (string, error) {
+		t.Fatal("looked up profile for a missing channel")
+		return "", nil
+	}, func(*agent.Request, string) (io.Closer, error) {
+		t.Fatal("joined a missing channel as a user")
+		return nil, nil
+	}, func(*agent.Request) (io.Closer, error) { return nil, ErrChannelUnavailable })
+	if !errors.Is(err, ErrChannelUnavailable) {
+		t.Fatal(err)
+	}
+}

@@ -3,7 +3,9 @@ package handler
 import (
 	"context"
 	"errors"
+	"sync"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -290,4 +292,74 @@ func TestCloseAlreadyDisconnectedChat(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+}
+
+// silentChat is how Twitch IRC treats a JOIN for a channel that doesn't
+// exist: the connection opens, but no ROOMSTATE ever arrives.
+func silentChat() *fakeChat {
+	done := make(chan struct{})
+	var once sync.Once
+	return &fakeChat{
+		connect:    func() error { <-done; return twitch.ErrClientDisconnected },
+		disconnect: func() error { once.Do(func() { close(done) }); return nil },
+	}
+}
+
+func TestAnonymousJoinOfMissingChannel(t *testing.T) {
+	lookupFailed := errors.New("helix unavailable")
+	for _, tc := range []struct {
+		name         string
+		exists       bool
+		lookupErr    error
+		wantErr      error
+		wantAttempts int
+	}{
+		// Production: three silent joins, then two fallback identities, all for nothing.
+		{"missing channel stops after one join", false, nil, ErrChannelUnavailable, 1},
+		{"existing channel keeps retrying", true, nil, context.DeadlineExceeded, 3},
+		{"failed lookup keeps retrying", false, lookupFailed, context.DeadlineExceeded, 3},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				h := testAgent()
+				h.bindChat = func(chatConnection) {}
+				attempts, lookups := 0, 0
+				h.newChat = func(string, string) chatConnection { attempts++; return silentChat() }
+				h.channelExists = func(_ context.Context, login string) (bool, error) {
+					lookups++
+					if login != "room" {
+						t.Fatalf("looked up %q", login)
+					}
+					return tc.exists, tc.lookupErr
+				}
+				_, err := h.JoinAnonymously(testRequest())
+				if !errors.Is(err, tc.wantErr) || attempts != tc.wantAttempts || lookups != 1 {
+					t.Fatalf("err=%v attempts=%d lookups=%d", err, attempts, lookups)
+				}
+			})
+		})
+	}
+}
+
+func TestAnonymousJoinDoesNotLookUpOnConnectionFailure(t *testing.T) {
+	h := testAgent()
+	h.bindChat = func(chatConnection) {}
+	h.channelExists = func(context.Context, string) (bool, error) {
+		t.Fatal("looked up a channel after a connection failure")
+		return false, nil
+	}
+	attempts := 0
+	h.newChat = func(string, string) chatConnection {
+		attempts++
+		if attempts == 1 {
+			return &fakeChat{connect: func() error { return errors.New("temporary connection failure") }}
+		}
+		c, _ := activeChat()
+		return c
+	}
+	client, err := h.JoinAnonymously(testRequest())
+	if err != nil {
+		t.Fatal(err)
+	}
+	client.Close()
 }

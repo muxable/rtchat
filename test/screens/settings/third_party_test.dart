@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
@@ -74,7 +75,11 @@ void main() {
     opened = [];
   });
 
-  Future<void> pump(WidgetTester tester, List<Account> accounts) async {
+  Future<void> pump(
+    WidgetTester tester,
+    List<Account> accounts, {
+    Authenticate? authenticate,
+  }) async {
     // tall enough to build every section.
     tester.view.physicalSize = const Size(800, 3000);
     tester.view.devicePixelRatio = 1;
@@ -87,10 +92,12 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: ThirdPartyScreen(
             donations: (account) => donations[account.provider]!,
-            authenticate: (url) async {
-              opened.add(url);
-              return 'com.rtirl.chat://?token=connected';
-            },
+            authenticate:
+                authenticate ??
+                (url) async {
+                  opened.add(url);
+                  return 'com.rtirl.chat://?token=connected';
+                },
           ),
         ),
       ),
@@ -160,5 +167,36 @@ void main() {
         'provider': 'twitch',
       }),
     ]);
+  });
+  testWidgets('closing the sign-in page is not an error', (tester) async {
+    await pump(
+      tester,
+      [twitch],
+      authenticate:
+          (url) => Future.error(
+            PlatformException(
+              code: 'CANCELED',
+              message: 'User canceled authentication',
+            ),
+          ),
+    );
+
+    await tester.tap(find.text('StreamElements'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('a failed sign-in says so', (tester) async {
+    await pump(tester, [
+      twitch,
+    ], authenticate: (url) => Future.error(PlatformException(code: 'error')));
+
+    await tester.tap(find.text('Streamlabs'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SnackBar), findsOneWidget);
   });
 }
