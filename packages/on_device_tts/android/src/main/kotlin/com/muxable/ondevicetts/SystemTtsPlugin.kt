@@ -43,7 +43,9 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var awaitSpeakCompletion = false
     private var speaking = false
     private var awaitSynthCompletion = false
-    private var synth = false
+    // The synthesis the pending synthResult waits for, so a late callback
+    // from one that was stopped or superseded can't complete another.
+    private var synthUtterance: String? = null
     private var context: Context? = null
     private var tts: TextToSpeech? = null
     private val tag = "TTS"
@@ -114,9 +116,7 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     closeParcelFileDescriptor(false)
                     Log.d(tag, "Utterance ID has completed: $utteranceId")
-                    if (awaitSynthCompletion) {
-                        synthCompletion(1)
-                    }
+                    synthCompletion(utteranceId, 1)
                     invokeMethod("synth.onComplete", true)
                 } else {
                     Log.d(tag, "Utterance ID has completed: $utteranceId")
@@ -172,9 +172,7 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
             override fun onError(utteranceId: String) {
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     closeParcelFileDescriptor(true)
-                    if (awaitSynthCompletion) {
-                        synth = false
-                    }
+                    synthCompletion(utteranceId, null, "Error from TextToSpeech (synth)")
                     invokeMethod("synth.onError", "Error from TextToSpeech (synth)")
                 } else {
                     if (awaitSpeakCompletion) {
@@ -188,9 +186,9 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
             override fun onError(utteranceId: String, errorCode: Int) {
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     closeParcelFileDescriptor(true)
-                    if (awaitSynthCompletion) {
-                        synth = false
-                    }
+                    synthCompletion(
+                        utteranceId, null, "Error from TextToSpeech (synth) - $errorCode",
+                    )
                     invokeMethod("synth.onError", "Error from TextToSpeech (synth) - $errorCode")
                 } else {
                     if (awaitSpeakCompletion) {
@@ -209,11 +207,23 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
     }
 
-    fun synthCompletion(success: Int) {
-        synth = false
+    /**
+     * Completes the pending synthesis call with [success], or with [error]
+     * when [success] is null, if [utteranceId] is the synthesis it waits for.
+     * Callbacks arrive on a binder thread; the state is only touched on the
+     * main thread.
+     */
+    private fun synthCompletion(utteranceId: String, success: Int?, error: String? = null) {
         handler!!.post {
-            synthResult?.success(success)
+            if (utteranceId != synthUtterance) return@post
+            val result = synthResult
             synthResult = null
+            synthUtterance = null
+            if (success != null) {
+                result?.success(success)
+            } else {
+                result?.error("SynthesisError", error, null)
+            }
         }
     }
 
@@ -345,18 +355,16 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             "synthesizeToFile" -> {
                 val text: String? = call.argument("text")
-                if (synth) {
-                    result.success(0)
-                    return
-                }
                 val fileName: String? = call.argument("fileName")
                 val isFullPath: Boolean? = call.argument("isFullPath")
-                synthesizeToFile(text!!, fileName!!, isFullPath!!)
-                if (awaitSynthCompletion) {
-                    synth = true
-                    synthResult = result
-                } else {
-                    result.success(1)
+                // A synthesis still pending was given up on; this one replaces it.
+                synthResult?.success(0)
+                val utteranceId = SYNTHESIZE_TO_FILE_PREFIX + UUID.randomUUID().toString()
+                synthUtterance = utteranceId
+                synthResult = if (awaitSynthCompletion) result else null
+                if (!awaitSynthCompletion) result.success(1)
+                if (!synthesizeToFile(text!!, fileName!!, isFullPath!!, utteranceId)) {
+                    synthCompletion(utteranceId, null, "Failed to start synthesizing to file")
                 }
             }
 
@@ -690,7 +698,9 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun stop() {
-        if (awaitSynthCompletion) synth = false
+        synthResult?.success(0)
+        synthResult = null
+        synthUtterance = null
         if (awaitSpeakCompletion) speaking = false
         tts!!.stop()
     }
@@ -708,20 +718,21 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
     }
 
-    private fun synthesizeToFile(text: String, fileName: String, isFullPath: Boolean) {
+    private fun synthesizeToFile(
+        text: String,
+        fileName: String,
+        isFullPath: Boolean,
+        utteranceId: String,
+    ): Boolean {
         val fullPath: String
-        val uuid: String = UUID.randomUUID().toString()
-        bundle!!.putString(
-            TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
-            SYNTHESIZE_TO_FILE_PREFIX + uuid
-        )
+        bundle!!.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId)
 
         val result: Int =
             if(isFullPath){
                 val file = File(fileName)
                 fullPath = file.path
 
-                tts!!.synthesizeToFile(text, bundle!!, file, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+                tts!!.synthesizeToFile(text, bundle!!, file, utteranceId)
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val resolver = this.context?.contentResolver
                 val contentValues = ContentValues().apply {
@@ -733,13 +744,13 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
                 this.parcelFileDescriptor = resolver?.openFileDescriptor(uri!!, "rw")
                 fullPath = uri?.path + File.separatorChar + fileName
 
-                tts!!.synthesizeToFile(text, bundle!!, parcelFileDescriptor!!, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+                tts!!.synthesizeToFile(text, bundle!!, parcelFileDescriptor!!, utteranceId)
             } else {
                 val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
                 val file = File(musicDir, fileName)
                 fullPath = file.path
 
-                tts!!.synthesizeToFile(text, bundle!!, file, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+                tts!!.synthesizeToFile(text, bundle!!, file, utteranceId)
             }
 
         if (result == TextToSpeech.SUCCESS) {
@@ -747,6 +758,7 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
         } else {
             Log.d(tag, "Failed creating file : $fullPath")
         }
+        return result == TextToSpeech.SUCCESS
     }
 
     private fun invokeMethod(method: String, arguments: Any) {
