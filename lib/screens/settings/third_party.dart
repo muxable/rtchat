@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
@@ -69,12 +70,21 @@ Future<void> _connect(
     );
     return;
   }
-  final result = await authenticate(
-    Uri.https("chat.rtirl.com", "/auth/$service/redirect", {
-      "token": idToken,
-      "provider": account.provider,
-    }),
-  );
+  final String result;
+  try {
+    result = await authenticate(
+      Uri.https("chat.rtirl.com", "/auth/$service/redirect", {
+        "token": idToken,
+        "provider": account.provider,
+      }),
+    );
+  } on PlatformException catch (e) {
+    // closing the sign-in page isn't an error.
+    if (e.code != 'CANCELED') {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.thirdPartyAuthError)));
+    }
+    return;
+  }
   final token = Uri.parse(result).queryParameters['token'];
   if (token == null) {
     messenger.showSnackBar(SnackBar(content: Text(l10n.thirdPartyAuthError)));
