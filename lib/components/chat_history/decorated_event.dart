@@ -49,7 +49,7 @@ class DecoratedEventWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Align(
-                            alignment: Alignment.topLeft,
+                            alignment: Alignment.centerLeft,
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
                                 maxHeight: 2 * styleModel.fontSize,
