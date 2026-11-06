@@ -65,6 +65,9 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var audioFocusRequest: AudioFocusRequest? = null
     private var filePlayer: MediaPlayer? = null
     private var playResult: Result? = null
+    private val preparationStalled = Runnable {
+        finishPlayback(null, "MediaPlayer didn't prepare the file")
+    }
     private val playbackStalled = Runnable {
         // The output stopped consuming audio; don't hang the caller.
         Log.w(tag, "File playback stalled")
@@ -75,6 +78,7 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
         private const val SILENCE_PREFIX = "SIL_"
         private const val SYNTHESIZE_TO_FILE_PREFIX = "STF_"
         private const val STALL_TIMEOUT_MS = 5000L
+        private const val PREPARE_TIMEOUT_MS = 10000L
         private const val UNKNOWN_DURATION_MS = 30000L
     }
 
@@ -732,6 +736,7 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
             )
             player.setOnPreparedListener {
                 if (filePlayer === player) {
+                    handler!!.removeCallbacks(preparationStalled)
                     player.start()
                     val duration = player.duration.toLong()
                     handler!!.postDelayed(
@@ -750,6 +755,7 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
                 true
             }
             player.setDataSource(path)
+            handler!!.postDelayed(preparationStalled, PREPARE_TIMEOUT_MS)
             player.prepareAsync()
         } catch (e: Exception) {
             finishPlayback(null, e.toString())
@@ -762,6 +768,7 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
         val result = playResult
         filePlayer = null
         playResult = null
+        handler!!.removeCallbacks(preparationStalled)
         handler!!.removeCallbacks(playbackStalled)
         player.release()
         if (success != null) {
