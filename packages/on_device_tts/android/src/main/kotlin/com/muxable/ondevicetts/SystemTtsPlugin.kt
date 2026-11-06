@@ -8,6 +8,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -62,10 +63,23 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
     private var audioManager: AudioManager? = null
     private var audioFocusRequest: AudioFocusRequest? = null
+    private var filePlayer: MediaPlayer? = null
+    private var playResult: Result? = null
+    private val preparationStalled = Runnable {
+        finishPlayback(null, "MediaPlayer didn't prepare the file")
+    }
+    private val playbackStalled = Runnable {
+        // The output stopped consuming audio; don't hang the caller.
+        Log.w(tag, "File playback stalled")
+        finishPlayback(1)
+    }
 
     companion object {
         private const val SILENCE_PREFIX = "SIL_"
         private const val SYNTHESIZE_TO_FILE_PREFIX = "STF_"
+        private const val STALL_TIMEOUT_MS = 5000L
+        private const val PREPARE_TIMEOUT_MS = 10000L
+        private const val UNKNOWN_DURATION_MS = 30000L
     }
 
     private fun initInstance(messenger: BinaryMessenger, context: Context) {
@@ -358,6 +372,11 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
                 } else {
                     result.success(1)
                 }
+            }
+
+            "playFile" -> {
+                val path: String = call.argument("path")!!
+                playFile(path, result)
             }
 
             "pause" -> {
@@ -693,6 +712,70 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
         if (awaitSynthCompletion) synth = false
         if (awaitSpeakCompletion) speaking = false
         tts!!.stop()
+        finishPlayback(0)
+    }
+
+    /**
+     * Plays a synthesized file in this process, so the app's foreground
+     * service covers it in the background. Like [PcmPlayer], it plays as
+     * media without requesting audio focus: it mixes with other audio, and
+     * other audio can't pause it. Completes with 1 when playback ends, or 0
+     * when [stop] cuts it off.
+     */
+    private fun playFile(path: String, result: Result) {
+        finishPlayback(0)
+        val player = MediaPlayer()
+        filePlayer = player
+        playResult = result
+        try {
+            player.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build(),
+            )
+            player.setOnPreparedListener {
+                if (filePlayer === player) {
+                    handler!!.removeCallbacks(preparationStalled)
+                    player.start()
+                    val duration = player.duration.toLong()
+                    handler!!.postDelayed(
+                        playbackStalled,
+                        (if (duration > 0) duration else UNKNOWN_DURATION_MS) + STALL_TIMEOUT_MS,
+                    )
+                }
+            }
+            player.setOnCompletionListener {
+                if (filePlayer === player) finishPlayback(1)
+            }
+            player.setOnErrorListener { _, what, extra ->
+                if (filePlayer === player) {
+                    finishPlayback(null, "MediaPlayer error $what ($extra)")
+                }
+                true
+            }
+            player.setDataSource(path)
+            handler!!.postDelayed(preparationStalled, PREPARE_TIMEOUT_MS)
+            player.prepareAsync()
+        } catch (e: Exception) {
+            finishPlayback(null, e.toString())
+        }
+    }
+
+    /** Releases the file player, if any, and completes its call. */
+    private fun finishPlayback(success: Int?, error: String? = null) {
+        val player = filePlayer ?: return
+        val result = playResult
+        filePlayer = null
+        playResult = null
+        handler!!.removeCallbacks(preparationStalled)
+        handler!!.removeCallbacks(playbackStalled)
+        player.release()
+        if (success != null) {
+            result?.success(success)
+        } else {
+            result?.error("PlaybackError", error, null)
+        }
     }
 
     private val maxSpeechInputLength: Int
