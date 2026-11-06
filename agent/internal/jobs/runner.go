@@ -3,9 +3,6 @@ package jobs
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
-	"fmt"
 	"time"
 	_ "time/tzdata"
 
@@ -15,15 +12,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Lease lets one replica run a job's slot. Work stops a minute before the
+// lease expires, so the holder always finishes while no one else can hold it.
 type Lease struct {
-	Owner         string    `firestore:"owner"`
 	ExpiresAt     time.Time `firestore:"expiresAt"`
 	CompletedSlot string    `firestore:"completedSlot"`
 }
 
+// LeaseStore never fails: a lease that couldn't be confirmed isn't held, and
+// the next tick tries again; a finish that isn't recorded lets the lease expire.
 type LeaseStore interface {
-	Acquire(context.Context, string, string, string, time.Time, time.Duration) (bool, error)
-	Finish(context.Context, string, string, string, bool) error
+	Acquire(ctx context.Context, name, slot string, now time.Time, ttl time.Duration) bool
+	Finish(ctx context.Context, name, slot string, success bool)
 }
 
 type FirestoreLeases struct{ Client *firestore.Client }
@@ -32,54 +32,35 @@ func canAcquire(l Lease, slot string, now time.Time) bool {
 	return l.CompletedSlot != slot && !l.ExpiresAt.After(now)
 }
 
-func (s FirestoreLeases) Acquire(ctx context.Context, name, owner, slot string, now time.Time, ttl time.Duration) (bool, error) {
+func (s FirestoreLeases) Acquire(ctx context.Context, name, slot string, now time.Time, ttl time.Duration) bool {
 	acquired := false
 	ref := s.Client.Collection("jobLeases").Doc(name)
 	err := s.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 		acquired = false
 		doc, err := tx.Get(ref)
 		var lease Lease
-		if status.Code(err) != codes.NotFound {
-			if err != nil {
-				return err
-			}
-			if err = doc.DataTo(&lease); err != nil {
-				return err
-			}
+		if err == nil {
+			err = doc.DataTo(&lease)
+		}
+		if err != nil && status.Code(err) != codes.NotFound {
+			return err
 		}
 		if !canAcquire(lease, slot, now) {
 			return nil
 		}
-		lease.Owner = owner
-		lease.ExpiresAt = now.Add(ttl)
-		if err := tx.Set(ref, lease); err != nil {
-			return err
-		}
 		acquired = true
-		return nil
+		return tx.Set(ref, Lease{ExpiresAt: now.Add(ttl), CompletedSlot: lease.CompletedSlot})
 	})
-	return acquired, err
+	return acquired && err == nil
 }
-func (s FirestoreLeases) Finish(ctx context.Context, name, owner, slot string, success bool) error {
-	ref := s.Client.Collection("jobLeases").Doc(name)
-	return s.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		doc, err := tx.Get(ref)
-		if err != nil {
-			return err
-		}
-		var lease Lease
-		if err = doc.DataTo(&lease); err != nil {
-			return err
-		}
-		if lease.Owner != owner {
-			return fmt.Errorf("job lease ownership lost")
-		}
-		lease.ExpiresAt = time.Time{}
-		if success {
-			lease.CompletedSlot = slot
-		}
-		return tx.Set(ref, lease)
-	})
+
+// Finish runs while the caller's lease is live, so it needs no ownership check.
+func (s FirestoreLeases) Finish(ctx context.Context, name, slot string, success bool) {
+	update := map[string]interface{}{"expiresAt": time.Time{}}
+	if success {
+		update["completedSlot"] = slot
+	}
+	s.Client.Collection("jobLeases").Doc(name).Set(ctx, update, firestore.MergeAll)
 }
 
 type Job struct {
@@ -140,37 +121,25 @@ func (r Runner) Once(ctx context.Context, job Job, now time.Time) {
 	if ctx.Err() != nil {
 		return
 	}
-	var id [16]byte
-	if _, err := rand.Read(id[:]); err != nil {
-		zap.L().Error("job owner creation failed", zap.Error(err))
-		return
-	}
-	owner := hex.EncodeToString(id[:])
 	slot := Slot(now, job.Daily)
 	// Work expires before its lease. This leaves a safety window for canceled
-	// HTTP/Firestore requests to stop before another replica can take over.
+	// HTTP/Firestore requests, and Finish, to stop before another replica can take over.
 	leaseCtx, leaseCancel := context.WithTimeout(ctx, 15*time.Second)
-	acquired, err := r.Leases.Acquire(leaseCtx, job.Name, owner, slot, now, job.Timeout+time.Minute)
+	acquired := r.Leases.Acquire(leaseCtx, job.Name, slot, now, job.Timeout+time.Minute)
 	leaseCancel()
-	if err != nil {
-		zap.L().Error("job lease acquisition failed", zap.String("job", job.Name), zap.Error(err))
-		return
-	}
 	if !acquired {
 		return
 	}
 	started := time.Now()
 	work, cancel := context.WithTimeout(ctx, job.Timeout)
-	err = job.Run(work)
+	err := job.Run(work)
 	if err == nil {
 		err = work.Err()
 	}
 	cancel()
 	finishCtx, finishCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer finishCancel()
-	if finishErr := r.Leases.Finish(finishCtx, job.Name, owner, slot, err == nil); finishErr != nil {
-		zap.L().Error("job lease completion failed", zap.String("job", job.Name), zap.Error(finishErr))
-	}
+	r.Leases.Finish(finishCtx, job.Name, slot, err == nil)
 	if err != nil {
 		zap.L().Error("scheduled job failed", zap.String("job", job.Name), zap.String("slot", slot), zap.Duration("duration", time.Since(started)), zap.Error(err))
 		return
