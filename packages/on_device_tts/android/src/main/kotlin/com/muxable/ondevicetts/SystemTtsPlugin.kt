@@ -3,7 +3,6 @@
 
 package com.muxable.ondevicetts
 
-import android.content.ContentValues
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
@@ -11,11 +10,8 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.os.ParcelFileDescriptor
-import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
@@ -61,7 +57,6 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var ttsStatus: Int? = null
     private var selectedEngine: String? = null
     private var engineResult: Result? = null
-    private var parcelFileDescriptor: ParcelFileDescriptor? = null
     private var audioManager: AudioManager? = null
     private var audioFocusRequest: AudioFocusRequest? = null
 
@@ -114,7 +109,6 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
             override fun onDone(utteranceId: String) {
                 if (utteranceId.startsWith(SILENCE_PREFIX)) return
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
-                    closeParcelFileDescriptor(false)
                     Log.d(tag, "Utterance ID has completed: $utteranceId")
                     synthCompletion(utteranceId, 1)
                     invokeMethod("synth.onComplete", true)
@@ -171,7 +165,6 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
             @Deprecated("")
             override fun onError(utteranceId: String) {
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
-                    closeParcelFileDescriptor(true)
                     synthCompletion(utteranceId, null, "Error from TextToSpeech (synth)")
                     invokeMethod("synth.onError", "Error from TextToSpeech (synth)")
                 } else {
@@ -185,7 +178,6 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             override fun onError(utteranceId: String, errorCode: Int) {
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
-                    closeParcelFileDescriptor(true)
                     synthCompletion(
                         utteranceId, null, "Error from TextToSpeech (synth) - $errorCode",
                     )
@@ -356,14 +348,14 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
             "synthesizeToFile" -> {
                 val text: String? = call.argument("text")
                 val fileName: String? = call.argument("fileName")
-                val isFullPath: Boolean? = call.argument("isFullPath")
                 // A synthesis still pending was given up on; this one replaces it.
                 synthResult?.success(0)
                 val utteranceId = SYNTHESIZE_TO_FILE_PREFIX + UUID.randomUUID().toString()
                 synthUtterance = utteranceId
                 synthResult = if (awaitSynthCompletion) result else null
                 if (!awaitSynthCompletion) result.success(1)
-                if (!synthesizeToFile(text!!, fileName!!, isFullPath!!, utteranceId)) {
+                // The engine always passes a full path in the app's storage.
+                if (!synthesizeToFile(text!!, fileName!!, utteranceId)) {
                     synthCompletion(utteranceId, null, "Failed to start synthesizing to file")
                 }
             }
@@ -708,55 +700,13 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
     private val maxSpeechInputLength: Int
         get() = TextToSpeech.getMaxSpeechInputLength()
 
-    private fun closeParcelFileDescriptor(isError: Boolean)  {
-        if (this.parcelFileDescriptor != null)  {
-            if (isError) {
-                this.parcelFileDescriptor!!.closeWithError("Error synthesizing TTS to file")
-            } else {
-                this.parcelFileDescriptor!!.close()
-            }
-        }
-    }
-
-    private fun synthesizeToFile(
-        text: String,
-        fileName: String,
-        isFullPath: Boolean,
-        utteranceId: String,
-    ): Boolean {
-        val fullPath: String
+    private fun synthesizeToFile(text: String, path: String, utteranceId: String): Boolean {
         bundle!!.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId)
-
-        val result: Int =
-            if(isFullPath){
-                val file = File(fileName)
-                fullPath = file.path
-
-                tts!!.synthesizeToFile(text, bundle!!, file, utteranceId)
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val resolver = this.context?.contentResolver
-                val contentValues = ContentValues().apply {
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                    put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav")
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MUSIC)
-                }
-                val uri = resolver?.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
-                this.parcelFileDescriptor = resolver?.openFileDescriptor(uri!!, "rw")
-                fullPath = uri?.path + File.separatorChar + fileName
-
-                tts!!.synthesizeToFile(text, bundle!!, parcelFileDescriptor!!, utteranceId)
-            } else {
-                val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-                val file = File(musicDir, fileName)
-                fullPath = file.path
-
-                tts!!.synthesizeToFile(text, bundle!!, file, utteranceId)
-            }
-
+        val result = tts!!.synthesizeToFile(text, bundle!!, File(path), utteranceId)
         if (result == TextToSpeech.SUCCESS) {
-            Log.d(tag, "Successfully created file : $fullPath")
+            Log.d(tag, "Successfully created file : $path")
         } else {
-            Log.d(tag, "Failed creating file : $fullPath")
+            Log.d(tag, "Failed creating file : $path")
         }
         return result == TextToSpeech.SUCCESS
     }
