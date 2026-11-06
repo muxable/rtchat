@@ -19,9 +19,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
       - name: Check translations
-        run: python3 scripts/check_translations.py
-      - name: Test translation check
-        run: python3 -m unittest discover -s scripts -p "test_*.py"
+        shell: bash
+        run: |
+          status=0
+          for file in lib/l10n/*.arb; do
+            missing=$(jq -r --slurpfile template lib/l10n/app_en.arb '
+              . as $messages | $template[0] | keys[] |
+              select(startswith("@") | not) |
+              select($messages[.] | if type == "string" then test("\\S") | not else true end)
+            ' "$file")
+            if [ -n "$missing" ]; then
+              echo "::error file=$file::Missing or blank translations: $(echo "$missing" | paste -sd, -)"
+              status=1
+            fi
+          done
+          exit "$status"
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:

@@ -41,4 +41,4 @@ Adding YouTube support is possible but requires a decent amount of work. If you 
 
 ## Translations
 
-Translations live in `lib/l10n/app_<locale>.arb`, with `app_en.arb` as the template. Every locale must provide a nonempty translation for each template message. Run `python3 scripts/check_translations.py` to check before submitting a PR; CI runs the same check.
+Translations live in `lib/l10n/app_<locale>.arb`, with `app_en.arb` as the template. Every locale must provide a nonempty translation for each template message. CI checks for missing or blank translations.
