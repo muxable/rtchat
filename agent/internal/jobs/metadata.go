@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
+	"maps"
 	"math"
 	"math/rand"
 	"net/http"
@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -143,6 +144,7 @@ func (a *API) FetchTwitch(ctx context.Context, logins []string, write func([]Cha
 		}
 	}
 	rand.Shuffle(len(ids), func(i, j int) { ids[i], ids[j] = ids[j], ids[i] })
+	var followers []ChannelUpdate
 	for _, id := range ids[:min(200, len(ids))] {
 		q := params("broadcaster_id", []string{id})
 		q.Set("first", "1")
@@ -160,12 +162,10 @@ func (a *API) FetchTwitch(ctx context.Context, logins []string, write func([]Cha
 			return err
 		}
 		if result.Total != nil && *result.Total > 0 {
-			if err := write([]ChannelUpdate{{"twitch:" + id, map[string]interface{}{"followerCount": *result.Total}}}); err != nil {
-				return err
-			}
+			followers = append(followers, ChannelUpdate{"twitch:" + id, map[string]interface{}{"followerCount": *result.Total}})
 		}
 	}
-	return nil
+	return write(followers)
 }
 func min(a, b int) int {
 	if a < b {
@@ -247,35 +247,58 @@ func logRefresh(provider string, channels, written int) {
 	zap.L().Info("channel metadata refreshed", zap.String("provider", provider), zap.Int("channels", channels), zap.Int("written", written))
 }
 
-// write returns the number of channel documents it updated.
+// write returns the number of channel documents it updated. It reads every
+// document in one call and writes the changed ones together, each on the
+// condition that it is still the version read.
 func (s *Service) write(ctx context.Context, started time.Time, updates []ChannelUpdate) (int, error) {
-	var written int
+	merged := map[string]map[string]interface{}{}
+	var refs []*firestore.DocumentRef
 	for _, update := range updates {
-		skipped := false
-		ref := s.Client.Collection("channels").Doc(update.ID)
-		err := s.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-			doc, err := tx.Get(ref)
-			if err != nil && status.Code(err) != codes.NotFound {
-				return err
-			}
-			// A newer webhook wins over a poll that started before it. Follower-only
-			// writes do not touch stream metadata and may proceed independently.
-			skipped = err == nil && doc.UpdateTime.After(started) && len(update.Data) > 1
-			if skipped {
-				return nil
-			}
-			// Unchanged data still costs a billed write, so leave the doc alone.
-			if err == nil && unchanged(doc.Data(), update.Data) {
-				skipped = true
-				return nil
-			}
-			return tx.Set(ref, update.Data, firestore.MergeAll)
-		})
-		if err != nil {
-			return written, err
+		if merged[update.ID] == nil {
+			merged[update.ID] = map[string]interface{}{}
+			refs = append(refs, s.Client.Collection("channels").Doc(update.ID))
 		}
-		if !skipped {
+		maps.Copy(merged[update.ID], update.Data)
+	}
+	docs, err := s.Client.GetAll(ctx, refs)
+	if err != nil {
+		return 0, err
+	}
+	writer := s.Client.BulkWriter(ctx)
+	var jobs []*firestore.BulkWriterJob
+	for _, doc := range docs {
+		data := merged[doc.Ref.ID]
+		var job *firestore.BulkWriterJob
+		if !doc.Exists() {
+			job, err = writer.Create(doc.Ref, data)
+		} else if (doc.UpdateTime.After(started) && len(data) > 1) || unchanged(doc.Data(), data) {
+			// A newer webhook wins over a poll that started before it; follower-only
+			// writes don't touch stream metadata. Unchanged data still costs a write.
+			continue
+		} else {
+			var fields []firestore.Update
+			for field, value := range data {
+				fields = append(fields, firestore.Update{FieldPath: firestore.FieldPath{field}, Value: value})
+			}
+			job, err = writer.Update(doc.Ref, fields, firestore.LastUpdateTime(doc.UpdateTime))
+		}
+		if err != nil {
+			writer.End()
+			return 0, err
+		}
+		jobs = append(jobs, job)
+	}
+	writer.End()
+	written := 0
+	for _, job := range jobs {
+		_, err := job.Results()
+		switch status.Code(err) {
+		case codes.OK:
 			written++
+		case codes.FailedPrecondition, codes.AlreadyExists:
+			// A webhook wrote the channel since it was read; it wins.
+		default:
+			return written, err
 		}
 	}
 	return written, nil
