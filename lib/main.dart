@@ -20,6 +20,7 @@ import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/commands.dart';
+import 'package:rtchat/models/in_app_update.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/chat.dart';
@@ -450,10 +451,12 @@ class _AppState extends State<App> {
                         onChannelSelect: views.openChannel,
                       );
                     }
-                    return HomeScreen(
-                      isDiscoModeEnabled: _isDiscoModeRunning,
-                      channel: channel,
-                      onChannelSelect: views.openChannel,
+                    return AppUpdateHandler(
+                      child: HomeScreen(
+                        isDiscoModeEnabled: _isDiscoModeRunning,
+                        channel: channel,
+                        onChannelSelect: views.openChannel,
+                      ),
                     );
                   },
                 );

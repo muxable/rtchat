@@ -84,5 +84,6 @@ flutter {
 dependencies {
     implementation "androidx.media:media:1.7.1"
     implementation 'com.google.android.play:app-update:2.1.0'
+    implementation 'com.google.android.play:app-update-ktx:2.1.0'
     implementation 'com.google.android.play:feature-delivery:2.1.0'
 }
