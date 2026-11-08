@@ -2,6 +2,7 @@ package chatmessage
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -46,11 +47,11 @@ func Create(ctx context.Context, create func(context.Context) error) (duplicate 
 				return false, nil
 			case codes.AlreadyExists:
 				return started == 1, nil
-			case codes.Unavailable, codes.DeadlineExceeded, codes.Aborted, codes.ResourceExhausted:
-				err = attempt
-			default:
+			}
+			if !Transient(attempt) {
 				return false, attempt
 			}
+			err = attempt
 			if ctx.Err() == nil && started < MaxAttempts {
 				retry = time.After(time.Duration(started) * 100 * time.Millisecond)
 			} else if pending == 0 {
@@ -74,4 +75,16 @@ func Create(ctx context.Context, create func(context.Context) error) (duplicate 
 			return false, err
 		}
 	}
+}
+
+// Transient reports whether a Create that failed with err may succeed later.
+func Transient(err error) bool {
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	switch status.Code(err) {
+	case codes.Unavailable, codes.DeadlineExceeded, codes.Aborted, codes.ResourceExhausted:
+		return true
+	}
+	return false
 }

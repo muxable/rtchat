@@ -37,7 +37,22 @@ type TwitchAgent struct {
 	newChat       func(string, string) chatConnection
 	bindChat      func(chatConnection)
 	channelExists func(context.Context, string) (bool, error)
+	createDoc     func(context.Context, *chatDocument) error
+
+	// held keeps messages whose write failed transiently, e.g. during a
+	// Firestore outage, until a retry lands them.
+	heldMu    sync.Mutex
+	held      []heldDocument
+	retryOnce sync.Once
 }
+
+type heldDocument struct {
+	kind string
+	doc  *chatDocument
+}
+
+// maxHeld bounds memory if Firestore never comes back.
+const maxHeld = 20000
 
 // ErrChannelUnavailable means Helix has no user for the channel's login, e.g.
 // it was renamed, deleted or suspended. Twitch IRC never answers a JOIN for
@@ -120,19 +135,65 @@ func joinWithContext(ctx context.Context, client chatConnection, channel string,
 	}
 }
 
-func (h *TwitchAgent) write(channelID, messageID string, data interface{}) chatmetrics.Outcome {
-	duplicate, err := createMessage(context.Background(), func(ctx context.Context) error {
-		_, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(ctx, data)
+func (h *TwitchAgent) write(doc *chatDocument) (duplicate bool, err error) {
+	return createMessage(context.Background(), func(ctx context.Context) error {
+		if h.createDoc != nil {
+			return h.createDoc(ctx, doc)
+		}
+		_, err := h.Firestore.Collection("channels").Doc(doc.channelID).Collection("messages").Doc(doc.messageID).Create(ctx, doc.data)
 		return err
 	})
+}
+
+func record(kind string, doc *chatDocument, duplicate bool, err error) {
 	if err != nil {
-		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID))
-		return chatmetrics.Failed
+		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", doc.channelID), zap.String("messageId", doc.messageID))
+		chatmetrics.Record("twitch", kind, chatmetrics.Failed)
+	} else if duplicate {
+		chatmetrics.Record("twitch", kind, chatmetrics.Duplicate)
+	} else {
+		chatmetrics.Record("twitch", kind, chatmetrics.Created)
 	}
-	if duplicate {
-		return chatmetrics.Duplicate
+}
+
+// hold queues a message for retryHeld, reporting false if too many are held.
+func (h *TwitchAgent) hold(kind string, doc *chatDocument) bool {
+	h.heldMu.Lock()
+	defer h.heldMu.Unlock()
+	if len(h.held) >= maxHeld {
+		return false
 	}
-	return chatmetrics.Created
+	h.held = append(h.held, heldDocument{kind, doc})
+	h.retryOnce.Do(func() { go h.retryHeld(5 * time.Second) })
+	return true
+}
+
+// retryHeld writes held messages in order every interval, stopping a pass at
+// the first transient failure since Firestore is still unavailable.
+func (h *TwitchAgent) retryHeld(interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-h.context().Done():
+			return
+		case <-ticker.C:
+		}
+		h.heldMu.Lock()
+		held := h.held
+		h.held = nil
+		h.heldMu.Unlock()
+		for i, m := range held {
+			duplicate, err := h.write(m.doc)
+			if chatmessage.Transient(err) && h.context().Err() == nil {
+				h.heldMu.Lock()
+				h.held = append(held[i:], h.held...)
+				h.heldMu.Unlock()
+				break
+			}
+			record(m.kind, m.doc, duplicate, err)
+		}
+	}
 }
 
 func (h *TwitchAgent) bindEvents(client *twitch.Client) {
@@ -288,11 +349,15 @@ func (h *TwitchAgent) JoinAnonymously(r *agent.Request) (*AnonymousTwitchClient,
 // writeDocument counts every received event by kind; events without a
 // document (e.g. non-announcement user notices) count as skipped.
 func (h *TwitchAgent) writeDocument(kind string, doc *chatDocument) {
-	outcome := chatmetrics.Skipped
-	if doc != nil {
-		outcome = h.write(doc.channelID, doc.messageID, doc.data)
+	if doc == nil {
+		chatmetrics.Record("twitch", kind, chatmetrics.Skipped)
+		return
 	}
-	chatmetrics.Record("twitch", kind, outcome)
+	duplicate, err := h.write(doc)
+	if chatmessage.Transient(err) && h.hold(kind, doc) {
+		return
+	}
+	record(kind, doc, duplicate, err)
 }
 
 func (h *TwitchAgent) profile(userID string) (map[string]interface{}, error) {
