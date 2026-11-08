@@ -27,8 +27,10 @@ type TwitchAgent struct {
 	Firestore              *firestore.Client
 	ClientID, ClientSecret string
 	// WaitForAuth gates initial IRC logins across replicas, outside the handshake timeout.
-	WaitForAuth      func(context.Context, string) error
-	Context          context.Context
+	WaitForAuth func(context.Context, string) error
+	Context     context.Context
+	// Buffer, if set, holds message writes through a Firestore outage.
+	Buffer           *chatmessage.Buffer
 	tokenServiceOnce sync.Once
 	tokenService     *provider.Service
 	// Optional dependencies allow lifecycle tests without external services.
@@ -120,19 +122,26 @@ func joinWithContext(ctx context.Context, client chatConnection, channel string,
 	}
 }
 
-func (h *TwitchAgent) write(channelID, messageID string, data interface{}) chatmetrics.Outcome {
-	duplicate, err := createMessage(context.Background(), func(ctx context.Context) error {
+func (h *TwitchAgent) write(channelID, messageID string, data interface{}, done func(chatmetrics.Outcome)) {
+	create := func(ctx context.Context) error {
 		_, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(ctx, data)
 		return err
-	})
-	if err != nil {
-		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID))
-		return chatmetrics.Failed
 	}
-	if duplicate {
-		return chatmetrics.Duplicate
+	result := func(duplicate bool, err error) {
+		if err != nil {
+			zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID))
+			done(chatmetrics.Failed)
+		} else if duplicate {
+			done(chatmetrics.Duplicate)
+		} else {
+			done(chatmetrics.Created)
+		}
 	}
-	return chatmetrics.Created
+	if h.Buffer != nil {
+		h.Buffer.Create(h.context(), create, result)
+		return
+	}
+	result(createMessage(context.Background(), create))
 }
 
 func (h *TwitchAgent) bindEvents(client *twitch.Client) {
@@ -288,11 +297,12 @@ func (h *TwitchAgent) JoinAnonymously(r *agent.Request) (*AnonymousTwitchClient,
 // writeDocument counts every received event by kind; events without a
 // document (e.g. non-announcement user notices) count as skipped.
 func (h *TwitchAgent) writeDocument(kind string, doc *chatDocument) {
-	outcome := chatmetrics.Skipped
-	if doc != nil {
-		outcome = h.write(doc.channelID, doc.messageID, doc.data)
+	record := func(outcome chatmetrics.Outcome) { chatmetrics.Record("twitch", kind, outcome) }
+	if doc == nil {
+		record(chatmetrics.Skipped)
+		return
 	}
-	chatmetrics.Record("twitch", kind, outcome)
+	h.write(doc.channelID, doc.messageID, doc.data, record)
 }
 
 func (h *TwitchAgent) profile(userID string) (map[string]interface{}, error) {
@@ -369,7 +379,7 @@ func installReconnect(client chatConnection, source oauth2.TokenSource) {
 // createMessage writes one message document within a bounded budget, hedging
 // stalled attempts so a single hung RPC cannot drop the message.
 func createMessage(ctx context.Context, create func(context.Context) error) (duplicate bool, err error) {
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, chatmessage.AttemptTimeout)
 	defer cancel()
 	return chatmessage.Create(ctx, create)
 }

@@ -21,6 +21,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/catalog"
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
 	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"github.com/muxable/rtchat/agent/internal/ircauth"
@@ -151,8 +152,12 @@ func main() {
 		zap.L().Fatal("failed to get twitch client secret", zap.Error(err))
 	}
 
+	writes := chatmessage.NewBuffer()
+	go writes.Run(ctx)
+
 	twitch := &handler.TwitchAgent{
 		Firestore:    client,
+		Buffer:       writes,
 		ClientID:     twitchClientID,
 		ClientSecret: twitchClientSecret,
 		WaitForAuth:  ircauth.NewFirestoreGate(client).Wait,
