@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"fmt"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"testing/synctest"
@@ -50,6 +52,37 @@ func TestCreateMessageSurvivesStalledAttempt(t *testing.T) {
 		})
 		if err != nil || calls.Load() != 2 || time.Since(start) > 5*time.Second {
 			t.Fatalf("calls=%d err=%v after %v; chat dropped", calls.Load(), err, time.Since(start))
+		}
+	})
+}
+
+// The 2026-11-07 outage: every Firestore call stalled for about a minute.
+// Messages received during it must be held and written once it recovers.
+func TestWriteDocumentHoldsMessagesThroughOutage(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		recovered := time.Now().Add(time.Minute)
+		var mu sync.Mutex
+		written := map[string]bool{}
+		h := &TwitchAgent{Context: ctx, createDoc: func(ctx context.Context, doc *chatDocument) error {
+			if time.Now().Before(recovered) {
+				<-ctx.Done()
+				return ctx.Err()
+			}
+			mu.Lock()
+			defer mu.Unlock()
+			written[doc.messageID] = true
+			return nil
+		}}
+		for i := range 100 {
+			go h.writeDocument("message", &chatDocument{"twitch:1", fmt.Sprint(i), nil})
+			time.Sleep(time.Second)
+		}
+		time.Sleep(time.Minute)
+		synctest.Wait()
+		if len(written) != 100 {
+			t.Fatalf("%d of 100 messages written", len(written))
 		}
 	})
 }
