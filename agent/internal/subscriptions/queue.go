@@ -45,6 +45,10 @@ const (
 	twitchAppJob
 )
 
+// twitchReconcileLease labels the leases reconciles hold, which a broadcaster's
+// subscribe can run beside: it only queues another reconcile.
+const twitchReconcileLease = "reconcile"
+
 // twitchAppKey is the app subscription's item and lease key. It isn't numeric,
 // so it can't collide with a broadcaster.
 const twitchAppKey = "app-authorization"
@@ -394,7 +398,12 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem, job twitchJ
 	token, err := q.service.API.Tokens.AppAccessToken(ctx, "twitch")
 	if err == nil {
 		// Removals take the reconcile's lease so the two never interleave.
-		err = q.lock(ctx, "twitch:"+item.channel, func(ctx context.Context) error {
+		lockCtx := ctx
+		if job != twitchRemoveJob {
+			// Subscribe may run beside a reconcile, but never beside a removal.
+			lockCtx = subscriptionlock.Job(ctx, twitchReconcileLease)
+		}
+		err = q.lock(lockCtx, "twitch:"+item.channel, func(ctx context.Context) error {
 			var err error
 			switch job {
 			case twitchRemoveJob:

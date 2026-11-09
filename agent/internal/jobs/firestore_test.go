@@ -13,7 +13,9 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/option"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 )
 
@@ -38,41 +40,35 @@ func TestFirestoreLeaseReplicasTakeover(t *testing.T) {
 	var wg sync.WaitGroup
 	for i := 0; i < 3; i++ {
 		wg.Add(1)
-		go func(i int) {
+		go func() {
 			defer wg.Done()
-			ok, err := leases.Acquire(ctx, "refresh", fmt.Sprint(i), "slot", now, time.Minute)
-			if err != nil {
-				t.Error(err)
-			}
-			if ok {
+			if leases.Acquire(ctx, "refresh", "slot", now, time.Minute) {
 				acquired.Add(1)
 			}
-		}(i)
+		}()
 	}
 	wg.Wait()
 	if acquired.Load() != 1 {
 		t.Fatal(acquired.Load())
 	}
-	ok, err := leases.Acquire(ctx, "refresh", "takeover", "slot", now.Add(time.Minute), time.Minute)
-	if err != nil || !ok {
-		t.Fatal(ok, err)
+	if !leases.Acquire(ctx, "refresh", "slot", now.Add(time.Minute), time.Minute) {
+		t.Fatal("expired lease not taken over")
 	}
-	if err := leases.Finish(ctx, "refresh", "stale", "slot", true); err == nil {
-		t.Fatal("stale owner finished")
+	leases.Finish(ctx, "refresh", "slot", false)
+	if !leases.Acquire(ctx, "refresh", "slot", now.Add(time.Minute), time.Minute) {
+		t.Fatal("failed slot not retried")
 	}
-	if err := leases.Finish(ctx, "refresh", "takeover", "slot", false); err != nil {
-		t.Fatal(err)
+	leases.Finish(ctx, "refresh", "slot", true)
+	if leases.Acquire(ctx, "refresh", "slot", now.Add(24*time.Hour), time.Minute) {
+		t.Fatal("completed slot ran again")
 	}
-	ok, err = leases.Acquire(ctx, "refresh", "retry", "slot", now.Add(time.Minute), time.Minute)
-	if err != nil || !ok {
-		t.Fatal(ok, err)
+	if !leases.Acquire(ctx, "refresh", "next", now.Add(time.Minute), time.Minute) {
+		t.Fatal("next slot not taken after completion")
 	}
-	if err := leases.Finish(ctx, "refresh", "retry", "slot", true); err != nil {
-		t.Fatal(err)
-	}
-	ok, err = leases.Acquire(ctx, "refresh", "duplicate", "slot", now.Add(24*time.Hour), time.Minute)
-	if err != nil || ok {
-		t.Fatal(ok, err)
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	if leases.Acquire(canceled, "other", "slot", now, time.Minute) {
+		t.Fatal("unconfirmed lease reported as held")
 	}
 }
 func TestFirestoreCleanupIdempotencyAndActivity(t *testing.T) {
@@ -321,3 +317,60 @@ func TestFirestoreCleanupRejectsMalformedSubscriptionIDs(t *testing.T) {
 		t.Fatal("malformed subscription record was deleted", err)
 	}
 }
+
+// The refresh job timed out writing channels one transaction at a time: two
+// serial round trips per channel. A batch of updates must cost a few.
+func TestFirestoreMetadataWritesInFewRoundTrips(t *testing.T) {
+	if os.Getenv("FIRESTORE_EMULATOR_HOST") == "" {
+		t.Skip("set FIRESTORE_EMULATOR_HOST for transaction integration tests")
+	}
+	var rpcs atomic.Int32
+	count := grpc.WithChainUnaryInterceptor(func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		rpcs.Add(1)
+		return invoker(ctx, method, req, reply, cc, opts...)
+	})
+	stream := grpc.WithChainStreamInterceptor(func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		rpcs.Add(1)
+		return streamer(ctx, desc, cc, method, opts...)
+	})
+	ctx := context.Background()
+	conn, err := grpc.NewClient(os.Getenv("FIRESTORE_EMULATOR_HOST"), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithPerRPCCredentials(emulatorAdmin{}), count, stream)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := firestore.NewClient(ctx, fmt.Sprintf("jobs-%d", time.Now().UnixNano()), option.WithGRPCConn(conn))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	service := Service{Client: db}
+	var updates []ChannelUpdate
+	for i := 0; i < 300; i++ {
+		if i%2 == 0 { // half the channels already exist
+			if _, err := db.Collection("channels").Doc(fmt.Sprint("twitch:", i)).Set(ctx, map[string]interface{}{"viewerCount": int64(0)}); err != nil {
+				t.Fatal(err)
+			}
+		}
+		updates = append(updates, ChannelUpdate{fmt.Sprint("twitch:", i), map[string]interface{}{"viewerCount": int64(i + 1), "login": fmt.Sprint("user", i)}})
+	}
+	rpcs.Store(0)
+	written, err := service.write(ctx, time.Now(), updates)
+	if err != nil || written != 300 {
+		t.Fatal(written, err)
+	}
+	if n := rpcs.Load(); n > 30 {
+		t.Fatalf("%d round trips to write %d channels", n, len(updates))
+	}
+	doc, err := db.Collection("channels").Doc("twitch:298").Get(ctx)
+	if err != nil || doc.Data()["viewerCount"] != int64(299) || doc.Data()["login"] != "user298" {
+		t.Fatal(doc.Data(), err)
+	}
+}
+
+// emulatorAdmin is the credential the Firestore client sends the emulator.
+type emulatorAdmin struct{}
+
+func (emulatorAdmin) GetRequestMetadata(context.Context, ...string) (map[string]string, error) {
+	return map[string]string{"authorization": "Bearer owner"}, nil
+}
+func (emulatorAdmin) RequireTransportSecurity() bool { return false }

@@ -81,8 +81,10 @@ func (s *Service) subscribeTwitch(ctx context.Context, uid, channel string) (int
 		return user.Login, err
 	}
 	// Foreground opens must not wait for a worker's full 90-second lease.
-	// Keep lifecycle work serialized, but let callers retry busy channels.
-	err = subscriptionlock.WithWaitLimit(ctx, s.DB, "twitch:"+channel, foregroundLeaseWait, func(ctx context.Context) error {
+	// Keep lifecycle work serialized against removals, but run beside a
+	// reconcile, which does the EventSub work this would queue; nothing here
+	// conflicts with it. Let callers retry channels busy otherwise.
+	err = subscriptionlock.WithWaitLimitBeside(ctx, s.DB, "twitch:"+channel, foregroundLeaseWait, []string{twitchReconcileLease}, func(ctx context.Context) error {
 		// A server profile and its stored OAuth grant must identify the same
 		// broadcaster before authenticated-only subscriptions are reconciled.
 		userToken, err := s.API.Tokens.AccessToken(ctx, uid, "twitch")
