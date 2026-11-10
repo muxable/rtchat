@@ -16,6 +16,11 @@
         "source": "/privacy",
         "destination": "https://rtirl.com/privacy-policy/",
         "type": 301
+      },
+      {
+        "source": "/embed",
+        "destination": "https://rtchat-api.rtirl.com/embed",
+        "type": 302
       }
     ],
     "rewrites": [
@@ -38,10 +43,6 @@
       {
         "source": "/api/kick/webhook",
         "function": "kickWebhook"
-      },
-      {
-        "source": "/embed",
-        "function": "embedRedirect"
       }
     ]
   },

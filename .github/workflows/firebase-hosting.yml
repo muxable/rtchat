@@ -3,7 +3,7 @@ on:
   push:
     paths:
       - "public/**"
-      # rewrites to functions live in firebase.json.
+      # Hosting redirects and function rewrites live in firebase.json.
       - "firebase.json"
     branches:
       - main
