@@ -62,13 +62,13 @@ class HeaderBarWidget extends StatefulWidget implements PreferredSizeWidget {
   /// Where each channel's metadata comes from; Firestore unless overridden.
   final Stream<ChannelMetadata> Function(Channel)? metadataFor;
 
-  const HeaderBarWidget(
-      {super.key,
-      required this.channel,
-      this.actions,
-      required this.onChannelSelect,
-      @visibleForTesting this.metadataFor})
-      : preferredSize = const Size.fromHeight(kToolbarHeight);
+  const HeaderBarWidget({
+    super.key,
+    required this.channel,
+    this.actions,
+    required this.onChannelSelect,
+    @visibleForTesting this.metadataFor,
+  }) : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   @override
   final Size preferredSize; // default is 56.0
@@ -126,91 +126,111 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
     final title = headerTitle(channels);
     final stream = _metadata(channels);
     return AppBar(
-        title: GestureDetector(
-            onTap: () => setState(() => _locked = !_locked),
-            // keyed by the stream so changing the channels drops the previous
-            // metadata, which is for a different number of channels.
-            child: StreamBuilder<List<ChannelMetadata?>>(
-                key: ObjectKey(stream),
-                stream: stream,
-                builder: (context, snapshot) {
-                  final metadata = snapshot.data;
-                  final data =
-                      metadata == null ? null : aggregateMetadata(metadata);
-                  return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Row(children: [
-                              Flexible(
-                                child: Text(title,
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
-                                    overflow: TextOverflow.fade),
+      title: GestureDetector(
+        onTap: () => setState(() => _locked = !_locked),
+        // keyed by the stream so changing the channels drops the previous
+        // metadata, which is for a different number of channels.
+        child: StreamBuilder<List<ChannelMetadata?>>(
+          key: ObjectKey(stream),
+          stream: stream,
+          builder: (context, snapshot) {
+            final metadata = snapshot.data;
+            final data = metadata == null ? null : aggregateMetadata(metadata);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          style: Theme.of(context).textTheme.titleMedium,
+                          overflow: TextOverflow.fade,
+                        ),
+                      ),
+                      // a live indicator per channel.
+                      if (channels.length > 1)
+                        for (var i = 0; i < channels.length; i++)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Tooltip(
+                              message: channels[i].displayName,
+                              child: Icon(
+                                Icons.circle,
+                                size: 8,
+                                color:
+                                    metadata?[i]?.onlineAt != null
+                                        ? Colors.red
+                                        : Theme.of(context).disabledColor,
                               ),
-                              // a live indicator per channel.
-                              if (channels.length > 1)
-                                for (var i = 0; i < channels.length; i++)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 4),
-                                    child: Tooltip(
-                                      message: channels[i].displayName,
-                                      child: Icon(Icons.circle,
-                                          size: 8,
-                                          color: metadata?[i]?.onlineAt != null
-                                              ? Colors.red
-                                              : Theme.of(context)
-                                                  .disabledColor),
-                                    ),
-                                  ),
-                            ])),
-                        Consumer<LayoutModel>(
-                            builder: (context, layoutModel, child) {
-                          final style = Theme.of(context).textTheme.bodyMedium;
-                          if (data == null) {
-                            return Text("...", style: style);
+                            ),
+                          ),
+                    ],
+                  ),
+                ),
+                Consumer<LayoutModel>(
+                  builder: (context, layoutModel, child) {
+                    final style = Theme.of(context).textTheme.bodyMedium;
+                    if (data == null) {
+                      return Text("...", style: style);
+                    }
+                    final texts = <Widget>[];
+                    if (layoutModel.isStatsVisible) {
+                      if (data is StreamChannelMetadata) {
+                        final followerCount = data.followerCount;
+                        if (data.onlineAt == null) {
+                          if (followerCount != null) {
+                            texts.add(
+                              Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.followerCount(followerCount),
+                                style: style,
+                              ),
+                            );
                           }
-                          final texts = <Widget>[];
-                          if (layoutModel.isStatsVisible) {
-                            if (data is StreamChannelMetadata) {
-                              final followerCount = data.followerCount;
-                              if (data.onlineAt == null) {
-                                if (followerCount != null) {
-                                  texts.add(Text(
-                                      AppLocalizations.of(context)!
-                                          .followerCount(followerCount),
-                                      style: style));
-                                }
-                              } else {
-                                texts.add(Text(
-                                    AppLocalizations.of(context)!
-                                        .viewerCount(data.viewerCount),
-                                    style: style));
-                              }
-                            }
-                          }
-                          if (data.onlineAt != null) {
-                            texts.add(_DurationWidget(
-                                from: data.onlineAt!, style: style));
-                          }
-                          if (texts.isEmpty) {
-                            return Container();
-                          }
-                          return Row(children: [
-                            if (_locked)
-                              const Padding(
-                                  padding: EdgeInsets.only(right: 4),
-                                  child: Icon(Icons.lock_outline, size: 12)),
-                            Expanded(
-                              child: texts[_iteration % texts.length],
-                            )
-                          ]);
-                        }),
-                      ]);
-                })),
-        actions: widget.actions);
+                        } else {
+                          texts.add(
+                            Text(
+                              AppLocalizations.of(
+                                context,
+                              )!.viewerCount(data.viewerCount),
+                              style: style,
+                            ),
+                          );
+                        }
+                      }
+                    }
+                    if (data.onlineAt != null) {
+                      texts.add(
+                        _DurationWidget(from: data.onlineAt!, style: style),
+                      );
+                    }
+                    if (texts.isEmpty) {
+                      return Container();
+                    }
+                    return Row(
+                      children: [
+                        if (_locked)
+                          const Padding(
+                            padding: EdgeInsets.only(right: 4),
+                            child: Icon(Icons.lock_outline, size: 12),
+                          ),
+                        Expanded(child: texts[_iteration % texts.length]),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+      actions: widget.actions,
+    );
   }
 }
 
@@ -223,10 +243,12 @@ Stream<List<T?>> combineLatest<T>(List<Stream<T>> streams) {
   controller = StreamController<List<T?>>.broadcast(
     onListen: () {
       for (var i = 0; i < streams.length; i++) {
-        subscriptions.add(streams[i].listen((value) {
-          latest[i] = value;
-          controller.add(List.of(latest));
-        }, onError: controller.addError));
+        subscriptions.add(
+          streams[i].listen((value) {
+            latest[i] = value;
+            controller.add(List.of(latest));
+          }, onError: controller.addError),
+        );
       }
     },
     onCancel: () {

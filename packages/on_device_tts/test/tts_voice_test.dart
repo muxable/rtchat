@@ -36,8 +36,10 @@ void main() {
 
   test('equality', () {
     expect(const TtsVoice(id: 'a', name: 'Samantha', locale: 'en-US'), enUs);
-    expect(const TtsVoice(id: 'a', name: 'Samantha', locale: 'en-US').hashCode,
-        enUs.hashCode);
+    expect(
+      const TtsVoice(id: 'a', name: 'Samantha', locale: 'en-US').hashCode,
+      enUs.hashCode,
+    );
     expect(enUs == enGb, isFalse);
   });
 }

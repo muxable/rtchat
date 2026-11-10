@@ -9,12 +9,13 @@ class RaidingEventScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-              AppLocalizations.of(context)!.outgoingRaidConfigurationTitle),
+      appBar: AppBar(
+        title: Text(
+          AppLocalizations.of(context)!.outgoingRaidConfigurationTitle,
         ),
-        body: Consumer<EventSubConfigurationModel>(
-            builder: (context, model, child) {
+      ),
+      body: Consumer<EventSubConfigurationModel>(
+        builder: (context, model, child) {
           return Column(
             children: [
               Padding(
@@ -22,28 +23,34 @@ class RaidingEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(AppLocalizations.of(context)!.pinDuration,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.bold,
-                        )),
+                    Text(
+                      AppLocalizations.of(context)!.pinDuration,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Slider.adaptive(
-                      value: model.raidingEventConfig.eventDuration.inSeconds
-                          .toDouble(),
+                      value:
+                          model.raidingEventConfig.eventDuration.inSeconds
+                              .toDouble(),
                       min: 0,
                       max: 150,
                       divisions: 15,
                       label: AppLocalizations.of(context)!.durationSeconds(
-                          model.raidingEventConfig.eventDuration.inSeconds),
+                        model.raidingEventConfig.eventDuration.inSeconds,
+                      ),
                       onChanged: (value) {
                         model.setRaidingEventDuration(
-                            Duration(seconds: value.toInt()));
+                          Duration(seconds: value.toInt()),
+                        );
                       },
                     ),
                     SwitchListTile.adaptive(
                       title: Text(AppLocalizations.of(context)!.enableEvent),
                       subtitle: Text(
-                          AppLocalizations.of(context)!.showEventInChatHistory),
+                        AppLocalizations.of(context)!.showEventInChatHistory,
+                      ),
                       value: model.raidingEventConfig.showEvent,
                       onChanged: (value) {
                         model.setRaidingEventShowable(value);
@@ -54,6 +61,8 @@ class RaidingEventScreen extends StatelessWidget {
               ),
             ],
           );
-        }));
+        },
+      ),
+    );
   }
 }

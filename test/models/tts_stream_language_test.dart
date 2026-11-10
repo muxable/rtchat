@@ -16,10 +16,11 @@ import 'tts_model_test.dart' show createMessage;
 var _messages = 0;
 
 MessageModel chat(String text, {String userId = '1', Channel? channel}) =>
-    createMessage(text,
-        messageId: 'm${_messages++}',
-        author: TwitchUserModel(userId: userId, login: 'user$userId'))
-      ..channel = channel;
+    createMessage(
+      text,
+      messageId: 'm${_messages++}',
+      author: TwitchUserModel(userId: userId, login: 'user$userId'),
+    )..channel = channel;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -102,22 +103,24 @@ void main() {
     expect(languageOf(spanish), 'fr');
   });
 
-  test('an unknown language is retried after a while, not on every change',
-      () async {
-    model.update(views);
-    lookups.remove(spanish)!.completeError(StateError('offline'));
-    await pumpEventQueue();
+  test(
+    'an unknown language is retried after a while, not on every change',
+    () async {
+      model.update(views);
+      lookups.remove(spanish)!.completeError(StateError('offline'));
+      await pumpEventQueue();
 
-    now = now.add(const Duration(minutes: 1));
-    model.update(views);
-    expect(lookupCounts[spanish], 1);
+      now = now.add(const Duration(minutes: 1));
+      model.update(views);
+      expect(lookupCounts[spanish], 1);
 
-    now = now.add(TtsModel.languageRetryInterval);
-    model.update(views);
-    expect(lookupCounts[spanish], 2);
-    await answer(spanish, 'es');
-    expect(languageOf(spanish), 'es');
-  });
+      now = now.add(TtsModel.languageRetryInterval);
+      model.update(views);
+      expect(lookupCounts[spanish], 2);
+      await answer(spanish, 'es');
+      expect(languageOf(spanish), 'es');
+    },
+  );
 
   test('never changes the saved language or saves the settings', () async {
     var notified = 0;

@@ -21,10 +21,20 @@ type Snapshot struct {
 	Subscriptions   []Subscription `json:"subscriptions"`
 }
 type Progress struct {
-	TargetID   string `json:"targetId"`
-	Created    bool   `json:"created"`
-	DeletedOld bool   `json:"deletedOld"`
-	RolledBack bool   `json:"rolledBack"`
+	TargetID   string `json:"targetId,omitempty"`
+	Created    bool   `json:"created,omitempty"`
+	DeletedOld bool   `json:"deletedOld,omitempty"`
+	RolledBack bool   `json:"rolledBack,omitempty"`
+	// SourceDeleted is persisted before a break-before-make deletion, so a
+	// crash between deleting the source and creating its replacement is
+	// detected on resume ("deleted old, no replacement") and completed.
+	SourceDeleted bool `json:"sourceDeleted,omitempty"`
+	// RestoredID is the legacy-callback subscription recreated after a failed
+	// break-before-make; it stands in for the snapshot source ID afterwards.
+	RestoredID string `json:"restoredId,omitempty"`
+	// Attempts counts failed attempts; LastError is the latest failure.
+	Attempts  int    `json:"attempts,omitempty"`
+	LastError string `json:"lastError,omitempty"`
 }
 type Checkpoint struct {
 	SnapshotHash string              `json:"snapshotHash"`

@@ -68,9 +68,12 @@ class FakePackDownloader implements PackDownloader {
       if (forced != null) return result.complete(forced);
       final body = files[url];
       if (body == null) {
-        return result.complete(const PackDownloadResult(
+        return result.complete(
+          const PackDownloadResult(
             PackDownloadState.notFound,
-            httpStatusCode: 404));
+            httpStatusCode: 404,
+          ),
+        );
       }
       onProgress(0.5);
       final gate = this.gate;

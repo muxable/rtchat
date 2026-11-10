@@ -9,8 +9,11 @@ class MetadataAdapter {
       _instance ??= MetadataAdapter._(db: FirebaseFirestore.instance);
   static MetadataAdapter? _instance;
 
-  Stream<String?> getThirdPartyMetadataValue(
-      {required String channelId, required String name, required String key}) {
+  Stream<String?> getThirdPartyMetadataValue({
+    required String channelId,
+    required String name,
+    required String key,
+  }) {
     return db
         .collection("channels")
         .doc(channelId)
@@ -21,15 +24,16 @@ class MetadataAdapter {
         .limit(1)
         .snapshots()
         .map((event) {
-      if (event.docs.isEmpty) {
-        return null;
-      }
-      return event.docs.first.get("value");
-    });
+          if (event.docs.isEmpty) {
+            return null;
+          }
+          return event.docs.first.get("value");
+        });
   }
 
-  Stream<List<String>> getAvailableThirdPartyProviders(
-      {required String channelId}) {
+  Stream<List<String>> getAvailableThirdPartyProviders({
+    required String channelId,
+  }) {
     return db
         .collection("channels")
         .doc(channelId)

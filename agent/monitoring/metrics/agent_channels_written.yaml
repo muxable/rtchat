@@ -1,0 +1,19 @@
+description: Channel documents written by the agent metadata refresh jobs, by provider.
+filter: >-
+  resource.type="gce_instance"
+  logName="projects/rtchat-47692/logs/cos_containers"
+  jsonPayload.message="channel metadata refreshed"
+valueExtractor: EXTRACT(jsonPayload.written)
+labelExtractors:
+  provider: EXTRACT(jsonPayload.provider)
+bucketOptions:
+  exponentialBuckets:
+    numFiniteBuckets: 20
+    growthFactor: 2
+    scale: 1
+metricDescriptor:
+  metricKind: DELTA
+  valueType: DISTRIBUTION
+  unit: "1"
+  labels:
+  - key: provider

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
@@ -14,21 +16,25 @@ class StreamlabsDonationEventWidget extends StatelessWidget {
     return DecoratedEventWidget.avatar(
       avatar: const AssetImage("assets/streamlabs.png"),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            StyledText(
-              text: AppLocalizations.of(context)!
-                  .streamlabsTipEventMessage(model.name, model.formattedAmount),
-              tags: {
-                'b': StyledTextTag(
-                    style: Theme.of(context).textTheme.titleSmall),
-              },
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          StyledText(
+            text: AppLocalizations.of(context)!.streamlabsTipEventMessage(
+              htmlEscape.convert(model.name),
+              htmlEscape.convert(model.formattedAmount),
             ),
-            if (model.message != null && model.message!.isNotEmpty)
-              Text(model.message!,
-                  style: const TextStyle(fontStyle: FontStyle.italic)),
-          ]),
+            tags: {
+              'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+            },
+          ),
+          if (model.message != null && model.message!.isNotEmpty)
+            Text(
+              model.message!,
+              style: const TextStyle(fontStyle: FontStyle.italic),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -10,19 +10,26 @@ import 'package:rtchat/models/messages/twitch/user.dart';
 
 final t0 = DateTime(2024, 1, 1, 12);
 
-TwitchMessageModel chat(String id, DateTime timestamp,
-        {String userId = 'u1', bool deleted = false}) =>
-    TwitchMessageModel(
-        messageId: id,
-        author: TwitchUserModel(userId: userId, login: 'login$userId'),
-        message: 'message $id',
-        tags: const {},
-        annotations: const TwitchMessageAnnotationsModel(
-            isAction: false, isFirstTimeChatter: false, announcement: null),
-        thirdPartyEmotes: const [],
-        timestamp: timestamp,
-        deleted: deleted,
-        channelId: 'twitch:1');
+TwitchMessageModel chat(
+  String id,
+  DateTime timestamp, {
+  String userId = 'u1',
+  bool deleted = false,
+}) => TwitchMessageModel(
+  messageId: id,
+  author: TwitchUserModel(userId: userId, login: 'login$userId'),
+  message: 'message $id',
+  tags: const {},
+  annotations: const TwitchMessageAnnotationsModel(
+    isAction: false,
+    isFirstTimeChatter: false,
+    announcement: null,
+  ),
+  thirdPartyEmotes: const [],
+  timestamp: timestamp,
+  deleted: deleted,
+  channelId: 'twitch:1',
+);
 
 StreamStateEventModel streamState(String id, DateTime timestamp) =>
     StreamStateEventModel(messageId: id, isOnline: true, timestamp: timestamp);
@@ -38,9 +45,11 @@ void main() {
       final appended = <MessageModel>[];
       var messages = <MessageModel>[];
       for (var i = 0; i < 3; i++) {
-        messages = applyDeltaEvent(messages,
-            AppendDeltaEvent(chat('m$i', t0.add(Duration(seconds: i)))),
-            onAppend: appended.add);
+        messages = applyDeltaEvent(
+          messages,
+          AppendDeltaEvent(chat('m$i', t0.add(Duration(seconds: i)))),
+          onAppend: appended.add,
+        );
       }
       expect(ids(messages), ['m0', 'm1', 'm2']);
       expect(ids(appended), ['m0', 'm1', 'm2']);
@@ -49,8 +58,11 @@ void main() {
     test('messages with equal timestamps are appended', () {
       final appended = <MessageModel>[];
       var messages = <MessageModel>[chat('a', t0)];
-      messages = applyDeltaEvent(messages, AppendDeltaEvent(chat('b', t0)),
-          onAppend: appended.add);
+      messages = applyDeltaEvent(
+        messages,
+        AppendDeltaEvent(chat('b', t0)),
+        onAppend: appended.add,
+      );
       expect(ids(messages), ['a', 'b']);
       expect(ids(appended), ['b']);
     });
@@ -62,15 +74,19 @@ void main() {
         chat('c', t0.add(const Duration(seconds: 2))),
         chat('d', t0.add(const Duration(seconds: 3))),
       ];
-      messages = applyDeltaEvent(messages,
-          AppendDeltaEvent(chat('b', t0.add(const Duration(seconds: 1)))),
-          onAppend: appended.add);
+      messages = applyDeltaEvent(
+        messages,
+        AppendDeltaEvent(chat('b', t0.add(const Duration(seconds: 1)))),
+        onAppend: appended.add,
+      );
       expect(ids(messages), ['a', 'b', 'c', 'd']);
       expect(ids(appended), ['b']);
 
-      messages = applyDeltaEvent(messages,
-          AppendDeltaEvent(chat('z', t0.subtract(const Duration(seconds: 1)))),
-          onAppend: appended.add);
+      messages = applyDeltaEvent(
+        messages,
+        AppendDeltaEvent(chat('z', t0.subtract(const Duration(seconds: 1)))),
+        onAppend: appended.add,
+      );
       expect(ids(messages), ['z', 'a', 'b', 'c', 'd']);
       expect(ids(appended), ['b', 'z']);
     });
@@ -83,11 +99,15 @@ void main() {
         chat('b', t0),
       ];
       final result = applyDeltaEvent(
-          messages,
-          UpdateDeltaEvent(
-              'b', t0, (m) => (m as TwitchMessageModel).withDeleted(true)),
-          onUpdate: (event, previous, updated) =>
-              updates.add((previous, updated)));
+        messages,
+        UpdateDeltaEvent(
+          'b',
+          t0,
+          (m) => (m as TwitchMessageModel).withDeleted(true),
+        ),
+        onUpdate:
+            (event, previous, updated) => updates.add((previous, updated)),
+      );
       expect(result, same(messages));
       expect((result[0] as TwitchMessageModel).deleted, isFalse);
       expect((result[1] as TwitchMessageModel).deleted, isTrue);
@@ -101,8 +121,10 @@ void main() {
       var called = false;
       final messages = <MessageModel>[chat('a', t0)];
       final result = applyDeltaEvent(
-          messages, UpdateDeltaEvent('missing', t0, (m) => m),
-          onUpdate: (_, __, ___) => called = true);
+        messages,
+        UpdateDeltaEvent('missing', t0, (m) => m),
+        onUpdate: (messageId, oldMessage, newMessage) => called = true,
+      );
       expect(ids(result), ['a']);
       expect(called, isFalse);
     });
@@ -115,14 +137,15 @@ void main() {
         chat('b', t0, userId: 'u2'),
       ];
       final result = applyDeltaEvent(
-          messages,
-          UpdateAllDeltaEvent(t0, (m) {
-            if (m is TwitchMessageModel && m.author.userId == 'u1') {
-              return m.withDeleted(true);
-            }
-            return m;
-          }),
-          onUpdate: (event, previous, next) => updated.add(next));
+        messages,
+        UpdateAllDeltaEvent(t0, (m) {
+          if (m is TwitchMessageModel && m.author.userId == 'u1') {
+            return m.withDeleted(true);
+          }
+          return m;
+        }),
+        onUpdate: (event, previous, next) => updated.add(next),
+      );
       expect((result[0] as TwitchMessageModel).deleted, isTrue);
       expect(result[1], isA<StreamStateEventModel>());
       expect((result[2] as TwitchMessageModel).deleted, isFalse);
@@ -133,7 +156,9 @@ void main() {
       final messages = <MessageModel>[chat('a', t0), chat('b', t0)];
       final clearedAt = t0.add(const Duration(minutes: 1));
       final result = applyDeltaEvent(
-          messages, ClearDeltaEvent(messageId: 'clear', timestamp: clearedAt));
+        messages,
+        ClearDeltaEvent(messageId: 'clear', timestamp: clearedAt),
+      );
       expect(result, isNot(same(messages)));
       expect(result.single, isA<ChatClearedEventModel>());
       expect(result.single.messageId, 'clear');
@@ -163,7 +188,7 @@ void main() {
 
     test('adds a separator every 50 chat messages', () {
       final models = [
-        for (var i = 0; i < 120; i++) chat('m$i', t0.add(Duration(seconds: i)))
+        for (var i = 0; i < 120; i++) chat('m$i', t0.add(Duration(seconds: i))),
       ];
       expect(appendAll(models), [0, 49, 98]);
     });
@@ -171,7 +196,7 @@ void main() {
     test('non-chat messages do not trigger the 50 message separator', () {
       final models = <MessageModel>[
         for (var i = 0; i < 60; i++)
-          streamState('s$i', t0.add(Duration(seconds: i)))
+          streamState('s$i', t0.add(Duration(seconds: i))),
       ];
       expect(appendAll(models), [0]);
     });
@@ -294,9 +319,10 @@ void main() {
 
       setUp(() {
         pings = 0;
-        model = MessagesModel.fromJson({'pingMinGapDuration': 60})
-          ..isOnline = ((_) => Stream.value(true))
-          ..onMessagePing = (() => pings++);
+        model =
+            MessagesModel.fromJson({'pingMinGapDuration': 60})
+              ..isOnline = ((_) => Stream.value(true))
+              ..onMessagePing = (() => pings++);
         model.addEvent(a, LiveStateDeltaEvent(t0));
         model.addEvent(b, LiveStateDeltaEvent(t0));
       });
@@ -304,24 +330,24 @@ void main() {
       test('ping on the appended message, not the previous ones', () async {
         model.addEvent(a, AppendDeltaEvent(from(a, 'a1', t0)));
         model.addEvent(
-            a,
-            AppendDeltaEvent(
-                from(a, 'a2', t0.add(const Duration(seconds: 10)))));
+          a,
+          AppendDeltaEvent(from(a, 'a2', t0.add(const Duration(seconds: 10)))),
+        );
         await pumpEventQueue();
         expect(pings, 0);
 
         model.addEvent(
-            a,
-            AppendDeltaEvent(
-                from(a, 'a3', t0.add(const Duration(seconds: 200)))));
+          a,
+          AppendDeltaEvent(from(a, 'a3', t0.add(const Duration(seconds: 200)))),
+        );
         await pumpEventQueue();
         expect(pings, 1);
 
         // the gap is small, so no ping even though the previous one had one.
         model.addEvent(
-            a,
-            AppendDeltaEvent(
-                from(a, 'a4', t0.add(const Duration(seconds: 205)))));
+          a,
+          AppendDeltaEvent(from(a, 'a4', t0.add(const Duration(seconds: 205)))),
+        );
         await pumpEventQueue();
         expect(pings, 1);
       });
@@ -342,6 +368,241 @@ void main() {
       // listener would keep the model and its messages alive.
       expect(events.hasListener, isFalse);
       await events.close();
+    });
+  });
+
+  group('pullMoreMessages', () {
+    final channel = Channel('twitch', '1', 'one');
+    final other = Channel('twitch', '2', 'two');
+
+    HistoryPage page(List<MessageModel> messages, {bool isLast = false}) => (
+      events: [for (final m in messages) AppendDeltaEvent(m)],
+      oldest: messages.firstOrNull?.timestamp,
+      isLast: isLast,
+    );
+
+    MessagesModel model(
+      Future<HistoryPage> Function(Channel, DateTime) history, {
+      bool withMessage = true,
+    }) {
+      final events = StreamController<DeltaEvent>.broadcast();
+      addTearDown(events.close);
+      final model =
+          MessagesModel.fromJson({})
+            ..forChannel = ((_) => events.stream)
+            ..forChannelHistory = history;
+      model.channel = channel;
+      if (withMessage) {
+        model.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
+      }
+      return model;
+    }
+
+    test('prepends older messages until the history runs out', () async {
+      final froms = <DateTime>[];
+      final older = t0.subtract(const Duration(minutes: 1));
+      final m = model((channel, from) async {
+        froms.add(from);
+        return froms.length == 1
+            ? page([chat('m0', older)])
+            : page([], isLast: true);
+      });
+      expect(m.canLoadMoreHistory, isTrue);
+      await m.pullMoreMessages();
+      expect(ids(m.messages), ['m0', 'm1']);
+      expect(m.canLoadMoreHistory, isTrue);
+      await m.pullMoreMessages();
+      expect(froms, [t0, older]);
+      expect(m.canLoadMoreHistory, isFalse);
+      // no more queries once exhausted.
+      await m.pullMoreMessages();
+      expect(froms.length, 2);
+    });
+
+    test('a short page is the last one', () async {
+      final m = model(
+        (channel, from) async => page([
+          chat('m0', t0.subtract(const Duration(minutes: 1))),
+        ], isLast: true),
+      );
+      await m.pullMoreMessages();
+      expect(ids(m.messages), ['m0', 'm1']);
+      expect(m.canLoadMoreHistory, isFalse);
+    });
+
+    test('pages back past documents that show no messages', () async {
+      final froms = <DateTime>[];
+      final hidden = t0.subtract(const Duration(hours: 1));
+      final m = model((channel, from) async {
+        froms.add(from);
+        // a full page of documents that don't parse into events.
+        return froms.length == 1
+            ? (events: <DeltaEvent>[], oldest: hidden, isLast: false)
+            : page([], isLast: true);
+      });
+      await m.pullMoreMessages();
+      expect(m.canLoadMoreHistory, isTrue);
+      await m.pullMoreMessages();
+      expect(froms, [t0, hidden]);
+    });
+
+    test('drops a load that finishes after the channels changed', () async {
+      final loading = Completer<HistoryPage>();
+      final m = model((channel, from) => loading.future);
+      final pull = m.pullMoreMessages();
+      m.channel = other;
+      m.addEvent(other, AppendDeltaEvent(chat('o1', t0)..channel = other));
+      loading.complete(
+        page([
+          chat('m0', t0.subtract(const Duration(minutes: 1))),
+        ], isLast: true),
+      );
+      await pull;
+      expect(ids(m.messages), ['o1']);
+      expect(m.canLoadMoreHistory, isTrue);
+    });
+
+    test('a channel without messages has nothing to page back', () async {
+      var calls = 0;
+      final m = model((channel, from) async {
+        calls++;
+        return page([]);
+      }, withMessage: false);
+      expect(m.canLoadMoreHistory, isFalse);
+      await m.pullMoreMessages();
+      expect(calls, 0);
+      m.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
+      expect(m.canLoadMoreHistory, isTrue);
+    });
+
+    test('nothing is paged back from before a clear', () async {
+      var calls = 0;
+      final m = model((channel, from) async {
+        calls++;
+        return page([chat('m0', t0.subtract(const Duration(minutes: 1)))]);
+      });
+      m.addEvent(
+        channel,
+        ClearDeltaEvent(
+          messageId: 'clear',
+          timestamp: t0.add(const Duration(seconds: 1)),
+        ),
+      );
+      expect(m.canLoadMoreHistory, isFalse);
+      await m.pullMoreMessages();
+      expect(calls, 0);
+    });
+
+    test('a page with a clear is the last one', () async {
+      final older = t0.subtract(const Duration(minutes: 1));
+      final m = model(
+        (channel, from) async => (
+          events: <DeltaEvent>[
+            AppendDeltaEvent(chat('m0', older)),
+            ClearDeltaEvent(
+              messageId: 'clear',
+              timestamp: older.add(const Duration(seconds: 1)),
+            ),
+          ],
+          oldest: older,
+          isLast: false,
+        ),
+      );
+      await m.pullMoreMessages();
+      expect(m.canLoadMoreHistory, isFalse);
+    });
+
+    test('the live marker is not a paging cursor', () async {
+      final froms = <DateTime>[];
+      final m = model((channel, from) async {
+        froms.add(from);
+        return page([], isLast: true);
+      }, withMessage: false);
+      m.addEvent(channel, LiveStateDeltaEvent(t0.add(const Duration(days: 1))));
+      expect(m.canLoadMoreHistory, isFalse);
+      m.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
+      await m.pullMoreMessages();
+      expect(froms, [t0]);
+    });
+
+    test('callers share one load at a time', () async {
+      final loading = Completer<HistoryPage>();
+      var calls = 0;
+      final m = model((channel, from) {
+        calls++;
+        return loading.future;
+      });
+      final first = m.pullMoreMessages();
+      final second = m.pullMoreMessages();
+      loading.complete(
+        page([chat('m0', t0.subtract(const Duration(minutes: 1)))]),
+      );
+      await Future.wait([first, second]);
+      expect(calls, 1);
+      expect(ids(m.messages), ['m0', 'm1']);
+    });
+
+    test('drops a load that finishes after messages were pruned', () async {
+      final loading = Completer<HistoryPage>();
+      final m = model((channel, from) => loading.future);
+      for (var i = 2; i <= 1100; i++) {
+        m.addEvent(
+          channel,
+          AppendDeltaEvent(chat('m$i', t0.add(Duration(seconds: i)))),
+        );
+      }
+      final pull = m.pullMoreMessages();
+      m.pruneMessages();
+      loading.complete(
+        page([chat('m0', t0.subtract(const Duration(minutes: 1)))]),
+      );
+      await pull;
+      expect(m.messages.length, 1000);
+      expect(ids(m.messages), isNot(contains('m0')));
+    });
+
+    test('a load after a channel switch does not reuse the old one', () async {
+      final loads = <Channel, Completer<HistoryPage>>{};
+      final m = model((channel, from) => (loads[channel] = Completer()).future);
+      final stale = m.pullMoreMessages();
+      m.channel = other;
+      m.addEvent(other, AppendDeltaEvent(chat('o1', t0)..channel = other));
+      final fresh = m.pullMoreMessages();
+      expect(loads.keys, [channel, other]);
+      loads[other]!.complete(
+        page([
+          chat('o0', t0.subtract(const Duration(minutes: 1)))..channel = other,
+        ]),
+      );
+      await fresh;
+      loads[channel]!.complete(page([]));
+      await stale;
+      expect(ids(m.messages), ['o0', 'o1']);
+      // the stale load finishing doesn't drop the current one's slot.
+      expect(m.pullMoreMessages(), isNot(same(fresh)));
+    });
+
+    test('a clear during a load drops the page from before it', () async {
+      final loading = Completer<HistoryPage>();
+      final m = model((channel, from) => loading.future);
+      final pull = m.pullMoreMessages();
+      m.addEvent(
+        channel,
+        ClearDeltaEvent(
+          messageId: 'clear',
+          timestamp: t0.add(const Duration(seconds: 1)),
+        ),
+      );
+      final shown = ids(m.messages);
+      var notified = 0;
+      m.addListener(() => notified++);
+      loading.complete(
+        page([chat('m0', t0.subtract(const Duration(minutes: 1)))]),
+      );
+      await pull;
+      // the page is dropped rather than merged in and hidden by the clear.
+      expect(notified, 0);
+      expect(ids(m.messages), shown);
     });
   });
 }

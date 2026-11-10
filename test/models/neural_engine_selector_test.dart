@@ -40,10 +40,15 @@ void main() {
     repository.installed['b'] = installedPack('b');
     repository.installed['a'] = installedPack('a');
     selector = NeuralEngineSelector(
-        repository: repository, tts: tts, reportError: (e, _) => fail('$e'));
+      repository: repository,
+      tts: tts,
+      reportError: (e, _) => fail('$e'),
+    );
     await selector.start();
-    expect(tts.neuralEngine,
-        isA<NeuralTtsEngine>().having((e) => e.pack.id, 'pack', 'a'));
+    expect(
+      tts.neuralEngine,
+      isA<NeuralTtsEngine>().having((e) => e.pack.id, 'pack', 'a'),
+    );
   });
 
   test('follows installs, upgrades and deletes', () async {
@@ -86,20 +91,21 @@ void main() {
       (const DeviceMemory(totalBytes: 1900 << 20), lowMemory),
       (
         const DeviceMemory(totalBytes: 8 << 30, isLowRamDevice: true),
-        lowMemory
+        lowMemory,
       ),
     ]) {
       final tts = TtsModel.fromJson({}, engine: FakeTtsEngine());
       var checks = 0;
       final selector = NeuralEngineSelector(
-          repository: repository,
-          tts: tts,
-          reportError: (e, _) => fail('$e'),
-          createEngine: (_) => FakeTtsEngine(),
-          deviceMemory: () async {
-            checks++;
-            return memory;
-          });
+        repository: repository,
+        tts: tts,
+        reportError: (e, _) => fail('$e'),
+        createEngine: (_) => FakeTtsEngine(),
+        deviceMemory: () async {
+          checks++;
+          return memory;
+        },
+      );
       await selector.start();
       await selector.start();
       expect((tts.neuralFallback, checks), (fallback, 1), reason: '$memory');
@@ -114,5 +120,49 @@ void main() {
     repository.add(installedPack('a'));
     await pumpEventQueue();
     expect(tts.neuralEngine, isNull);
+  });
+  test(
+    'prefers the catalog default over a smaller pack installed alongside it',
+    () {
+      final packs = [
+        for (final pack in bundledVoicePacks) installedPackOf(pack),
+      ];
+      expect(NeuralEngineSelector.choose(packs.reversed)?.id, 'supertonic-3');
+      expect(
+        NeuralEngineSelector.choose(packs, preferredId: 'supertonic-2')?.id,
+        'supertonic-2',
+      );
+      expect(
+        NeuralEngineSelector.choose(packs, preferredId: 'missing')?.id,
+        'supertonic-3',
+      );
+    },
+  );
+
+  test(
+    'switches after selection and falls back when that pack is deleted',
+    () async {
+      for (final pack in bundledVoicePacks) {
+        repository.add(installedPackOf(pack));
+      }
+      await selector.start();
+      final first = tts.neuralEngine as FakeTtsEngine;
+      expect(first.name, 'supertonic-3');
+      tts.preferredVoicePackId = 'supertonic-2';
+      await pumpEventQueue();
+      expect((tts.neuralEngine! as FakeTtsEngine).name, 'supertonic-2');
+      expect(first.isDisposed, isTrue);
+      repository.remove('supertonic-2');
+      await pumpEventQueue();
+      expect((tts.neuralEngine! as FakeTtsEngine).name, 'supertonic-3');
+    },
+  );
+
+  test('persists the preferred pack without changing older settings', () {
+    expect(tts.toJson(), isNot(contains('voicePack')));
+    tts.preferredVoicePackId = 'supertonic-2';
+    final restored = TtsModel.fromJson(tts.toJson(), engine: FakeTtsEngine());
+    expect(restored.preferredVoicePackId, 'supertonic-2');
+    restored.dispose();
   });
 }

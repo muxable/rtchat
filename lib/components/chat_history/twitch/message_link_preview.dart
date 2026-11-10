@@ -1,6 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:flutter/material.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 
 class TwitchClipData {
   final String? imageUrl;
@@ -8,20 +8,22 @@ class TwitchClipData {
   final String? title;
   final String? description;
 
-  const TwitchClipData(
-      {required this.imageUrl,
-      required this.url,
-      required this.title,
-      required this.description});
+  const TwitchClipData({
+    required this.imageUrl,
+    required this.url,
+    required this.title,
+    required this.description,
+  });
 }
 
 Future<TwitchClipData> fetchClipData(String url) async {
   final data = await MetadataFetch.extract(url);
   return TwitchClipData(
-      imageUrl: data!.image,
-      url: data.url,
-      title: data.title,
-      description: data.description);
+    imageUrl: data!.image,
+    url: data.url,
+    title: data.title,
+    description: data.description,
+  );
 }
 
 class TwitchMessageLinkPreviewWidget extends StatefulWidget {
@@ -59,21 +61,23 @@ class _TwitchMessageLinkPreviewWidgetState
     final data = _data;
     if (data == null) {
       return const Padding(
-          padding: EdgeInsets.symmetric(vertical: 4),
-          child: Card(child: CircularProgressIndicator()));
+        padding: EdgeInsets.symmetric(vertical: 4),
+        child: Card(child: CircularProgressIndicator()),
+      );
     }
     return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Card(
-          child: ListTile(
-            leading: data.imageUrl == null
-                ? null
-                : Image(
-                    image: ResilientNetworkImage(Uri.parse(data.imageUrl!))),
-            title: data.title == null ? null : Text(data.title!),
-            subtitle: data.description == null ? null : Text(data.description!),
-            isThreeLine: true,
-          ),
-        ));
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Card(
+        child: ListTile(
+          leading:
+              data.imageUrl == null
+                  ? null
+                  : Image(image: CachedNetworkImageProvider(data.imageUrl!)),
+          title: data.title == null ? null : Text(data.title!),
+          subtitle: data.description == null ? null : Text(data.description!),
+          isThreeLine: true,
+        ),
+      ),
+    );
   }
 }

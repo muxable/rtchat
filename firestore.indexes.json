@@ -49,7 +49,122 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "activity",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "amount",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "annotations",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "author",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "createdAt",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "currency",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "donor",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "event",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "expiresAt",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "formattedAmount",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "id",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "message",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "messageId",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "name",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "notificationType",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "raid",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "reply",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "tags",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "targetUserId",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "messages",
+      "fieldPath": "webhookId",
+      "indexes": []
+    }
+  ]
 }

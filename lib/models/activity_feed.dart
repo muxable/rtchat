@@ -44,8 +44,8 @@ class ActivityFeedModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "isCustom": _isCustom,
-        "customUrl": _customUrl,
-        "isEnabled": _isEnabled,
-      };
+    "isCustom": _isCustom,
+    "customUrl": _customUrl,
+    "isEnabled": _isEnabled,
+  };
 }

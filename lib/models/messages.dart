@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:core';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/main.dart';
 import 'package:rtchat/models/adapters/messages.dart';
@@ -15,9 +17,14 @@ import 'package:rtchat/models/tts.dart';
 class MessagesModel extends ChangeNotifier {
   final List<StreamSubscription<void>> _subscriptions = [];
 
+  /// The [Api] to call as the user on a provider, from `UserModel.apiOn`.
+  Api Function(String provider) apiOn =
+      (provider) => Api.forApp(Firebase.app());
+
   @visibleForTesting
-  Stream<DeltaEvent> Function(Channel channel) forChannel =
-      (channel) => MessagesAdapter.instance.forChannel(channel);
+  late Stream<DeltaEvent> Function(Channel channel) forChannel =
+      (channel) =>
+          MessagesAdapter.instance.forChannel(channel, apiOn(channel.provider));
   List<ChannelEvent> _events = [];
   List<MessageModel> _messages = [];
   Set<int> _separators = {};
@@ -25,6 +32,26 @@ class MessagesModel extends ChangeNotifier {
   List<Channel> _channels = const [];
   // channels whose initial history has loaded, so new events are live.
   final Set<Channel> _liveChannels = {};
+  // channels whose history has been paged back to their first message.
+  final Set<Channel> _historyExhausted = {};
+  // where each channel's history paging continues from: the oldest message
+  // document loaded, which may be older than the oldest event if some
+  // documents aren't shown.
+  final Map<Channel, DateTime> _historyBefore = {};
+  // bumped when the channels change or messages are pruned, so a history
+  // load that was in flight is dropped.
+  var _generation = 0;
+  Future<void>? _pulling;
+  var _pullingGeneration = 0;
+
+  @visibleForTesting
+  late Future<HistoryPage> Function(Channel channel, DateTime from)
+  forChannelHistory =
+      (channel, from) => MessagesAdapter.instance.forChannelHistory(
+        channel,
+        from,
+        apiOn(channel.provider),
+      );
 
   // it's a bit odd to have this here, but tts only cares about the delta events
   // so it's easier to wire this way.
@@ -44,6 +71,9 @@ class MessagesModel extends ChangeNotifier {
     _separators = {};
     _events = [];
     _liveChannels.clear();
+    _historyExhausted.clear();
+    _historyBefore.clear();
+    _generation++;
     if (_tts != null) {
       final localizations = _getLocalizations();
       if (localizations != null) {
@@ -59,8 +89,9 @@ class MessagesModel extends ChangeNotifier {
     }
     _subscriptions.clear();
     for (final channel in _channels) {
-      _subscriptions
-          .add(forChannel(channel).listen((event) => _onEvent(channel, event)));
+      _subscriptions.add(
+        forChannel(channel).listen((event) => _onEvent(channel, event)),
+      );
     }
   }
 
@@ -68,8 +99,9 @@ class MessagesModel extends ChangeNotifier {
 
   /// Whether [channel] is streaming, which gates message alerts.
   @visibleForTesting
-  Stream<bool> Function(Channel channel) isOnline = (channel) =>
-      ProfilesAdapter.instance.getIsOnline(channelId: channel.toString());
+  Stream<bool> Function(Channel channel) isOnline =
+      (channel) =>
+          ProfilesAdapter.instance.getIsOnline(channelId: channel.toString());
 
   @visibleForTesting
   void addEvent(Channel channel, DeltaEvent event) => _onEvent(channel, event);
@@ -80,7 +112,7 @@ class MessagesModel extends ChangeNotifier {
     _messages = applyDeltaEvent(
       _messages,
       event,
-      channel: _channels.length > 1 ? channel : null,
+      channel: channel,
       onAppend: (model) {
         // only messages that arrive live are read out or pinged, not history.
         // in a merged view a live message can land before a newer one that
@@ -129,6 +161,10 @@ class MessagesModel extends ChangeNotifier {
     } else if (event is LiveStateDeltaEvent) {
       _liveChannels.add(channel);
     }
+    if (event is ClearDeltaEvent) {
+      // messages from before a clear are never shown.
+      _historyExhausted.add(channel);
+    }
     notifyListeners();
   }
 
@@ -163,31 +199,93 @@ class MessagesModel extends ChangeNotifier {
         .toSet();
   }
 
-  /// Loads older messages for every channel, each from before the oldest
-  /// event received from it.
-  Future<void> pullMoreMessages() async {
-    final futureEvents = _events; // this prevents a race.
-    final history = <ChannelEvent>[];
-    for (final channel in _channels) {
-      final oldest = futureEvents
-          .where((entry) => entry.channel == channel)
+  // the live marker is stamped by the client, so it's no paging cursor.
+  DateTime? _oldestTimestamp(List<ChannelEvent> events, Channel channel) =>
+      events
+          .where(
+            (entry) =>
+                entry.channel == channel && entry.event is! LiveStateDeltaEvent,
+          )
           .map((entry) => entry.event.timestamp)
           .firstOrNull;
+
+  /// Whether some channel may have messages older than those loaded.
+  bool get canLoadMoreHistory => _channels.any(
+    (channel) =>
+        !_historyExhausted.contains(channel) &&
+        _oldestTimestamp(_events, channel) != null,
+  );
+
+  /// Loads older messages for every channel, each from before the oldest
+  /// document loaded from it. Only one load runs at a time: callers share
+  /// it. A load is dropped if the channels change or messages are pruned
+  /// while it's in flight.
+  Future<void> pullMoreMessages() {
+    final pulling = _pulling;
+    // a load for channels or messages that have since changed is dropped,
+    // so it can't be shared.
+    if (pulling != null && _pullingGeneration == _generation) {
+      return pulling;
+    }
+    _pullingGeneration = _generation;
+    late final Future<void> next;
+    next = _pullMoreMessages().whenComplete(() {
+      if (identical(_pulling, next)) {
+        _pulling = null;
+      }
+    });
+    return _pulling = next;
+  }
+
+  Future<void> _pullMoreMessages() async {
+    final generation = _generation;
+    final futureEvents = _events; // this prevents a race.
+    final history = <ChannelEvent>[];
+    final exhausted = <Channel>[];
+    final before = <Channel, DateTime>{};
+    for (final channel in _channels) {
+      if (_historyExhausted.contains(channel)) {
+        continue;
+      }
+      final oldest =
+          _historyBefore[channel] ?? _oldestTimestamp(futureEvents, channel);
       if (oldest == null) {
         continue;
       }
-      final events =
-          await MessagesAdapter.instance.forChannelHistory(channel, oldest);
-      history.addAll(events.map((event) => (channel: channel, event: event)));
+      final page = await forChannelHistory(channel, oldest);
+      if (_disposed || generation != _generation) {
+        return;
+      }
+      if (_historyExhausted.contains(channel)) {
+        // cleared while loading, so nothing before the clear is shown.
+        continue;
+      }
+      final pageOldest = page.oldest;
+      if (page.isLast ||
+          pageOldest == null ||
+          // messages from before a clear are never shown.
+          page.events.any((event) => event is ClearDeltaEvent)) {
+        exhausted.add(channel);
+      } else {
+        before[channel] = pageOldest;
+      }
+      history.addAll(
+        page.events.map((event) => (channel: channel, event: event)),
+      );
     }
-    if (history.isEmpty || _disposed) {
+    _historyExhausted.addAll(exhausted);
+    _historyBefore.addAll(before);
+    if (history.isEmpty) {
       return;
     }
     _events = [...history, ...futureEvents];
-    _messages = _channels.length > 1
-        ? replayEvents(_events)
-        : _events.fold(
-            [], (messages, entry) => applyDeltaEvent(messages, entry.event));
+    _messages =
+        _channels.length > 1
+            ? replayEvents(_events)
+            : _events.fold(
+              [],
+              (messages, entry) => applyDeltaEvent(messages, entry.event),
+            );
     _separators = computeSeparators(_messages);
     notifyListeners();
   }
@@ -197,7 +295,19 @@ class MessagesModel extends ChangeNotifier {
     if (_messages.length > 1000) {
       _messages.removeRange(0, _messages.length - 1000);
       _events.removeWhere(
-          (entry) => entry.event.timestamp.isBefore(_messages.first.timestamp));
+        (entry) => entry.event.timestamp.isBefore(_messages.first.timestamp),
+      );
+      // paging back starts again from the oldest message kept, unless a
+      // clear hides everything before it.
+      _generation++;
+      _historyBefore.clear();
+      _historyExhausted.removeWhere(
+        (channel) =>
+            !_events.any(
+              (entry) =>
+                  entry.channel == channel && entry.event is ClearDeltaEvent,
+            ),
+      );
       _separators = computeSeparators(_messages);
     }
   }
@@ -244,8 +354,9 @@ class MessagesModel extends ChangeNotifier {
       return false;
     }
     if (messages.length == 1) {
-      return messages.last.timestamp
-          .isAfter(DateTime.now().subtract(const Duration(seconds: 1)));
+      return messages.last.timestamp.isAfter(
+        DateTime.now().subtract(const Duration(seconds: 1)),
+      );
     }
     final lastMessage = messages.last;
     final secondLastMessage = messages[messages.length - 2];
@@ -255,19 +366,21 @@ class MessagesModel extends ChangeNotifier {
 
   MessagesModel.fromJson(Map<String, dynamic> json) {
     if (json['announcementPinDuration'] != null) {
-      _announcementPinDuration =
-          Duration(seconds: json['announcementPinDuration'].toInt());
+      _announcementPinDuration = Duration(
+        seconds: json['announcementPinDuration'].toInt(),
+      );
     }
     if (json['pingMinGapDuration'] != null) {
-      _pingMinGapDuration =
-          Duration(seconds: json['pingMinGapDuration'].toInt());
+      _pingMinGapDuration = Duration(
+        seconds: json['pingMinGapDuration'].toInt(),
+      );
     }
   }
 
   Map<String, dynamic> toJson() => {
-        "announcementPinDuration": _announcementPinDuration.inSeconds.toInt(),
-        "pingMinGapDuration": _pingMinGapDuration.inSeconds.toInt(),
-      };
+    "announcementPinDuration": _announcementPinDuration.inSeconds.toInt(),
+    "pingMinGapDuration": _pingMinGapDuration.inSeconds.toInt(),
+  };
 
   BuildContext? _getContext() {
     return navigatorKey.currentContext;
@@ -300,7 +413,7 @@ List<MessageModel> applyDeltaEvent(
   Channel? channel,
   void Function(MessageModel model)? onAppend,
   void Function(DeltaEvent event, MessageModel previous, MessageModel updated)?
-      onUpdate,
+  onUpdate,
 }) {
   if (event is AppendDeltaEvent) {
     _insert(messages, event.model);
@@ -348,8 +461,9 @@ void _insert(List<MessageModel> messages, MessageModel model) {
   if (messages.isNotEmpty &&
       model.timestamp.isBefore(messages.last.timestamp)) {
     // this message is out of order, so we need to insert it in the right place
-    final index = messages
-        .indexWhere((element) => element.timestamp.isAfter(model.timestamp));
+    final index = messages.indexWhere(
+      (element) => element.timestamp.isAfter(model.timestamp),
+    );
     messages.insert(index, model);
   } else {
     messages.add(model);
@@ -363,11 +477,11 @@ typedef ChannelEvent = ({Channel channel, DeltaEvent event});
 /// (keeping the received order for events with the same timestamp).
 @visibleForTesting
 List<MessageModel> replayEvents(List<ChannelEvent> events) {
-  final ordered = events.indexed.toList()
-    ..sort((a, b) {
-      final byTime = a.$2.event.timestamp.compareTo(b.$2.event.timestamp);
-      return byTime != 0 ? byTime : a.$1.compareTo(b.$1);
-    });
+  final ordered =
+      events.indexed.toList()..sort((a, b) {
+        final byTime = a.$2.event.timestamp.compareTo(b.$2.event.timestamp);
+        return byTime != 0 ? byTime : a.$1.compareTo(b.$1);
+      });
   var messages = <MessageModel>[];
   for (final (_, entry) in ordered) {
     messages = applyDeltaEvent(messages, entry.event, channel: entry.channel);

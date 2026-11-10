@@ -2,18 +2,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/components/chat_history/twitch/cheer_event.dart';
 
 void main() {
-  final bit_10 =
-      Uri.parse("https://cdn.twitchalerts.com/twitch-bits/images/hd/10.gif");
-  final bit_100 =
-      Uri.parse("https://cdn.twitchalerts.com/twitch-bits/images/hd/100.gif");
-  final bit_1000 =
-      Uri.parse("https://cdn.twitchalerts.com/twitch-bits/images/hd/1000.gif");
-  final bit_5000 =
-      Uri.parse("https://cdn.twitchalerts.com/twitch-bits/images/hd/5000.gif");
-  final bit_10000 =
-      Uri.parse("https://cdn.twitchalerts.com/twitch-bits/images/hd/10000.gif");
+  final bit_10 = Uri.parse(
+    "https://cdn.twitchalerts.com/twitch-bits/images/hd/10.gif",
+  );
+  final bit_100 = Uri.parse(
+    "https://cdn.twitchalerts.com/twitch-bits/images/hd/100.gif",
+  );
+  final bit_1000 = Uri.parse(
+    "https://cdn.twitchalerts.com/twitch-bits/images/hd/1000.gif",
+  );
+  final bit_5000 = Uri.parse(
+    "https://cdn.twitchalerts.com/twitch-bits/images/hd/5000.gif",
+  );
+  final bit_10000 = Uri.parse(
+    "https://cdn.twitchalerts.com/twitch-bits/images/hd/10000.gif",
+  );
   final bit_100000 = Uri.parse(
-      "https://cdn.twitchalerts.com/twitch-bits/images/hd/100000.gif");
+    "https://cdn.twitchalerts.com/twitch-bits/images/hd/100000.gif",
+  );
   group('bits_10', () {
     test('cheer 1 bits', () {
       final actual = getCorrespondingImageUrl(1);

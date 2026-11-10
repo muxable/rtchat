@@ -14,7 +14,7 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final void Function(Channel) onChannelSelect;
   final void Function(Channel)? onRaid;
   final bool? isRaid;
-  final ChannelSearch search;
+  final ChannelSearch? search;
 
   /// Adds a swiped result to [channels] without closing the sheet,
   /// replacing the one on its provider.
@@ -26,16 +26,17 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
   /// Shown above the results.
   final Widget? header;
 
-  const ChannelSearchBottomSheetWidget(
-      {super.key,
-      this.controller,
-      required this.onChannelSelect,
-      this.onRaid,
-      this.isRaid,
-      this.search = searchChannels,
-      this.onChannelAdd,
-      this.channels = const [],
-      this.header});
+  const ChannelSearchBottomSheetWidget({
+    super.key,
+    this.controller,
+    required this.onChannelSelect,
+    this.onRaid,
+    this.isRaid,
+    this.search,
+    this.onChannelAdd,
+    this.channels = const [],
+    this.header,
+  });
 
   @override
   State<ChannelSearchBottomSheetWidget> createState() =>
@@ -56,7 +57,10 @@ class _ChannelSearchBottomSheetWidgetState
     _raid = widget.isRaid ?? false;
     try {
       final userProvider =
-          Provider.of<UserModel>(context, listen: false).userChannel?.provider;
+          Provider.of<UserModel>(
+            context,
+            listen: false,
+          ).userChannels.firstOrNull?.provider;
       if (searchProviders.containsKey(userProvider)) {
         _provider = userProvider!;
       }
@@ -107,87 +111,111 @@ class _ChannelSearchBottomSheetWidgetState
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Row(children: [
-            Expanded(
+          Row(
+            children: [
+              Expanded(
                 child: Text(
-                    _raid && widget.onRaid != null
-                        ? AppLocalizations.of(context)!.raidAChannel
-                        : AppLocalizations.of(context)!.searchChannels,
-                    style: Theme.of(context).textTheme.headlineMedium)),
-            if (widget.onRaid != null)
-              Switch.adaptive(
+                  _raid && widget.onRaid != null
+                      ? AppLocalizations.of(context)!.raidAChannel
+                      : AppLocalizations.of(context)!.searchChannels,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ),
+              if (widget.onRaid != null)
+                Switch.adaptive(
                   value: _raid,
-                  onChanged: (value) => setState(() => _raid = value))
-          ]),
+                  onChanged: (value) => setState(() => _raid = value),
+                ),
+            ],
+          ),
           const SizedBox(height: 16),
           TextField(
-              textInputAction: TextInputAction.search,
-              autofocus: true,
-              controller: _searchController,
-              decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide.none),
-                  filled: true,
-                  hintStyle:
-                      TextStyle(color: Theme.of(context).colorScheme.primary),
-                  prefixIcon: PopupMenuButton<String>(
-                      initialValue: _provider,
-                      tooltip: "",
-                      onSelected: _setProvider,
-                      itemBuilder: (context) => [
-                            for (final entry in searchProviders.entries)
-                              PopupMenuItem(
-                                  value: entry.key, child: Text(entry.value)),
-                          ],
-                      child: Padding(
-                          padding: const EdgeInsets.only(left: 16, right: 4),
-                          child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            Text(searchProviders[_provider]!),
-                            const Icon(Icons.arrow_drop_down, size: 20),
-                          ]))),
-                  prefixIconConstraints:
-                      const BoxConstraints(minWidth: 0, minHeight: 0),
-                  suffixIcon: AnimatedScale(
-                    scale: _value == "" ? 0.0 : 1.0,
-                    duration: const Duration(milliseconds: 150),
-                    child: GestureDetector(
-                        child: const Icon(Icons.cancel),
-                        onTap: () {
-                          _searchController.clear();
-                          setState(() => _value = "");
-                        }),
+            textInputAction: TextInputAction.search,
+            autofocus: true,
+            controller: _searchController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              hintStyle: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              prefixIcon: PopupMenuButton<String>(
+                initialValue: _provider,
+                tooltip: "",
+                onSelected: _setProvider,
+                itemBuilder:
+                    (context) => [
+                      for (final entry in searchProviders.entries)
+                        PopupMenuItem(
+                          value: entry.key,
+                          child: Text(entry.value),
+                        ),
+                    ],
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(searchProviders[_provider]!),
+                      const Icon(Icons.arrow_drop_down, size: 20),
+                    ],
                   ),
-                  hintText: "muxfd"),
-              onChanged: (value) {
-                setState(() {
-                  _value = value;
-                });
-              }),
-          Expanded(
-              child: ChannelSearchResultsWidget(
-            query: _value,
-            provider: _provider,
-            search: widget.search,
-            controller: widget.controller,
-            onChannelSelect: (channel) {
-              if (_raid && widget.onRaid != null) {
-                FirebaseAnalytics.instance.logEvent(
-                    name: "raid", parameters: {"channelId": channel.channelId});
-                widget.onRaid!(channel);
-              } else {
-                FirebaseAnalytics.instance.logEvent(
-                    name: "channel_select",
-                    parameters: {"channelId": channel.channelId});
-                widget.onChannelSelect(channel);
-              }
-              Navigator.of(context).pop();
+                ),
+              ),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 0,
+                minHeight: 0,
+              ),
+              suffixIcon: AnimatedScale(
+                scale: _value == "" ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 150),
+                child: GestureDetector(
+                  child: const Icon(Icons.cancel),
+                  onTap: () {
+                    _searchController.clear();
+                    setState(() => _value = "");
+                  },
+                ),
+              ),
+              hintText: "muxfd",
+            ),
+            onChanged: (value) {
+              setState(() {
+                _value = value;
+              });
             },
-            isShowOnlyOnline: _raid && widget.onRaid != null,
-            onChannelAdd: onChannelAdd,
-            channels: widget.channels,
-            header: widget.header,
-          ))
+          ),
+          Expanded(
+            child: ChannelSearchResultsWidget(
+              query: _value,
+              provider: _provider,
+              search: widget.search,
+              controller: widget.controller,
+              onChannelSelect: (channel) {
+                if (_raid && widget.onRaid != null) {
+                  FirebaseAnalytics.instance.logEvent(
+                    name: "raid",
+                    parameters: {"channelId": channel.channelId},
+                  );
+                  widget.onRaid!(channel);
+                } else {
+                  FirebaseAnalytics.instance.logEvent(
+                    name: "channel_select",
+                    parameters: {"channelId": channel.channelId},
+                  );
+                  widget.onChannelSelect(channel);
+                }
+                Navigator.of(context).pop();
+              },
+              isShowOnlyOnline: _raid && widget.onRaid != null,
+              onChannelAdd: onChannelAdd,
+              channels: widget.channels,
+              header: widget.header,
+            ),
+          ),
         ],
       ),
     );

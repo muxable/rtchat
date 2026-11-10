@@ -10,14 +10,17 @@ final twitch = Channel(Providers.twitch, '1', 'muxfd');
 final kick = Channel(Providers.kick, '2', 'muxfd');
 final t0 = DateTime(2025, 1, 1, 12);
 
-FakeChatMessage chat(String id, int seconds, Channel channel,
-        {String userId = 'u'}) =>
-    FakeChatMessage(
-        messageId: id,
-        timestamp: t0.add(Duration(seconds: seconds)),
-        author: FakeChatUser(userId: userId, login: userId),
-        message: id)
-      ..channel = channel;
+FakeChatMessage chat(
+  String id,
+  int seconds,
+  Channel channel, {
+  String userId = 'u',
+}) => FakeChatMessage(
+  messageId: id,
+  timestamp: t0.add(Duration(seconds: seconds)),
+  author: FakeChatUser(userId: userId, login: userId),
+  message: id,
+)..channel = channel;
 
 List<String> ids(List<MessageModel> messages) =>
     messages.map((m) => m.messageId).toList();
@@ -49,10 +52,13 @@ void main() {
       chat('k4', 4, kick),
     ];
     messages = applyDeltaEvent(
-        messages,
-        ClearDeltaEvent(
-            messageId: 'clear', timestamp: t0.add(const Duration(seconds: 5))),
-        channel: twitch);
+      messages,
+      ClearDeltaEvent(
+        messageId: 'clear',
+        timestamp: t0.add(const Duration(seconds: 5)),
+      ),
+      channel: twitch,
+    );
     expect(ids(messages), ['k2', 'k4', 'clear']);
     expect(messages.last, isA<ChatClearedEventModel>());
     expect(messages.last.channel, twitch);
@@ -64,18 +70,22 @@ void main() {
       chat('k2', 2, kick, userId: 'same'),
     ];
     applyDeltaEvent(
-        messages,
-        UpdateAllDeltaEvent(
-            t0.add(const Duration(seconds: 3)),
-            (message) => message is FakeChatMessage
+      messages,
+      UpdateAllDeltaEvent(
+        t0.add(const Duration(seconds: 3)),
+        (message) =>
+            message is FakeChatMessage
                 ? FakeChatMessage(
-                    messageId: message.messageId,
-                    timestamp: message.timestamp,
-                    author: message.author,
-                    message: message.message,
-                    deleted: true)
-                : message),
-        channel: kick);
+                  messageId: message.messageId,
+                  timestamp: message.timestamp,
+                  author: message.author,
+                  message: message.message,
+                  deleted: true,
+                )
+                : message,
+      ),
+      channel: kick,
+    );
     expect((messages[0] as FakeChatMessage).deleted, isFalse);
     expect((messages[1] as FakeChatMessage).deleted, isTrue);
     // the replacement keeps the channel it came from.
@@ -83,9 +93,10 @@ void main() {
   });
 
   test("without a channel, clears replace everything like before", () {
-    final messages = applyDeltaEvent(
-        [chat('t1', 1, twitch), chat('k2', 2, kick)],
-        ClearDeltaEvent(messageId: 'clear', timestamp: t0));
+    final messages = applyDeltaEvent([
+      chat('t1', 1, twitch),
+      chat('k2', 2, kick),
+    ], ClearDeltaEvent(messageId: 'clear', timestamp: t0));
     expect(ids(messages), ['clear']);
   });
 

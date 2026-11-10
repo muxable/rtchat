@@ -1,12 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/scanner_error.dart';
-import 'package:rtchat/components/scanner_settings.dart';
+import 'package:rtchat/components/provider_icon.dart';
+import 'package:rtchat/components/qr_scanner.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/adapters/donations.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/wallet_address.dart';
 import 'package:rtchat/urls.dart';
@@ -34,118 +35,150 @@ const streamlabsCurrencies = [
   ['CHF', 'Swiss Franc'],
   ['THB', 'Thai Baht'],
   ['TRY', 'Turkish Lira'],
-  ['USD', 'US Dollar']
+  ['USD', 'US Dollar'],
 ];
 
-class _RealtimeCashWidget extends StatefulWidget {
-  final String userId;
+/// Opens [url] to sign in to a service, returning the URL it redirects back
+/// to.
+typedef Authenticate = Future<String> Function(Uri url);
 
-  const _RealtimeCashWidget({required this.userId});
+Future<String> _authenticate(Uri url) => FlutterWebAuth2.authenticate(
+  url: url.toString(),
+  callbackUrlScheme: "com.rtirl.chat",
+);
+
+/// Connects [service] to [account]. The ID token says which account it's
+/// for, so the backend stores it under that account's uid.
+Future<void> _connect(
+  BuildContext context,
+  Account account,
+  String service,
+  Authenticate authenticate,
+) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final l10n = AppLocalizations.of(context)!;
+  final idToken = await account.user.getIdToken();
+  if (idToken == null) {
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text(
+          "Some strange authentication error occurred. Try signing out, or ask on Discord?",
+        ),
+      ),
+    );
+    return;
+  }
+  final String result;
+  try {
+    result = await authenticate(
+      Uri.https("chat.rtirl.com", "/auth/$service/redirect", {
+        "token": idToken,
+        "provider": account.provider,
+      }),
+    );
+  } on PlatformException catch (e) {
+    // closing the sign-in page isn't an error.
+    if (e.code != 'CANCELED') {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.thirdPartyAuthError)));
+    }
+    return;
+  }
+  final token = Uri.parse(result).queryParameters['token'];
+  if (token == null) {
+    messenger.showSnackBar(SnackBar(content: Text(l10n.thirdPartyAuthError)));
+  }
+}
+
+class _RealtimeCashWidget extends StatefulWidget {
+  final Account account;
+  final DonationsAdapter donations;
+
+  const _RealtimeCashWidget({
+    super.key,
+    required this.account,
+    required this.donations,
+  });
 
   @override
   State<_RealtimeCashWidget> createState() => _RealtimeCashWidgetState();
 }
 
 class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
-  var _scanController = MobileScannerController(
-    // facing: CameraFacing.back,
-    // torchEnabled: false,
-    detectionSpeed: DetectionSpeed.noDuplicates,
-  );
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<String?>(
-      stream: DonationsAdapter.instance
-          .forRealtimeChatAddress(userId: widget.userId),
+      stream: widget.donations.forRealtimeChatAddress(
+        userId: widget.account.user.uid,
+      ),
       builder: (context, snapshot) {
-        return Column(children: [
-          ListTile(
-            leading: const Image(image: AssetImage('assets/realtimecash.png')),
-            title: const Text("RealtimeCash"),
-            subtitle: Text(AppLocalizations.of(context)!.realtimeCashSubtitle),
-            trailing: SizedBox(
-              width: 24,
-              height: 24,
-              child: snapshot.data != null
-                  ? const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                    )
-                  : const Icon(Icons.help),
+        return Column(
+          children: [
+            ListTile(
+              leading: const Image(
+                image: AssetImage('assets/realtimecash.png'),
+              ),
+              title: const Text("RealtimeCash"),
+              subtitle: Text(
+                AppLocalizations.of(context)!.realtimeCashSubtitle,
+              ),
+              trailing: SizedBox(
+                width: 24,
+                height: 24,
+                child:
+                    snapshot.data != null
+                        ? const Icon(Icons.check_circle, color: Colors.green)
+                        : const Icon(Icons.help),
+              ),
+              // open https://cash.rtirl.com/
+              onTap: () => openUrl(Uri.parse("https://cash.rtirl.com/")),
             ),
-            // open https://cash.rtirl.com/
-            onTap: () => openUrl(Uri.parse("https://cash.rtirl.com/")),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 88, right: 16),
-            child: TextField(
+            Padding(
+              padding: const EdgeInsets.only(left: 88, right: 16),
+              child: TextField(
                 controller: TextEditingController()..text = snapshot.data ?? "",
                 readOnly: false,
                 decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.walletAddress,
-                    suffixIcon: IconButton(
-                        icon: const Icon(Icons.qr_code_scanner),
-                        onPressed: () {
-                          final messenger = ScaffoldMessenger.of(context);
-
-                          showModalBottomSheet(
-                            isScrollControlled: true,
-                            context: context,
-                            builder: (ctx) {
-                              return Stack(
-                                children: [
-                                  MobileScanner(
-                                    errorBuilder: (context, error) {
-                                      return ScannerErrorWidget(error: error);
-                                    },
-                                    controller: _scanController,
-                                    onDetect: (capture) {
-                                      final address = parseWalletAddress(capture
-                                          .barcodes.firstOrNull?.rawValue);
-                                      if (address == null) {
-                                        messenger.showSnackBar(SnackBar(
-                                            content: Text(
-                                                AppLocalizations.of(context)!
-                                                    .invalidUrlErrorText)));
-                                      } else {
-                                        DonationsAdapter.instance
-                                            .setRealtimeCashAddress(
-                                                address: address);
-                                      }
-                                      Navigator.pop(ctx);
-                                    },
-                                  ),
-                                  Positioned(
-                                      top: 50,
-                                      left: 0,
-                                      right: 0,
-                                      child: ScannerSettings(
-                                        scanController: _scanController,
-                                      )),
-                                ],
-                              );
-                            },
-                          ).then((value) {
-                            _scanController.dispose();
-
-                            _scanController = MobileScannerController(
-                              detectionSpeed: DetectionSpeed.noDuplicates,
-                            );
-                          });
-                        })),
-                keyboardType: TextInputType.url),
-          ),
-        ]);
+                  hintText: AppLocalizations.of(context)!.walletAddress,
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.qr_code_scanner),
+                    onPressed: () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final l10n = AppLocalizations.of(context)!;
+                      final value = await scanQrCode(context);
+                      if (value == null) return;
+                      final address = parseWalletAddress(value);
+                      if (address == null) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(l10n.invalidUrlErrorText)),
+                        );
+                      } else {
+                        widget.donations.setRealtimeCashAddress(
+                          address: address,
+                        );
+                      }
+                    },
+                  ),
+                ),
+                keyboardType: TextInputType.url,
+              ),
+            ),
+          ],
+        );
       },
     );
   }
 }
 
 class _StreamlabsWidget extends StatelessWidget {
-  final String userId;
+  final Account account;
+  final DonationsAdapter donations;
+  final Authenticate authenticate;
 
-  const _StreamlabsWidget({required this.userId});
+  const _StreamlabsWidget({
+    required this.account,
+    required this.donations,
+    required this.authenticate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -155,50 +188,31 @@ class _StreamlabsWidget extends StatelessWidget {
         width: 24,
         height: 24,
         child: StreamBuilder(
-          stream: DonationsAdapter.instance.forStreamlabsConfig(userId: userId),
+          stream: donations.forStreamlabsConfig(userId: account.user.uid),
           builder: (context, snapshot) {
             return snapshot.data != null
-                ? const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                  )
+                ? const Icon(Icons.check_circle, color: Colors.green)
                 : Container();
           },
         ),
       ),
       title: const Text("Streamlabs"),
       subtitle: Text(AppLocalizations.of(context)!.streamlabsSubtitle),
-      onTap: () async {
-        final messenger = ScaffoldMessenger.of(context);
-        final l10n = AppLocalizations.of(context)!;
-        final userModel = Provider.of<UserModel>(context, listen: false);
-        final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-        final provider = userModel.userChannel?.provider;
-        if (provider == null) {
-          messenger.showSnackBar(const SnackBar(
-              content: Text(
-                  "Some strange authentication error occurred. Try signing out, or ask on Discord?")));
-          return;
-        }
-        final result = await FlutterWebAuth2.authenticate(
-            url:
-                "https://chat.rtirl.com/auth/streamlabs/redirect?token=$idToken&provider=$provider",
-            callbackUrlScheme: "com.rtirl.chat");
-        final token = Uri.parse(result).queryParameters['token'];
-        if (token == null) {
-          messenger.showSnackBar(SnackBar(
-            content: Text(l10n.thirdPartyAuthError),
-          ));
-        }
-      },
+      onTap: () => _connect(context, account, "streamlabs", authenticate),
     );
   }
 }
 
 class _StreamElementsWidget extends StatelessWidget {
-  final String userId;
+  final Account account;
+  final DonationsAdapter donations;
+  final Authenticate authenticate;
 
-  const _StreamElementsWidget({required this.userId});
+  const _StreamElementsWidget({
+    required this.account,
+    required this.donations,
+    required this.authenticate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -208,187 +222,221 @@ class _StreamElementsWidget extends StatelessWidget {
         width: 24,
         height: 24,
         child: StreamBuilder(
-          stream:
-              DonationsAdapter.instance.forStreamElementsConfig(userId: userId),
+          stream: donations.forStreamElementsConfig(userId: account.user.uid),
           builder: (context, snapshot) {
             return snapshot.data != null
-                ? const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                  )
+                ? const Icon(Icons.check_circle, color: Colors.green)
                 : Container();
           },
         ),
       ),
       title: const Text("StreamElements"),
       subtitle: Text(AppLocalizations.of(context)!.streamElementsSubtitle),
-      onTap: () async {
-        final messenger = ScaffoldMessenger.of(context);
-        final l10n = AppLocalizations.of(context)!;
-        final userModel = Provider.of<UserModel>(context, listen: false);
-        final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-        final provider = userModel.userChannel?.provider;
-        if (provider == null) {
-          messenger.showSnackBar(const SnackBar(
-              content: Text(
-                  "Some strange authentication error occurred. Try signing out, or ask on Discord?")));
-          return;
-        }
-        final result = await FlutterWebAuth2.authenticate(
-            url:
-                "https://chat.rtirl.com/auth/streamelements/redirect?token=$idToken&provider=$provider",
-            callbackUrlScheme: "com.rtirl.chat");
-        final token = Uri.parse(result).queryParameters['token'];
-        if (token == null) {
-          messenger.showSnackBar(SnackBar(
-            content: Text(l10n.thirdPartyAuthError),
-          ));
-        }
-      },
+      onTap: () => _connect(context, account, "streamelements", authenticate),
     );
   }
 }
 
 class _RealTimeKitWidget extends StatefulWidget {
+  final Account account;
+  final DonationsAdapter donations;
+
+  const _RealTimeKitWidget({
+    super.key,
+    required this.account,
+    required this.donations,
+  });
+
   @override
   State<_RealTimeKitWidget> createState() => _RealTimeKitWidgetState();
 }
 
 class _RealTimeKitWidgetState extends State<_RealTimeKitWidget> {
-  var _scanController = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
-  );
+  final _apiKeyController = TextEditingController();
 
-  String apiKey = "";
+  @override
+  void dispose() {
+    _apiKeyController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveApiKey(String value) async {
+    final apiKey = value.trim();
+    await widget.donations.setRealtimeKitApiKey(apiKey: apiKey);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ListTile(
-          leading: const Image(image: AssetImage('assets/realtimekit.png')),
-          title: const Text("RealtimeKit"),
-          subtitle: const Text("Control OBS remotely"),
-          trailing: SizedBox(
-            width: 24,
-            height: 24,
-            child: apiKey.isNotEmpty
-                ? const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                  )
-                : const Icon(Icons.help),
-          ),
-          onTap: () => apiKey.isNotEmpty
-              ? openUrl(Uri.parse(apiKey))
-              : openUrl(Uri.parse("https://kit.rtirl.com/")),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 88, right: 16),
-          child: TextField(
-              controller: TextEditingController()..text = apiKey,
-              readOnly: false,
-              decoration: InputDecoration(
-                  hintText: "API Key",
+    return StreamBuilder<RealtimeKitConfig?>(
+      stream: widget.donations.forRealtimeKitConfig(
+        userId: widget.account.user.uid,
+      ),
+      builder: (context, snapshot) {
+        final apiKey = snapshot.data?.apiKey ?? '';
+
+        // Sync persisted values without overwriting text being edited.
+        if (snapshot.hasData && _apiKeyController.text != apiKey) {
+          _apiKeyController.value = TextEditingValue(
+            text: apiKey,
+            selection: TextSelection.collapsed(offset: apiKey.length),
+          );
+        } else if (!snapshot.hasData &&
+            snapshot.connectionState != ConnectionState.waiting &&
+            _apiKeyController.text.isNotEmpty) {
+          _apiKeyController.clear();
+        }
+
+        return Column(
+          children: [
+            ListTile(
+              leading: const Image(image: AssetImage('assets/realtimekit.png')),
+              title: const Text('RealtimeKit'),
+              subtitle: const Text('Control OBS remotely'),
+              trailing: SizedBox(
+                width: 24,
+                height: 24,
+                child:
+                    apiKey.isNotEmpty
+                        ? const Icon(Icons.check_circle, color: Colors.green)
+                        : const Icon(Icons.help),
+              ),
+              onTap:
+                  () => openUrl(
+                    Uri.parse(
+                      apiKey.isNotEmpty ? apiKey : 'https://kit.rtirl.com/',
+                    ),
+                  ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 88, right: 16),
+              child: TextField(
+                controller: _apiKeyController,
+                decoration: InputDecoration(
+                  hintText: 'API Key',
                   suffixIcon: IconButton(
-                      icon: const Icon(Icons.qr_code_scanner),
-                      onPressed: () {
-                        final messenger = ScaffoldMessenger.of(context);
+                    icon: const Icon(Icons.qr_code_scanner),
+                    onPressed: () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final value = await scanQrCode(context);
+                      if (value == null) return;
+                      _apiKeyController.text = value;
+                      try {
+                        await _saveApiKey(value);
+                      } catch (error) {
+                        if (!mounted) return;
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Could not save RealtimeKit API key: $error',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                keyboardType: TextInputType.url,
+                onSubmitted: (value) async {
+                  try {
+                    await _saveApiKey(value);
+                  } catch (error) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Could not save RealtimeKit API key: $error',
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
 
-                        showModalBottomSheet(
-                          isScrollControlled: true,
-                          context: context,
-                          builder: (ctx) {
-                            return Stack(
-                              children: [
-                                MobileScanner(
-                                  errorBuilder: (context, error) {
-                                    return ScannerErrorWidget(error: error);
-                                  },
-                                  controller: _scanController,
-                                  onDetect: (capture) {
-                                    final List<Barcode> barcodes =
-                                        capture.barcodes;
+/// Names the account the connections after it belong to.
+class _AccountHeader extends StatelessWidget {
+  final Account account;
 
-                                    if (barcodes.isEmpty) {
-                                      messenger.showSnackBar(SnackBar(
-                                          content: Text(
-                                              AppLocalizations.of(context)!
-                                                  .invalidUrlErrorText)));
-                                      return;
-                                    }
+  const _AccountHeader(this.account);
 
-                                    final barcode = barcodes.first;
-
-                                    if (barcode.rawValue == null ||
-                                        barcode.rawValue!.isEmpty) {
-                                      messenger.showSnackBar(SnackBar(
-                                          content: Text(
-                                              AppLocalizations.of(context)!
-                                                  .invalidUrlErrorText)));
-                                      Navigator.pop(ctx);
-                                      return;
-                                    }
-
-                                    setState(() {
-                                      apiKey = barcode.rawValue!;
-                                    });
-
-                                    Navigator.pop(ctx);
-                                  },
-                                ),
-                                Positioned(
-                                    top: 50,
-                                    left: 0,
-                                    right: 0,
-                                    child: ScannerSettings(
-                                      scanController: _scanController,
-                                    )),
-                              ],
-                            );
-                          },
-                        ).then((value) {
-                          _scanController.dispose();
-
-                          _scanController = MobileScannerController(
-                            detectionSpeed: DetectionSpeed.noDuplicates,
-                          );
-                        });
-                      })),
-              keyboardType: TextInputType.url),
-        ),
-      ],
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: ProviderIcon(account.provider),
+      title: Text(
+        account.channel.displayName,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      subtitle: Text(providerName(account.provider)),
     );
   }
 }
 
 class ThirdPartyScreen extends StatelessWidget {
-  const ThirdPartyScreen({super.key});
+  /// Reads and writes an account's connections.
+  final DonationsAdapter Function(Account account) donations;
+
+  /// Opens a service's sign in page.
+  final Authenticate authenticate;
+
+  const ThirdPartyScreen({
+    super.key,
+    @visibleForTesting this.donations = DonationsAdapter.forAccount,
+    @visibleForTesting this.authenticate = _authenticate,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!.thirdPartyServices)),
-        body: Consumer<UserModel>(
-          builder: (context, userModel, child) {
-            final userId = userModel.user?.uid;
-            if (userId == null) {
-              // the user should be signed in at this point.
-              return Container();
-            }
-            return ListView(
-              children: [
-                _RealtimeCashWidget(userId: userId),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.thirdPartyServices),
+      ),
+      body: Consumer<UserModel>(
+        builder: (context, userModel, child) {
+          final accounts = userModel.accounts;
+          // connections are each account's own, so each account gets its
+          // own section once there's more than one.
+          return ListView(
+            children: [
+              for (final account in accounts) ...[
+                if (accounts.length > 1) _AccountHeader(account),
+                // Muxable services sorted alphabetically
+                _RealtimeCashWidget(
+                  key: ValueKey(account.app.name),
+                  account: account,
+                  donations: donations(account),
+                ),
                 const Divider(),
-                _RealTimeKitWidget(),
+                _RealTimeKitWidget(
+                  key: ValueKey('realtimekit-${account.app.name}'),
+                  account: account,
+                  donations: donations(account),
+                ),
                 const Divider(),
-                _StreamlabsWidget(userId: userId),
+                // External third-party services alphabetically sorted
+                _StreamElementsWidget(
+                  account: account,
+                  donations: donations(account),
+                  authenticate: authenticate,
+                ),
                 const Divider(),
-                _StreamElementsWidget(userId: userId),
+                _StreamlabsWidget(
+                  account: account,
+                  donations: donations(account),
+                  authenticate: authenticate,
+                ),
+                const Divider(),
               ],
-            );
-          },
-        ));
+            ],
+          );
+        },
+      ),
+    );
   }
 }

@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:core';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/speaker_keep_alive.dart';
 
 class AudioSource {
   final String? name;
@@ -24,15 +24,15 @@ class AudioSource {
   int get hashCode => url.hashCode;
 
   AudioSource.fromJson(Map<String, dynamic> json)
-      : name = json['name'],
-        url = Uri.parse(json['url']),
-        muted = json['muted'];
+    : name = json['name'],
+      url = Uri.parse(json['url']),
+      muted = json['muted'];
 
   Map<String, dynamic> toJson() => {
-        "name": name,
-        "url": url.toString(),
-        "muted": muted,
-      };
+    "name": name,
+    "url": url.toString(),
+    "muted": muted,
+  };
 
   @override
   String toString() => url.toString();
@@ -40,7 +40,7 @@ class AudioSource {
 
 class AudioModel extends ChangeNotifier {
   final List<AudioSource> _sources = [];
-  late final Timer _speakerDisconnectTimer;
+  final SpeakerKeepAlive _speakerKeepAlive;
 
   bool _isOnline = false;
   bool _isSettingsVisible = false;
@@ -49,10 +49,19 @@ class AudioModel extends ChangeNotifier {
   Channel? _hostChannel;
   StreamSubscription? _hostChannelStateSubscription;
 
+  // Android may refuse to start the audio service from the background, so a
+  // failed sync is retried when the app resumes.
+  late final AppLifecycleListener _lifecycleListener;
+  bool _syncFailed = false;
+  int _syncId = 0;
+  // syncs run one at a time so an older one can't land after a newer one.
+  Future<void> _sync = Future.value();
+
   @override
   void dispose() {
+    _lifecycleListener.dispose();
     _hostChannelStateSubscription?.cancel();
-    _speakerDisconnectTimer.cancel();
+    _speakerKeepAlive.dispose();
 
     super.dispose();
   }
@@ -72,10 +81,10 @@ class AudioModel extends ChangeNotifier {
     _hostChannelStateSubscription = ProfilesAdapter.instance
         .getIsOnline(channelId: _hostChannel.toString())
         .listen((isOnline) {
-      _isOnline = isOnline;
-      _syncWebViews();
-      notifyListeners();
-    });
+          _isOnline = isOnline;
+          _syncWebViews();
+          notifyListeners();
+        });
   }
 
   bool get isSettingsVisible => _isSettingsVisible;
@@ -126,66 +135,80 @@ class AudioModel extends ChangeNotifier {
   }
 
   Future<int> refreshAllSources() async {
-    final activeSources = _sources.where((element) => !element.muted).toList();
-    for (final source in activeSources) {
-      await AudioChannel.reload(source.url.toString());
+    if (!enabled) {
+      return 0;
     }
-    return activeSources.length;
+    final count = _sources.where((element) => !element.muted).length;
+    if (count > 0) {
+      await AudioChannel.reload();
+    }
+    return count;
   }
 
-  void _syncWebViews() {
-    if (enabled) {
-      AudioChannel.set(_sources
-          .where((element) => !element.muted)
-          .map((element) => element.url.toString())
-          .toList());
-    } else {
-      AudioChannel.set([]);
-    }
+  Future<void> _syncWebViews() {
+    final id = ++_syncId;
+    return _sync = _sync.then((_) {}, onError: (_) {}).then((_) async {
+      // a newer sync is queued and will apply the latest state.
+      if (id != _syncId) {
+        return;
+      }
+      _syncFailed =
+          !await AudioChannel.set(
+            enabled
+                ? _sources
+                    .where((element) => !element.muted)
+                    .map((element) => element.url.toString())
+                    .toList()
+                : [],
+          );
+    });
   }
 
   Future<void> showAudioPermissionDialog(BuildContext context) {
     return showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (context) {
-          return AlertDialog(
-            title: Text(
-                AppLocalizations.of(context)!.audioSourcesRequirePermissions),
-            content: Text(AppLocalizations.of(context)!
-                .audioSourcesRequirePermissionsMessage),
-            actions: <Widget>[
-              TextButton(
-                child: Text(
-                    AppLocalizations.of(context)!.audioSourcesRemoveButton),
-                onPressed: () {
-                  _sources.clear();
-                  Navigator.of(context).pop();
-                },
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            AppLocalizations.of(context)!.audioSourcesRequirePermissions,
+          ),
+          content: Text(
+            AppLocalizations.of(context)!.audioSourcesRequirePermissionsMessage,
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                AppLocalizations.of(context)!.audioSourcesRemoveButton,
               ),
-              TextButton(
-                child: Text(AppLocalizations.of(context)!
-                    .audioSourcesOpenSettingsButton),
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  await AudioChannel.requestPermission();
-                },
+              onPressed: () {
+                _sources.clear();
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                AppLocalizations.of(context)!.audioSourcesOpenSettingsButton,
               ),
-            ],
-          );
-        });
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await AudioChannel.requestPermission();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
-  AudioModel.fromJson(Map<String, dynamic> json) {
-    final player = AudioPlayer();
-    _speakerDisconnectTimer = Timer.periodic(
-      const Duration(minutes: 5),
-      (_) => player.play(
-        AssetSource("silence.mp3"),
-        ctx: AudioContextConfig(
-          focus: AudioContextConfigFocus.mixWithOthers,
-        ).build(),
-      ),
+  AudioModel.fromJson(Map<String, dynamic> json)
+    : _speakerKeepAlive = SpeakerKeepAlive() {
+    _lifecycleListener = AppLifecycleListener(
+      onResume: () {
+        if (_syncFailed) {
+          _syncWebViews();
+        }
+      },
     );
     final sources = json['sources'];
     if (sources != null) {
@@ -200,7 +223,7 @@ class AudioModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "sources": _sources.map((source) => source.toJson()).toList(),
-        "isAlwaysEnabled": _isAlwaysEnabled,
-      };
+    "sources": _sources.map((source) => source.toJson()).toList(),
+    "isAlwaysEnabled": _isAlwaysEnabled,
+  };
 }

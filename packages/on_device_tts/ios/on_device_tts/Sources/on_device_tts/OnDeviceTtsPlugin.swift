@@ -2,7 +2,7 @@ import Flutter
 import Foundation
 
 // The engine (OnDeviceTtsCore's sources) is compiled into this module by
-// on_device_tts.podspec, so there is nothing to import.
+// Package.swift (or the podspec), so there is nothing to import.
 
 /// The iOS side of `on_device_tts`'s ONNX Runtime engine: the
 /// `on_device_tts/onnx` method channel and the `on_device_tts/onnx/events`
@@ -18,6 +18,7 @@ public class OnDeviceTtsPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   }
 
   public static func register(with registrar: FlutterPluginRegistrar) {
+    SystemTtsPlugin.register(with: registrar)
     let instance = OnDeviceTtsPlugin()
     let channel = FlutterMethodChannel(
       name: "on_device_tts/onnx", binaryMessenger: registrar.messenger())

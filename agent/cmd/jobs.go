@@ -15,29 +15,37 @@ import (
 	"go.uber.org/zap"
 )
 
-// The allowlist keeps old Cloud Scheduler jobs authoritative until cutover.
-// Empty AGENT_SCHEDULED_JOBS leaves all replacement jobs disabled.
+// AGENT_SCHEDULED_JOBS is a comma-separated allowlist. Unset runs every job;
+// leases keep each to one replica. Set but empty disables them all.
 func startScheduledJobs(ctx context.Context, db *firestore.Client) func() {
-	service := &jobs.Service{Client: db, API: &jobs.API{Tokens: provider.NewService(db, &http.Client{Timeout: 15 * time.Second}), TwitchClientID: auth.TwitchClientID()}}
+	// One client for every job request, so connections are reused.
+	httpClient := &http.Client{Timeout: 15 * time.Second}
+	service := &jobs.Service{Client: db, API: &jobs.API{Tokens: provider.NewService(db, httpClient), Client: httpClient, TwitchClientID: auth.TwitchClientID()}}
 	all := map[string]jobs.Job{
 		"updateFollowerAndViewerCount": {Name: "updateFollowerAndViewerCount", Timeout: 3 * time.Minute, Run: service.Twitch},
 		"updateKickChannelMetadata":    {Name: "updateKickChannelMetadata", Timeout: 3 * time.Minute, Run: service.Kick},
 		"unsubscribe":                  {Name: "unsubscribe", Timeout: 30 * time.Minute, Daily: true, Run: service.Cleanup},
 	}
 	runner := jobs.Runner{Leases: jobs.FirestoreLeases{Client: db}}
-	seen := map[string]bool{}
-	for _, name := range strings.Split(os.Getenv("AGENT_SCHEDULED_JOBS"), ",") {
-		name = strings.TrimSpace(name)
-		if name == "" || seen[name] {
-			continue
+	if names, ok := os.LookupEnv("AGENT_SCHEDULED_JOBS"); ok {
+		seen := map[string]bool{}
+		for _, name := range strings.Split(names, ",") {
+			name = strings.TrimSpace(name)
+			if name == "" || seen[name] {
+				continue
+			}
+			job, ok := all[name]
+			if !ok {
+				zap.L().Error("unknown scheduled job disabled", zap.String("job", name))
+				continue
+			}
+			seen[name] = true
+			runner.Jobs = append(runner.Jobs, job)
 		}
-		job, ok := all[name]
-		if !ok {
-			zap.L().Error("unknown scheduled job disabled", zap.String("job", name))
-			continue
+	} else {
+		for _, job := range all {
+			runner.Jobs = append(runner.Jobs, job)
 		}
-		seen[name] = true
-		runner.Jobs = append(runner.Jobs, job)
 	}
 	work, cancel := context.WithCancel(ctx)
 	var wg sync.WaitGroup

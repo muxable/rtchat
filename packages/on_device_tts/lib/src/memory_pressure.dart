@@ -32,18 +32,22 @@ class MemoryPressureMonitor with WidgetsBindingObserver {
     this.onPressure, {
     OnnxTtsPlatform? platform,
     bool? useNativeSignals,
-  })  : _platform = platform ?? OnnxTtsPlatform.instance,
-        _useNativeSignals = useNativeSignals ??
-            (!kIsWeb && defaultTargetPlatform == TargetPlatform.android);
+  }) : _platform = platform ?? OnnxTtsPlatform.instance,
+       _useNativeSignals =
+           useNativeSignals ??
+           (!kIsWeb && defaultTargetPlatform == TargetPlatform.android);
 
   /// Starts listening. Needs a [WidgetsBinding].
   void start() {
     if (_isStarted) return;
     _isStarted = true;
     if (_useNativeSignals) {
-      _native = _platform.memoryPressure.listen((_) => onPressure(),
-          onError: (Object error) =>
-              debugPrint('on_device_tts: memory events failed: $error'));
+      _native = _platform.memoryPressure.listen(
+        (_) => onPressure(),
+        onError:
+            (Object error) =>
+                debugPrint('on_device_tts: memory events failed: $error'),
+      );
     } else {
       WidgetsBinding.instance.addObserver(this);
     }

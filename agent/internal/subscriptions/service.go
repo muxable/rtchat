@@ -21,13 +21,18 @@ import (
 var youtubeID = regexp.MustCompile(`^UC[A-Za-z0-9_-]{22}$`)
 var numericID = regexp.MustCompile(`^[0-9]+$`)
 
+// Leave room for short lifecycle work and the first-sign-in welcome message,
+// while answering well before the callable request deadline.
+const foregroundLeaseWait = 10 * time.Second
+
 type Service struct {
 	DB               *firestore.Client
 	API              *API
-	Enabled          bool
 	TwitchSecret     string
 	MaticWebhookID   string
 	KickChannelLimit int
+	// Queue reconciles Twitch EventSub subscriptions off the request path.
+	Queue *TwitchQueue
 }
 
 func (s *Service) Register(server *callable.Server) {
@@ -88,9 +93,6 @@ func (s *Service) Subscribe(ctx context.Context, data json.RawMessage) (interfac
 	default:
 		return nil, invalid("invalid provider")
 	}
-	if !s.Enabled {
-		return nil, &callable.Error{Code: "failed-precondition", Message: "subscription migration is not enabled"}
-	}
 	uid := callable.UID(ctx)
 	switch input.Provider {
 	case "youtube":
@@ -99,7 +101,10 @@ func (s *Service) Subscribe(ctx context.Context, data json.RawMessage) (interfac
 	case "twitch":
 		return s.subscribeTwitch(ctx, uid, channel)
 	case "kick":
-		err := subscriptionlock.With(ctx, s.DB, "kick:"+channel, func(ctx context.Context) error { return s.ensureKick(ctx, channel) })
+		err := subscriptionlock.WithWaitLimit(ctx, s.DB, "kick:"+channel, foregroundLeaseWait, func(ctx context.Context) error { return s.ensureKick(ctx, channel) })
+		if errors.Is(err, subscriptionlock.ErrBusy) {
+			return nil, unavailable("Kick subscriptions are busy; try again shortly")
+		}
 		if err != nil {
 			return nil, err
 		}

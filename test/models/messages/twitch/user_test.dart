@@ -5,8 +5,10 @@ import 'package:rtchat/models/messages/twitch/user.dart';
 void main() {
   test("isBot is case-insensitive", () {
     expect(const TwitchUserModel(userId: "1", login: "Nightbot").isBot, isTrue);
-    expect(const TwitchUserModel(userId: "1", login: "STREAMELEMENTS").isBot,
-        isTrue);
+    expect(
+      const TwitchUserModel(userId: "1", login: "STREAMELEMENTS").isBot,
+      isTrue,
+    );
     expect(const TwitchUserModel(userId: "1", login: "muxfd").isBot, isFalse);
   });
 
@@ -21,17 +23,25 @@ void main() {
 
   test("asChannel prefers displayName and falls back to login", () {
     expect(
-        const TwitchUserModel(userId: "1", login: "foo", displayName: "Foo")
-            .asChannel,
-        Channel("twitch", "1", "Foo"));
-    expect(const TwitchUserModel(userId: "1", login: "foo").asChannel,
-        Channel("twitch", "1", "foo"));
+      const TwitchUserModel(
+        userId: "1",
+        login: "foo",
+        displayName: "Foo",
+      ).asChannel,
+      Channel("twitch", "1", "Foo"),
+    );
+    expect(
+      const TwitchUserModel(userId: "1", login: "foo").asChannel,
+      Channel("twitch", "1", "foo"),
+    );
   });
 
   test("equality and toString", () {
     const a = TwitchUserModel(userId: "1", login: "foo", displayName: "Foo");
-    expect(a,
-        const TwitchUserModel(userId: "1", login: "foo", displayName: "Foo"));
+    expect(
+      a,
+      const TwitchUserModel(userId: "1", login: "foo", displayName: "Foo"),
+    );
     expect(a, isNot(const TwitchUserModel(userId: "1", login: "foo")));
     expect(a.toString(), "foo");
   });

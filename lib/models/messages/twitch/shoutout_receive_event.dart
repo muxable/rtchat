@@ -16,15 +16,18 @@ class TwitchShoutoutReceiveEventModel extends MessageModel {
   final String fromBroadcasterUserName;
   final int viewerCount;
 
-  const TwitchShoutoutReceiveEventModel(
-      {required super.timestamp,
-      required super.messageId,
-      required this.fromBroadcasterUserId,
-      required this.fromBroadcasterUserName,
-      required this.viewerCount});
+  const TwitchShoutoutReceiveEventModel({
+    required super.timestamp,
+    required super.messageId,
+    required this.fromBroadcasterUserId,
+    required this.fromBroadcasterUserName,
+    required this.viewerCount,
+  });
 
   static TwitchShoutoutReceiveEventModel fromDocumentData(
-      String messageId, Map<String, dynamic> data) {
+    String messageId,
+    Map<String, dynamic> data,
+  ) {
     return TwitchShoutoutReceiveEventModel(
       fromBroadcasterUserId: data['event']['from_broadcaster_user_id'],
       fromBroadcasterUserName: data['event']['from_broadcaster_user_name'],

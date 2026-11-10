@@ -5,31 +5,63 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand/v2"
+	"strconv"
 	"sync"
 	"time"
 
 	"cloud.google.com/go/firestore"
-	"github.com/gempir/go-twitch-irc/v3"
+	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
+	"github.com/muxable/rtchat/agent/internal/chatmetrics"
+	"github.com/muxable/rtchat/agent/internal/clients"
+	twitchapi "github.com/muxable/rtchat/agent/internal/clients/twitch"
+	"github.com/muxable/rtchat/agent/internal/provider"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type TwitchAgent struct {
 	Firestore              *firestore.Client
 	ClientID, ClientSecret string
+	// WaitForAuth gates initial IRC logins across replicas, outside the handshake timeout.
+	WaitForAuth      func(context.Context, string) error
+	Context          context.Context
+	tokenServiceOnce sync.Once
+	tokenService     *provider.Service
 	// Optional dependencies allow lifecycle tests without external services.
-	loadProfile func(string) (map[string]interface{}, error)
-	tokenSource func(string) (oauth2.TokenSource, error)
-	newChat     func(string, string) chatConnection
-	bindChat    func(chatConnection)
+	loadProfile   func(string) (map[string]interface{}, error)
+	tokenSource   func(string) (oauth2.TokenSource, error)
+	newChat       func(string, string) chatConnection
+	bindChat      func(chatConnection)
+	channelExists func(context.Context, string) (bool, error)
+	createDoc     func(context.Context, *chatDocument) error
+
+	// held keeps messages whose write failed transiently, e.g. during a
+	// Firestore outage, until a retry lands them.
+	heldMu    sync.Mutex
+	held      []heldDocument
+	retryOnce sync.Once
 }
+
+type heldDocument struct {
+	kind string
+	doc  *chatDocument
+}
+
+// maxHeld bounds memory if Firestore never comes back.
+const maxHeld = 20000
+
+// ErrChannelUnavailable means Helix has no user for the channel's login, e.g.
+// it was renamed, deleted or suspended. Twitch IRC never answers a JOIN for
+// such a channel, so no identity or retry can read it.
+var ErrChannelUnavailable = errors.New("twitch channel does not exist")
 
 type chatConnection interface {
 	OnConnect(func())
+	OnRoomStateMessage(func(twitch.RoomStateMessage))
 	Join(...string)
 	Connect() error
 	Disconnect() error
@@ -38,6 +70,10 @@ type chatConnection interface {
 }
 
 func joinWithTimeout(client chatConnection, channel string, timeout time.Duration) error {
+	return joinWithContext(context.Background(), client, channel, timeout)
+}
+
+func joinWithContext(ctx context.Context, client chatConnection, channel string, timeout time.Duration) error {
 	// connect to the chat
 	success := make(chan struct{})
 	abandoned := make(chan struct{})
@@ -49,7 +85,18 @@ func joinWithTimeout(client chatConnection, channel string, timeout time.Duratio
 			return
 		default:
 		}
-		// apparently this can be called multiple times
+	})
+	client.OnRoomStateMessage(func(message twitch.RoomStateMessage) {
+		if message.Channel != channel {
+			return
+		}
+		select {
+		case <-abandoned:
+			_ = client.Disconnect()
+			return
+		default:
+		}
+		// ROOMSTATE confirms entry, including rooms without visible JOIN messages.
 		once.Do(func() {
 			close(success)
 		})
@@ -59,15 +106,18 @@ func joinWithTimeout(client chatConnection, channel string, timeout time.Duratio
 	finished := make(chan error, 1)
 	go func() {
 		err := client.Connect()
-		finished <- err
-		if err != nil {
-			if !errors.Is(err, twitch.ErrClientDisconnected) {
-				zap.L().Error("failed to connect to chat", zap.Error(err))
+		if err != nil && !errors.Is(err, twitch.ErrClientDisconnected) {
+			select {
+			case <-success:
+				zap.L().Error("chat connection ended", zap.Error(err), zap.String("channel", channel))
+			default: // Initial join errors are handled by the caller's fallback.
 			}
 		}
+		finished <- err
 	}()
 
-	// wait for success signal or timeout
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 	select {
 	case <-success:
 		return nil
@@ -76,49 +126,98 @@ func joinWithTimeout(client chatConnection, channel string, timeout time.Duratio
 			return errors.New("connection ended before joining")
 		}
 		return err
-	case <-time.After(timeout):
+	case <-ctx.Done():
 		close(abandoned)
-		if err := client.Disconnect(); err != nil {
-			if !errors.Is(err, twitch.ErrConnectionIsNotOpen) {
-				zap.L().Error("failed to disconnect from chat", zap.Error(err))
-			}
+		if err := disconnectChat(client); err != nil {
+			zap.L().Error("failed to disconnect from chat", zap.Error(err))
 		}
-		return errors.New("timeout")
+		return ctx.Err()
 	}
 }
 
-func (h *TwitchAgent) write(channelID, messageID string, data interface{}) {
-	if err := createMessage(context.Background(), func(ctx context.Context) error {
-		_, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(ctx, data)
+func (h *TwitchAgent) write(doc *chatDocument) (duplicate bool, err error) {
+	return createMessage(context.Background(), func(ctx context.Context) error {
+		if h.createDoc != nil {
+			return h.createDoc(ctx, doc)
+		}
+		_, err := h.Firestore.Collection("channels").Doc(doc.channelID).Collection("messages").Doc(doc.messageID).Create(ctx, doc.data)
 		return err
-	}); err != nil {
-		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID), zap.Any("data", data))
+	})
+}
+
+func record(kind string, doc *chatDocument, duplicate bool, err error) {
+	if err != nil {
+		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", doc.channelID), zap.String("messageId", doc.messageID))
+		chatmetrics.Record("twitch", kind, chatmetrics.Failed)
+	} else if duplicate {
+		chatmetrics.Record("twitch", kind, chatmetrics.Duplicate)
+	} else {
+		chatmetrics.Record("twitch", kind, chatmetrics.Created)
+	}
+}
+
+// hold queues a message for retryHeld, reporting false if too many are held.
+func (h *TwitchAgent) hold(kind string, doc *chatDocument) bool {
+	h.heldMu.Lock()
+	defer h.heldMu.Unlock()
+	if len(h.held) >= maxHeld {
+		return false
+	}
+	h.held = append(h.held, heldDocument{kind, doc})
+	h.retryOnce.Do(func() { go h.retryHeld(5 * time.Second) })
+	return true
+}
+
+// retryHeld writes held messages in order every interval, stopping a pass at
+// the first transient failure since Firestore is still unavailable.
+func (h *TwitchAgent) retryHeld(interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-h.context().Done():
+			return
+		case <-ticker.C:
+		}
+		h.heldMu.Lock()
+		held := h.held
+		h.held = nil
+		h.heldMu.Unlock()
+		for i, m := range held {
+			duplicate, err := h.write(m.doc)
+			if chatmessage.Transient(err) && h.context().Err() == nil {
+				h.heldMu.Lock()
+				h.held = append(held[i:], h.held...)
+				h.heldMu.Unlock()
+				break
+			}
+			record(m.kind, m.doc, duplicate, err)
+		}
 	}
 }
 
 func (h *TwitchAgent) bindEvents(client *twitch.Client) {
 	client.OnUserNoticeMessage(func(message twitch.UserNoticeMessage) {
-		zap.L().Info("user notice", zap.String("message", message.Raw))
-		go h.writeDocument(userNoticeDocument(message, time.Now()))
+		go h.writeDocument("usernotice", userNoticeDocument(message, time.Now()))
 	})
 
 	// configure handlers
 	client.OnClearChatMessage(func(message twitch.ClearChatMessage) {
-		go h.writeDocument(clearChatDocument(message, time.Now()))
+		go h.writeDocument("clearchat", clearChatDocument(message, time.Now()))
 	})
 
 	client.OnClearMessage(func(message twitch.ClearMessage) {
 		userID, err := auth.TwitchUserIDFromUsername(h.Firestore, h.ClientID, h.ClientSecret, message.Channel)
 		if err != nil {
 			zap.L().Error("failed to get twitch user id", zap.Error(err))
+			chatmetrics.Record("twitch", "clearmsg", chatmetrics.Failed)
 			return
 		}
-		go h.writeDocument(clearMessageDocument(message, userID, time.Now()))
+		go h.writeDocument("clearmsg", clearMessageDocument(message, userID, time.Now()))
 	})
 
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
-		zap.L().Info("adding message", zap.String("content", message.Message), zap.String("channelId", "twitch:"+message.RoomID), zap.String("channel", message.Channel))
-		go h.writeDocument(privateMessageDocument(message, time.Now()))
+		go h.writeDocument("message", privateMessageDocument(message, time.Now()))
 	})
 }
 
@@ -127,10 +226,7 @@ type AuthenticatedTwitchClient struct {
 }
 
 func (c *AuthenticatedTwitchClient) Close() error {
-	if c.client == nil {
-		return nil
-	}
-	return c.client.Disconnect()
+	return disconnectChat(c.client)
 }
 
 type AnonymousTwitchClient struct {
@@ -138,7 +234,7 @@ type AnonymousTwitchClient struct {
 }
 
 func (c *AnonymousTwitchClient) Close() error {
-	return c.client.Disconnect()
+	return disconnectChat(c.client)
 }
 
 func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, error) {
@@ -167,12 +263,31 @@ func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, 
 		return nil, err
 	}
 
+	if h.WaitForAuth != nil {
+		ctx := h.Context
+		if ctx == nil {
+			ctx = context.Background()
+		}
+		bounded, cancel := context.WithTimeout(ctx, 2*time.Minute)
+		err := h.WaitForAuth(bounded, login)
+		cancel()
+		if err != nil {
+			return nil, fmt.Errorf("wait for IRC authentication slot: %w", err)
+		}
+		// The token may expire while waiting behind other channels during a rollout.
+		if !token.Valid() {
+			token, err = authProvider.Token()
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 	// create a new chat client and attempt to connect
 	client := h.chat(login, fmt.Sprintf("oauth:%s", token.AccessToken))
 
 	h.bind(client)
 	installReconnect(client, authProvider)
-	if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
+	if err := joinWithContext(h.context(), client, r.Channel(), 10*time.Second); err != nil {
 		return nil, err
 	}
 
@@ -182,19 +297,67 @@ func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, 
 	return &AnonymousTwitchClient{client: client}, nil
 }
 
-func (h *TwitchAgent) JoinAnonymously(r *agent.Request) (*AnonymousTwitchClient, error) {
-	// create a new chat client and attempt to connect
-	client := h.chat("", "")
-
-	// join the channel
-	h.bind(client)
-	return &AnonymousTwitchClient{client: client}, joinWithTimeout(client, r.Channel(), 5*time.Second)
+func disconnectChat(client chatConnection) error {
+	if client == nil {
+		return nil
+	}
+	err := client.Disconnect()
+	if errors.Is(err, twitch.ErrConnectionIsNotOpen) || errors.Is(err, twitch.ErrClientDisconnected) {
+		return nil
+	}
+	return err
 }
 
-func (h *TwitchAgent) writeDocument(doc *chatDocument) {
-	if doc != nil {
-		h.write(doc.channelID, doc.messageID, doc.data)
+func (h *TwitchAgent) context() context.Context {
+	if h.Context != nil {
+		return h.Context
 	}
+	return context.Background()
+}
+
+func (h *TwitchAgent) JoinAnonymously(r *agent.Request) (*AnonymousTwitchClient, error) {
+	ctx := h.context()
+	var err error
+	for attempt := 0; attempt < 3; attempt++ {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		client := h.chat("", "")
+		h.bind(client)
+		err = joinWithContext(ctx, client, r.Channel(), 10*time.Second)
+		if err == nil {
+			return &AnonymousTwitchClient{client: client}, nil
+		}
+		// A silent JOIN is also how Twitch treats a channel that doesn't exist.
+		// Ask Helix once; if it can't say, keep retrying as before.
+		if attempt == 0 && errors.Is(err, context.DeadlineExceeded) {
+			if exists, lookupErr := h.exists(ctx, r.Channel()); lookupErr == nil && !exists {
+				return nil, ErrChannelUnavailable
+			} else if lookupErr != nil {
+				zap.L().Warn("failed to look up Twitch channel", zap.Error(lookupErr), zap.String("channel", r.Channel()))
+			}
+		}
+		if attempt < 2 {
+			if err := clients.Wait(ctx, time.Duration(attempt+1)*time.Second); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return nil, err
+}
+
+// writeDocument counts every received event by kind; events without a
+// document (e.g. non-announcement user notices) count as skipped.
+func (h *TwitchAgent) writeDocument(kind string, doc *chatDocument) {
+	if doc == nil {
+		chatmetrics.Record("twitch", kind, chatmetrics.Skipped)
+		return
+	}
+	duplicate, err := h.write(doc)
+	if chatmessage.Transient(err) && h.hold(kind, doc) {
+		return
+	}
+	record(kind, doc, duplicate, err)
 }
 
 func (h *TwitchAgent) profile(userID string) (map[string]interface{}, error) {
@@ -212,7 +375,30 @@ func (h *TwitchAgent) tokens(userID string) (oauth2.TokenSource, error) {
 	if h.tokenSource != nil {
 		return h.tokenSource(userID)
 	}
-	return auth.NewFirestoreTwitchTokenSource(h.Firestore, h.ClientID, h.ClientSecret, userID)
+	return auth.NewTwitchTokenSource(h.providers(), userID), nil
+}
+
+func (h *TwitchAgent) providers() *provider.Service {
+	h.tokenServiceOnce.Do(func() { h.tokenService = provider.NewService(h.Firestore, nil) })
+	return h.tokenService
+}
+
+// exists reports whether Helix has a user with the channel's login.
+func (h *TwitchAgent) exists(ctx context.Context, login string) (bool, error) {
+	if h.channelExists != nil {
+		return h.channelExists(ctx, login)
+	}
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	token, err := h.providers().AppAccessToken(ctx, "twitch")
+	if err != nil {
+		return false, err
+	}
+	user, err := twitchapi.New(nil, h.ClientID, token).User(ctx, "login", login)
+	if err != nil {
+		return false, err
+	}
+	return user.ID != "", nil
 }
 
 func (h *TwitchAgent) chat(login, token string) chatConnection {
@@ -220,7 +406,7 @@ func (h *TwitchAgent) chat(login, token string) chatConnection {
 		return h.newChat(login, token)
 	}
 	if login == "" {
-		return twitch.NewAnonymousClient()
+		return twitch.NewClient("justinfan"+strconv.FormatUint(rand.Uint64N(1_000_000_000_000_000), 10), "oauth:59301")
 	}
 	return twitch.NewClient(login, token)
 }
@@ -245,30 +431,12 @@ func installReconnect(client chatConnection, source oauth2.TokenSource) {
 	})
 }
 
-func createMessage(ctx context.Context, create func(context.Context) error) error {
+// createMessage writes one message document within a bounded budget, hedging
+// stalled attempts so a single hung RPC cannot drop the message.
+func createMessage(ctx context.Context, create func(context.Context) error) (duplicate bool, err error) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
-	for attempt := 0; ; attempt++ {
-		err := create(ctx)
-		if err == nil || status.Code(err) == codes.AlreadyExists {
-			return nil
-		}
-		switch status.Code(err) {
-		case codes.Unavailable, codes.DeadlineExceeded, codes.Aborted, codes.ResourceExhausted:
-		default:
-			return err
-		}
-		if attempt == 2 {
-			return err
-		}
-		timer := time.NewTimer(time.Duration(attempt+1) * 100 * time.Millisecond)
-		select {
-		case <-ctx.Done():
-			timer.Stop()
-			return ctx.Err()
-		case <-timer.C:
-		}
-	}
+	return chatmessage.Create(ctx, create)
 }
 
 func twitchProfile(data map[string]interface{}) (map[string]interface{}, error) {

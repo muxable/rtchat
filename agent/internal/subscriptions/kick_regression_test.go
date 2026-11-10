@@ -25,7 +25,7 @@ func TestKickIDsUseOneCanonicalLifecycle(t *testing.T) {
 		fixture.handler(w, r)
 	}))
 	defer server.Close()
-	service := &Service{DB: db, Enabled: true, API: &API{Tokens: fakeTokens{}, Client: server.Client(), KickURL: server.URL}}
+	service := &Service{DB: db, API: &API{Tokens: fakeTokens{}, Client: server.Client(), KickURL: server.URL}}
 	for _, id := range []string{"00123", "123"} {
 		response := call(service, "subscribe", "", `{"provider":"kick","channelId":"`+id+`"}`)
 		var body struct{ Result string }
@@ -59,7 +59,7 @@ func TestUncertainKickCreationRetainsLifecycleLeases(t *testing.T) {
 				}
 				return nil, context.DeadlineExceeded
 			})}
-			service := &Service{DB: db, Enabled: true, API: &API{Tokens: fakeTokens{}, Client: client}}
+			service := &Service{DB: db, API: &API{Tokens: fakeTokens{}, Client: client}}
 			input := json.RawMessage(`{"provider":"kick","channelId":"123"}`)
 			if _, err := service.Subscribe(ctx, input); err == nil {
 				t.Fatal("lost POST response accepted")

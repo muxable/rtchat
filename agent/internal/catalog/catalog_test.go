@@ -222,3 +222,19 @@ func TestCatalogInvalidInputsAndProviderErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestEmptyTwitchSearchSkipsTwitch(t *testing.T) {
+	s, _, _ := fixture()
+	s.HTTP = &http.Client{Transport: transport(func(r *http.Request) (*http.Response, error) {
+		t.Errorf("unexpected request to %s", r.URL)
+		return response(400, `{"error":"Bad Request","message":"missing query"}`), nil
+	})}
+	for _, body := range []string{`{"provider":"twitch","query":""}`, `{"provider":"twitch"}`} {
+		for _, uid := range []string{"", "signed-out-of-twitch"} {
+			status, result := invoke(t, s, "search", body, uid)
+			if status != 200 || result["result"] == nil || len(array(result["result"])) != 0 {
+				t.Fatalf("%s as %q -> %d %v", body, uid, status, result)
+			}
+		}
+	}
+}

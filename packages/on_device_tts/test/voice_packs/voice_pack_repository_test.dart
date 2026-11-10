@@ -25,8 +25,10 @@ void main() {
     await temp.delete(recursive: true);
   });
 
-  VoicePackRepository repository(
-      {List<VoicePack> packs = const [], bool wifiOnly = false}) {
+  VoicePackRepository repository({
+    List<VoicePack> packs = const [],
+    bool wifiOnly = false,
+  }) {
     return VoicePackRepository(
       directory: base,
       packs: packs,
@@ -40,8 +42,9 @@ void main() {
   /// Serves [pack]'s files with the contents [packFor] made them from.
   void serve(VoicePack pack, Map<String, String> files) {
     for (final file in pack.files) {
-      downloader.files[file.url.toString()] =
-          Uint8List.fromList(utf8.encode(files[file.path]!));
+      downloader.files[file.url.toString()] = Uint8List.fromList(
+        utf8.encode(files[file.path]!),
+      );
     }
   }
 
@@ -97,12 +100,18 @@ void main() {
       expect((await repo.installedPacks()).keys, ['a']);
       expect(repo.task('a'), isNull);
 
-      expect(downloader.requests.map((request) => request.url),
-          pack.files.map((file) => file.url));
-      expect(downloader.requests.first.filePath,
-          downloadOf(pack.files.first).path);
-      expect(downloader.forgotten,
-          downloader.requests.map((request) => request.id));
+      expect(
+        downloader.requests.map((request) => request.url),
+        pack.files.map((file) => file.url),
+      );
+      expect(
+        downloader.requests.first.filePath,
+        downloadOf(pack.files.first).path,
+      );
+      expect(
+        downloader.forgotten,
+        downloader.requests.map((request) => request.id),
+      );
 
       final updates = await progress;
       expect(updates.map((update) => update.phase).toSet().toList(), [
@@ -113,9 +122,11 @@ void main() {
       ]);
       expect(updates.last.fraction, 1);
       expect(
-          updates.map((update) => update.downloadedBytes),
-          orderedEquals(
-              [...updates.map((update) => update.downloadedBytes)]..sort()));
+        updates.map((update) => update.downloadedBytes),
+        orderedEquals(
+          [...updates.map((update) => update.downloadedBytes)]..sort(),
+        ),
+      );
 
       // Nothing is left behind.
       expect(leftovers(), isEmpty);
@@ -127,9 +138,11 @@ void main() {
         final pack = packFor('evil', {path: 'pwned'});
         serve(pack, {path: 'pwned'});
         final repo = repository(packs: [pack]);
-        await expectLater(repo.install(pack).done,
-            throwsA(isA<VoicePackUnsupportedException>()),
-            reason: path);
+        await expectLater(
+          repo.install(pack).done,
+          throwsA(isA<VoicePackUnsupportedException>()),
+          reason: path,
+        );
       }
       expect(downloader.requests, isEmpty);
       expect(temp.listSync(), isEmpty);
@@ -144,7 +157,9 @@ void main() {
       final repo = repository(packs: [pack]);
 
       await expectLater(
-          repo.install(pack).done, throwsA(isA<VoicePackChecksumException>()));
+        repo.install(pack).done,
+        throwsA(isA<VoicePackChecksumException>()),
+      );
       expect(await repo.status(pack), VoicePackStatus.notInstalled);
       expect(repo.packDirectory('a').existsSync(), isFalse);
       expect(downloadOf(pack.files.last).existsSync(), isFalse);
@@ -153,16 +168,25 @@ void main() {
 
     test('a failed download fails the install', () async {
       final pack = packFor('a', modelFiles);
-      downloader.results[pack.files.first.url.toString()] =
-          const PackDownloadResult(PackDownloadState.failed,
-              message: 'connection reset', httpStatusCode: 503);
+      downloader.results[pack.files.first.url
+          .toString()] = const PackDownloadResult(
+        PackDownloadState.failed,
+        message: 'connection reset',
+        httpStatusCode: 503,
+      );
       final repo = repository(packs: [pack]);
       await expectLater(
-          repo.install(pack).done,
-          throwsA(isA<VoicePackDownloadException>()
+        repo.install(pack).done,
+        throwsA(
+          isA<VoicePackDownloadException>()
               .having((e) => e.statusCode, 'statusCode', 503)
               .having(
-                  (e) => e.message, 'message', contains('connection reset'))));
+                (e) => e.message,
+                'message',
+                contains('connection reset'),
+              ),
+        ),
+      );
       expect(await repo.status(pack), VoicePackStatus.notInstalled);
       expect(downloads(), isEmpty);
 
@@ -177,9 +201,15 @@ void main() {
       final pack = packFor('a', modelFiles);
       final repo = repository(packs: [pack]);
       await expectLater(
-          repo.install(pack).done,
-          throwsA(isA<VoicePackDownloadException>()
-              .having((e) => e.statusCode, 'statusCode', 404)));
+        repo.install(pack).done,
+        throwsA(
+          isA<VoicePackDownloadException>().having(
+            (e) => e.statusCode,
+            'statusCode',
+            404,
+          ),
+        ),
+      );
     });
 
     test('cancel cancels the download and deletes it', () async {
@@ -214,8 +244,9 @@ void main() {
   group('Wi-Fi', () {
     test('is required by default', () {
       expect(
-          VoicePackRepository(directory: base, downloader: downloader).wifiOnly,
-          isTrue);
+        VoicePackRepository(directory: base, downloader: downloader).wifiOnly,
+        isTrue,
+      );
     });
 
     test('Wi-Fi-only downloads wait for Wi-Fi', () async {
@@ -226,7 +257,8 @@ void main() {
 
       final task = repo.install(pack);
       await task.progress.firstWhere(
-          (update) => update.phase == VoicePackInstallPhase.waiting);
+        (update) => update.phase == VoicePackInstallPhase.waiting,
+      );
       expect(downloader.requests.single.requiresWiFi, isTrue);
       await pumpEventQueue();
       expect(task.latest.phase, VoicePackInstallPhase.waiting);
@@ -244,7 +276,8 @@ void main() {
       final repo = repository(packs: [pack], wifiOnly: true);
       final task = repo.install(pack);
       await task.progress.firstWhere(
-          (update) => update.phase == VoicePackInstallPhase.waiting);
+        (update) => update.phase == VoicePackInstallPhase.waiting,
+      );
       task.cancel();
       await expectLater(task.done, throwsA(isA<VoicePackCancelledException>()));
     });
@@ -255,8 +288,10 @@ void main() {
       downloader.onWiFi = false;
       final repo = repository(packs: [pack], wifiOnly: true);
       await repo.install(pack, allowMetered: true).done;
-      expect(downloader.requests.map((request) => request.requiresWiFi),
-          everyElement(isFalse));
+      expect(
+        downloader.requests.map((request) => request.requiresWiFi),
+        everyElement(isFalse),
+      );
     });
 
     test('is not required when the repository is not Wi-Fi only', () async {
@@ -265,8 +300,10 @@ void main() {
       downloader.onWiFi = false;
       final repo = repository(packs: [pack], wifiOnly: false);
       await repo.install(pack).done;
-      expect(downloader.requests.map((request) => request.requiresWiFi),
-          everyElement(isFalse));
+      expect(
+        downloader.requests.map((request) => request.requiresWiFi),
+        everyElement(isFalse),
+      );
     });
   });
 
@@ -298,8 +335,9 @@ void main() {
       await downloadOf(first).writeAsString('weights');
       final repo = repository(packs: [pack]);
       await repo.install(pack).done;
-      expect(downloader.requests.map((request) => request.url),
-          [pack.files.last.url]);
+      expect(downloader.requests.map((request) => request.url), [
+        pack.files.last.url,
+      ]);
       expect(await installedFile('a', 'model.onnx').readAsString(), 'weights');
     });
 
@@ -310,7 +348,9 @@ void main() {
       await downloadOf(first).writeAsString('WEIGHTS');
       final repo = repository(packs: [pack]);
       await expectLater(
-          repo.install(pack).done, throwsA(isA<VoicePackChecksumException>()));
+        repo.install(pack).done,
+        throwsA(isA<VoicePackChecksumException>()),
+      );
       expect(downloadOf(first).existsSync(), isFalse);
     });
 
@@ -354,14 +394,18 @@ void main() {
       serve(v2, v2Files);
       corrupt(v2, 'model.onnx');
       await expectLater(
-          repo.install(v2).done, throwsA(isA<VoicePackChecksumException>()));
+        repo.install(v2).done,
+        throwsA(isA<VoicePackChecksumException>()),
+      );
       expect(await installedFile('a', 'model.onnx').readAsString(), 'weights');
       expect((await repo.installedPack('a'))!.pack.version, 1);
 
       serve(v2, v2Files);
       await repo.install(v2).done;
-      expect(await installedFile('a', 'model.onnx').readAsString(),
-          'better weights');
+      expect(
+        await installedFile('a', 'model.onnx').readAsString(),
+        'better weights',
+      );
       // Files only in v1 are gone.
       expect(installedFile('a', 'data/dict').existsSync(), isFalse);
       expect((await repo.installedPack('a'))!.pack.version, 2);
@@ -383,7 +427,9 @@ void main() {
       ],
       files: packFor('a', modelFiles).files,
       license: VoicePackLicense(
-          name: 'MIT', url: Uri.parse('https://example.com/license')),
+        name: 'MIT',
+        url: Uri.parse('https://example.com/license'),
+      ),
       config: const {
         'model': 'model.onnx',
         'dicts': ['data/dict'],
@@ -431,7 +477,8 @@ void main() {
     expect(repo.packDirectory('a').existsSync(), isFalse);
     expect((await repo.installedPacks()).keys, ['b']);
     final manifest = jsonDecode(
-        await File(p.join(base.path, 'installed.json')).readAsString());
+      await File(p.join(base.path, 'installed.json')).readAsString(),
+    );
     expect((manifest['packs'] as Map).keys, ['b']);
     expect(await repo.status(a), VoicePackStatus.notInstalled);
     expect(leftovers(), isEmpty);

@@ -25,10 +25,15 @@ func (s *Service) Cleanup(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	var assignmentsRemoved, kickProcessed int
+	defer func() {
+		zap.L().Info("idle channels cleaned up", zap.Int("assignmentsRemoved", assignmentsRemoved), zap.Int("kickProcessed", kickProcessed))
+	}()
 	for _, doc := range assignments {
 		if !idleAssignment(doc.Ref.ID, doc.Data(), cutoff) {
 			continue
 		}
+		removed := false
 		if err := s.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 			current, err := tx.Get(doc.Ref)
 			if status.Code(err) == codes.NotFound {
@@ -37,12 +42,16 @@ func (s *Service) Cleanup(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-			if !idleAssignment(current.Ref.ID, current.Data(), cutoff) {
+			removed = idleAssignment(current.Ref.ID, current.Data(), cutoff)
+			if !removed {
 				return nil
 			}
 			return tx.Delete(current.Ref)
 		}); err != nil {
 			return err
+		}
+		if removed {
+			assignmentsRemoved++
 		}
 	}
 	docs, err := s.Client.Collection("webhooks").Where("lastActiveAt", "<", cutoff).Documents(ctx).GetAll()
@@ -57,7 +66,9 @@ func (s *Service) Cleanup(ctx context.Context) error {
 		if err := s.removeIdleKick(ctx, doc, cutoff); err != nil {
 			failures++
 			zap.L().Error("idle kick cleanup failed", zap.String("channel", doc.Ref.ID), zap.Error(err))
+			continue
 		}
+		kickProcessed++
 	}
 	if failures > 0 {
 		return fmt.Errorf("%d idle Kick cleanup failures", failures)

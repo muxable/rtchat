@@ -17,8 +17,9 @@ class TtsForegroundService {
   bool get _running => _mode != TtsMode.disabled;
 
   TtsForegroundService(this.model, this.localizations, {bool? enabled})
-      : enabled = enabled ??
-            (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    : enabled =
+          enabled ??
+          (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     if (!this.enabled) {
       return;
     }
@@ -40,13 +41,16 @@ class TtsForegroundService {
     // starting again while running just updates the notification.
     if (_running) {
       final l10n = localizations();
-      channel.invokeMethod('start', {
-        'title': l10n.textToSpeech,
-        'text': model.mode == TtsMode.alertsOnly
-            ? l10n.alertsEnabled
-            : l10n.textToSpeechEnabled,
-        'turnOff': l10n.turnOffTextToSpeech,
-      }).catchError((e) => debugPrint('failed to start tts service: $e'));
+      channel
+          .invokeMethod('start', {
+            'title': l10n.textToSpeech,
+            'text':
+                model.mode == TtsMode.alertsOnly
+                    ? l10n.alertsEnabled
+                    : l10n.textToSpeechEnabled,
+            'turnOff': l10n.turnOffTextToSpeech,
+          })
+          .catchError((e) => debugPrint('failed to start tts service: $e'));
     } else {
       channel
           .invokeMethod('stop')

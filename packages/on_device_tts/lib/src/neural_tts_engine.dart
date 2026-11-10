@@ -27,7 +27,7 @@ class NeuralTtsLoadException extends NeuralTtsException {
   final PlatformException cause;
 
   NeuralTtsLoadException(this.cause)
-      : super('Model failed to load: ${cause.message}');
+    : super('Model failed to load: ${cause.message}');
 }
 
 /// Speaks with an installed neural voice pack, synthesized on the device by
@@ -82,11 +82,12 @@ class NeuralTtsEngine implements TtsEngine {
     this.provider = OnnxProvider.cpu,
     this.steps = 5,
     OnnxTtsPlatform? platform,
-  })  : _platform = platform ?? OnnxTtsPlatform.instance,
-        _utterancePrefix = 'neural-${_engines++}-' {
+  }) : _platform = platform ?? OnnxTtsPlatform.instance,
+       _utterancePrefix = 'neural-${_engines++}-' {
     if (!canSpeak(pack.pack)) {
       throw NeuralTtsException(
-          'Unsupported model type ${pack.pack.modelType.name} in ${pack.id}');
+        'Unsupported model type ${pack.pack.modelType.name} in ${pack.id}',
+      );
     }
   }
 
@@ -96,7 +97,7 @@ class NeuralTtsEngine implements TtsEngine {
 
   /// Maps a [TtsEngine] rate (0..1, 0.5 normal) to the native speed (1.0
   /// normal) as `2 × rate`, clamped to [minSpeed]..[maxSpeed]. That is how
-  /// `flutter_tts` sets Android's speech rate, so a rate sounds about as fast
+  /// The system speech adapter sets Android's speech rate, so a rate sounds about as fast
   /// as with the system voices there: 0.8 (the app's Android default) is
   /// 1.6×.
   static double speedForRate(double rate) =>
@@ -104,8 +105,9 @@ class NeuralTtsEngine implements TtsEngine {
 
   /// The native events of this engine's utterances: when each first played
   /// audio, and how it ended. Broadcast.
-  Stream<OnnxTtsEvent> get events => _platform.events
-      .where((event) => event.utteranceId.startsWith(_utterancePrefix));
+  Stream<OnnxTtsEvent> get events => _platform.events.where(
+    (event) => event.utteranceId.startsWith(_utterancePrefix),
+  );
 
   /// Whether the model is loaded or loading.
   bool get isLoaded => _model != null;
@@ -116,19 +118,24 @@ class NeuralTtsEngine implements TtsEngine {
 
   Future<OnnxTts> _load() {
     if (_isDisposed) throw StateError('NeuralTtsEngine was disposed');
-    final model = _model ??= OnnxTts.load(
-      modelDir: pack.directory,
-      modelType: pack.pack.modelType.name,
-      numThreads: numThreads,
-      provider: provider,
-      platform: _platform,
-    ).onError<PlatformException>(
-        (error, _) => throw NeuralTtsLoadException(error),
-        test: (error) => error.code == 'load_failed');
+    final model =
+        _model ??= OnnxTts.load(
+          modelDir: pack.directory,
+          modelType: pack.pack.modelType.name,
+          numThreads: numThreads,
+          provider: provider,
+          platform: _platform,
+        ).onError<PlatformException>(
+          (error, _) => throw NeuralTtsLoadException(error),
+          test: (error) => error.code == 'load_failed',
+        );
     // Try again next time rather than keep a failure.
-    model.then((_) {}, onError: (Object error) {
-      if (identical(_model, model)) _model = null;
-    });
+    model.then(
+      (_) {},
+      onError: (Object error) {
+        if (identical(_model, model)) _model = null;
+      },
+    );
     return model;
   }
 
@@ -161,12 +168,14 @@ class NeuralTtsEngine implements TtsEngine {
     final id = '$_utterancePrefix${_nextUtterance++}';
     _activeUtterance = id;
     try {
-      await model.speak([message],
-          language: lang,
-          voiceId: voiceId,
-          speed: speedForRate(rate),
-          steps: steps,
-          utteranceId: id);
+      await model.speak(
+        [message],
+        language: lang,
+        voiceId: voiceId,
+        speed: speedForRate(rate),
+        steps: steps,
+        utteranceId: id,
+      );
     } finally {
       if (_activeUtterance == id) _activeUtterance = null;
     }
@@ -202,9 +211,10 @@ class NeuralTtsEngine implements TtsEngine {
     final ids = _speakerIds();
     final voices = [
       for (final (i, speaker) in pack.pack.speakers.indexed)
-        for (final locale in speaker.language == null
-            ? pack.pack.languages
-            : [speaker.language!])
+        for (final locale
+            in speaker.language == null
+                ? pack.pack.languages
+                : [speaker.language!])
           TtsVoice(id: ids[i], name: speaker.name, locale: locale),
     ];
     if (language == null) return voices;

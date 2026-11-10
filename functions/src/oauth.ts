@@ -1,6 +1,6 @@
 import * as crypto from "crypto";
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { defineSecret } from "firebase-functions/params";
 import {
   AccessToken,
@@ -96,7 +96,7 @@ export const KICK_OAUTH_CONFIG = {
 // YOUTUBE_OAUTH_SECRETS runs, never at load time.
 export const YOUTUBE_OAUTH_CLIENT_ID = defineSecret("youtube-oauth-client-id");
 export const YOUTUBE_OAUTH_CLIENT_SECRET = defineSecret(
-  "youtube-oauth-client-secret"
+  "youtube-oauth-client-secret",
 );
 export const YOUTUBE_OAUTH_SECRETS = [
   YOUTUBE_OAUTH_CLIENT_ID,
@@ -170,7 +170,7 @@ export function isInvalidRefreshError(err: any) {
 // response without one keeps the previous refresh token.
 export function withRefreshToken(
   previous: { refresh_token?: unknown },
-  refreshed: Record<string, unknown>
+  refreshed: Record<string, unknown>,
 ) {
   return refreshed.refresh_token || !previous.refresh_token
     ? refreshed
@@ -192,7 +192,7 @@ export async function getAccessToken(userId: string, provider: string) {
       // (including its new refresh token) is persisted below.
       const refreshed = await accessToken.refresh();
       accessToken = client.createToken(
-        withRefreshToken(accessToken.token, refreshed.token)
+        withRefreshToken(accessToken.token, refreshed.token),
       );
     } catch (err: any) {
       if (isInvalidRefreshError(err)) {
@@ -230,7 +230,7 @@ export async function getAppAccessToken(provider: string) {
         return cached;
       }
       const token = await new ClientCredentials(oauthConfig(provider)).getToken(
-        {}
+        {},
       );
       appTokens.set(provider, token);
       return token;

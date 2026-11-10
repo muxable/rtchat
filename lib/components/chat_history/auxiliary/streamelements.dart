@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
@@ -14,21 +16,25 @@ class StreamElementsTipEventWidget extends StatelessWidget {
     return DecoratedEventWidget.avatar(
       avatar: const AssetImage("assets/streamelements.png"),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            StyledText(
-              text: AppLocalizations.of(context)!.streamElementsTipEventMessage(
-                  model.name, model.formattedAmount),
-              tags: {
-                'b': StyledTextTag(
-                    style: Theme.of(context).textTheme.titleSmall),
-              },
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          StyledText(
+            text: AppLocalizations.of(context)!.streamElementsTipEventMessage(
+              htmlEscape.convert(model.name),
+              htmlEscape.convert(model.formattedAmount),
             ),
-            if (model.message != null && model.message!.isNotEmpty)
-              Text(model.message!,
-                  style: const TextStyle(fontStyle: FontStyle.italic)),
-          ]),
+            tags: {
+              'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+            },
+          ),
+          if (model.message != null && model.message!.isNotEmpty)
+            Text(
+              model.message!,
+              style: const TextStyle(fontStyle: FontStyle.italic),
+            ),
+        ],
+      ),
     );
   }
 }

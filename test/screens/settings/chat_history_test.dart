@@ -26,25 +26,30 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ChangeNotifierProvider<StyleModel>.value(value: styleModel),
-        ChangeNotifierProvider<MessagesModel>.value(value: messagesModel),
-        ChangeNotifierProvider<UserModel>.value(value: FakeUserModel()),
-        ChangeNotifierProvider<LayoutModel>.value(
-            value: LayoutModel.fromJson({})),
-        ChangeNotifierProvider<TwitchBadgeModel>.value(
-            value: TwitchBadgeModel.fromJson({})),
-      ],
-      child: const MaterialApp(
-        home: TestLocalizations(child: ChatHistoryScreen()),
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<StyleModel>.value(value: styleModel),
+          ChangeNotifierProvider<MessagesModel>.value(value: messagesModel),
+          ChangeNotifierProvider<UserModel>.value(value: FakeUserModel()),
+          ChangeNotifierProvider<LayoutModel>.value(
+            value: LayoutModel.fromJson({}),
+          ),
+          ChangeNotifierProvider<TwitchBadgeModel>.value(
+            value: TwitchBadgeModel.fromJson({}),
+          ),
+        ],
+        child: const MaterialApp(
+          home: TestLocalizations(child: ChatHistoryScreen()),
+        ),
       ),
-    ));
+    );
     await tester.pump();
   }
 
-  testWidgets('selecting a compact messages option updates the style model',
-      (tester) async {
+  testWidgets('selecting a compact messages option updates the style model', (
+    tester,
+  ) async {
     await pumpScreen(tester);
     expect(styleModel.compactMessages, CompactMessages.none);
 
@@ -60,8 +65,9 @@ void main() {
     expect(styleModel.compactMessages, CompactMessages.none);
   });
 
-  testWidgets('selecting an idle alert duration updates the messages model',
-      (tester) async {
+  testWidgets('selecting an idle alert duration updates the messages model', (
+    tester,
+  ) async {
     await pumpScreen(tester);
     expect(messagesModel.pingMinGapDuration, const Duration(days: 10000));
 
@@ -71,8 +77,9 @@ void main() {
 
     expect(messagesModel.pingMinGapDuration, const Duration(minutes: 5));
 
-    final group =
-        tester.widget<RadioGroup<Duration>>(find.byType(RadioGroup<Duration>));
+    final group = tester.widget<RadioGroup<Duration>>(
+      find.byType(RadioGroup<Duration>),
+    );
     expect(group.groupValue, const Duration(minutes: 5));
   });
 

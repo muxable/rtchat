@@ -143,7 +143,7 @@ func (h *AlchemyHandler) process(ctx context.Context, notification alchemyNotifi
 			"id": notification.ID, "createdAt": notification.CreatedAt,
 			"type": "realtimecash.donation", "notificationType": notification.Type,
 			"activity": activity, "donor": donation.Donor, "message": donation.Message,
-			"timestamp": now, "expiresAt": h.now().Truncate(time.Millisecond).Add(14 * 24 * time.Hour),
+			"timestamp": now, "expiresAt": h.now().Truncate(time.Millisecond).Add(messageTTL),
 		}
 		if err := h.store.Create(ctx, "channels/"+channelID+"/messages", alchemyDonationID(notification.Event.Network, activity), message); err != nil {
 			return err

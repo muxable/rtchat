@@ -18,16 +18,12 @@ class HeaderSearchBar extends StatelessWidget {
         child: TextField(
           textInputAction: TextInputAction.search,
           autofocus: true,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: AppLocalizations.of(context)!.search,
             isDense: true,
             border: InputBorder.none,
-            hintStyle: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            hintStyle: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
           onChanged: (value) async {
             onFilterBySearchBarText(value);

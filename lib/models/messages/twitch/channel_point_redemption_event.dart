@@ -5,7 +5,7 @@ enum TwitchChannelPointRedemptionStatus {
   fulfilled,
   canceled,
   unfulfilled,
-  unknown
+  unknown,
 }
 
 extension TwitchChannelPointRedemptionStatusParser
@@ -31,26 +31,30 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
   final int rewardCost;
   final String? userInput;
 
-  const TwitchChannelPointRedemptionEventModel(
-      {required super.timestamp,
-      required super.messageId,
-      required this.redeemerUsername,
-      required this.status,
-      required this.rewardName,
-      required this.rewardCost,
-      required this.userInput});
+  const TwitchChannelPointRedemptionEventModel({
+    required super.timestamp,
+    required super.messageId,
+    required this.redeemerUsername,
+    required this.status,
+    required this.rewardName,
+    required this.rewardCost,
+    required this.userInput,
+  });
 
   static TwitchChannelPointRedemptionEventModel fromDocumentData(
-      Map<String, dynamic> data) {
+    Map<String, dynamic> data,
+  ) {
     return TwitchChannelPointRedemptionEventModel(
-        timestamp: data['timestamp'].toDate(),
-        messageId: "channel.point-redemption-${data['event']['id']}",
-        redeemerUsername: data['event']['user_name'],
-        status: TwitchChannelPointRedemptionStatusParser.toEnum(
-            data['event']['status']),
-        rewardName: data['event']['reward']['title'],
-        rewardCost: data['event']['reward']['cost'],
-        userInput: data['event']['user_input']);
+      timestamp: data['timestamp'].toDate(),
+      messageId: "channel.point-redemption-${data['event']['id']}",
+      redeemerUsername: data['event']['user_name'],
+      status: TwitchChannelPointRedemptionStatusParser.toEnum(
+        data['event']['status'],
+      ),
+      rewardName: data['event']['reward']['title'],
+      rewardCost: data['event']['reward']['cost'],
+      userInput: data['event']['user_input'],
+    );
   }
 
   IconData get icon {

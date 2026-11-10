@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"sync"
 	"sync/atomic"
@@ -18,8 +21,11 @@ import (
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/catalog"
+	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"github.com/muxable/rtchat/agent/internal/handler"
+	"github.com/muxable/rtchat/agent/internal/ircauth"
 	"github.com/muxable/rtchat/agent/internal/oauthhttp"
+	"github.com/muxable/rtchat/agent/internal/observability"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"github.com/muxable/rtchat/agent/internal/publichttp"
 	"github.com/muxable/rtchat/agent/internal/subscriptions"
@@ -94,8 +100,11 @@ func (m *KeyedMutex) Lock(key string) func() {
 }
 
 func main() {
+	if err := observability.InstallCrashOutput(); err != nil {
+		panic(err)
+	}
 	if metadata.OnGCE() {
-		logger, err := loggerConfig.Build(zap.AddStacktrace(zap.ErrorLevel))
+		logger, err := loggerConfig.Build(zap.AddStacktrace(zap.WarnLevel), zap.WrapCore(observability.Wrap))
 		if err != nil {
 			panic(err)
 		}
@@ -111,6 +120,19 @@ func main() {
 		undo := zap.ReplaceGlobals(logger)
 		defer undo()
 	}
+
+	if len(os.Args) > 1 && os.Args[1] == "--supervise" {
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		cmd := exec.Command(os.Args[0], os.Args[2:]...)
+		cmd.Stdout, cmd.Stderr, cmd.Stdin = os.Stdout, os.Stderr, os.Stdin
+		code := observability.Supervise(ctx, cmd, zap.L())
+		_ = zap.L().Sync()
+		os.Exit(code)
+	}
+
+	// Registered after the logger so it runs last, after the drain and shutdown.
+	defer chatmetrics.Default.Flush(zap.L())
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -133,6 +155,8 @@ func main() {
 		Firestore:    client,
 		ClientID:     twitchClientID,
 		ClientSecret: twitchClientSecret,
+		WaitForAuth:  ircauth.NewFirestoreGate(client).Wait,
+		Context:      ctx,
 	}
 
 	// create a new RequestLock
@@ -146,6 +170,7 @@ func main() {
 			return twitch.NewClient(req)
 		}
 	})
+	go chatmetrics.Run(ctx, 60*time.Second)
 	go func() {
 		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()
@@ -154,7 +179,7 @@ func main() {
 		}
 	}()
 
-	isListening := &atomic.Bool{}
+	loop := &snapshotLoop{}
 	ready := &atomic.Bool{}
 	initial := newInitialJoins(func() {
 		zap.L().Info("initial channels applied", zap.Int("count", manager.count()))
@@ -163,74 +188,112 @@ func main() {
 	manager.applied = initial.done
 	start := time.Now().Add(time.Duration(rand.Intn(24)) * time.Hour)
 	recycleHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !ready.Load() || !isListening.Load() || time.Since(start) > 72*time.Hour {
+		if !ready.Load() || loop.stuck(time.Now()) || time.Since(start) > 72*time.Hour {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
 		w.Write([]byte((72*time.Hour - time.Since(start)).String()))
 	})
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	httpServer := &http.Server{Addr: ":" + port, ErrorLog: log.New(observability.HTTPLogWriter{Logger: zap.L()}, "", 0)}
+	draining := &atomic.Bool{}
+	// The EventSub worker starts once secrets load; shutdown cancels and joins it.
+	queueCtx, stopQueue := context.WithCancel(ctx)
+	defer stopQueue()
+	queueDone := make(chan struct{})
 	go func() {
 		// Optional webhook credentials must not delay the chat snapshot loop.
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		secrets := webhook.LoadSecrets(ctx, nil)
+		secretsCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		secrets := webhook.LoadSecrets(secretsCtx, nil)
 		cancel()
 		server := webhook.NewServer(secrets)
+		server.Draining = draining
 		verifier, err := callable.FirebaseVerifier(context.Background(), "rtchat-47692")
 		if err != nil {
 			zap.L().Warn("callable authentication unavailable; protected requests will be rejected")
 		}
 		api := callable.NewServer(verifier)
 		registerChat(api, &chatRoutes{tokens: provider.NewService(client, nil), store: chatFirestore{DB: client}})
+		// One client for token refreshes and provider requests, so connections are reused.
+		subscriptionHTTP := &http.Client{Timeout: 10 * time.Second}
 		subscriptionService := &subscriptions.Service{
 			DB:             client,
-			API:            &subscriptions.API{Tokens: provider.NewService(client, &http.Client{Timeout: 10 * time.Second})},
-			Enabled:        os.Getenv("AGENT_PROVIDER_SUBSCRIPTIONS_ENABLED") == "true",
+			API:            &subscriptions.API{Tokens: provider.NewService(client, subscriptionHTTP), Client: subscriptionHTTP},
 			TwitchSecret:   secrets.TwitchEventSubSecret,
 			MaticWebhookID: secrets.AlchemyMaticWebhookID,
 		}
+		subscriptionService.Queue = subscriptions.NewTwitchQueue(subscriptionService)
+		go func() {
+			defer close(queueDone)
+			subscriptionService.Queue.Run(queueCtx)
+		}()
 		subscriptionService.Register(api)
 		catalog.Register(api, client, provider.NewService(client, nil))
 		// Register every callable package before Mount so readiness and webhooks remain intact.
 		api.Mount(server.Mux)
-		if err := publichttp.Register(server.Mux, client, provider.NewService(client, nil)); err != nil {
+		public := http.NewServeMux()
+		if err := publichttp.Register(public, client, provider.NewService(client, nil)); err != nil {
 			zap.L().Warn("public HTTP configuration invalid; routes disabled")
-			for _, path := range []string{"/embed", "/embedRedirect", "/metadata", "/api/metadata"} {
-				server.Mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-					http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
-				})
-			}
+			public = http.NewServeMux()
+			public.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
+			})
+		}
+		for _, path := range []string{"/embed", "/embedRedirect", "/metadata", "/api/metadata"} {
+			server.Mux.Handle(path, webhook.LoggingMiddleware(public))
 		}
 		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
-		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client, twitchClientID, twitchClientSecret))
+		twitchWebhook := webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client)
+		twitchWebhook.OnDeauthorized = subscriptionService.Queue.Deauthorized
+		twitchWebhook.OnAppRevoked = subscriptionService.Queue.EnsureApp
+		server.RegisterProvider("/twitch/", twitchWebhook)
 		server.RegisterProvider("/alchemy/", webhook.NewAlchemyHandler(webhook.AlchemyConfig{
 			Secrets:        secrets,
 			MaticWebhookID: secrets.AlchemyMaticWebhookID,
 		}, webhook.AlchemyFirestore{Client: client}, webhook.NewAlchemyRPC()))
 		if os.Getenv("ENABLE_AGENT_OAUTH") == "true" {
 			oauthCtx, oauthCancel := context.WithTimeout(context.Background(), 30*time.Second)
-			if err := oauthhttp.Register(oauthCtx, server.Mux, client); err != nil {
+			oauthMux := http.NewServeMux()
+			if err := oauthhttp.Register(oauthCtx, oauthMux, client); err != nil {
 				zap.L().Warn("OAuth HTTP unavailable", zap.Error(err))
 			}
+			server.Mux.Handle("/auth/", webhook.LoggingMiddleware(oauthMux))
 			oauthCancel()
 		}
 		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")
-		port := os.Getenv("PORT")
-		if port == "" {
-			port = "8080"
-		}
-		if err := http.ListenAndServe(":"+port, server.Mux); err != nil {
+		httpServer.Handler = server.Mux
+		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			zap.L().Fatal("failed to start http server", zap.Error(err))
 		}
 	}()
 
 	first := true
 	for {
-		isListening.Store(true)
+		loop.listening()
 		snapshot, err := subscribeRequests.Next()
-		isListening.Store(false)
+		loop.applying(time.Now())
 		if err != nil {
+			// SIGTERM cancels the snapshot. The container is killed ten seconds
+			// later, so fail health checks long enough for the load balancer to
+			// stop routing here (two 2s probes), then finish in-flight requests
+			// before the deferred cleanup closes Firestore.
+			draining.Store(true)
+			if os.Getenv("CI") == "" {
+				time.Sleep(5 * time.Second)
+			}
+			shutdown, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+			stopQueue()
+			httpServer.Shutdown(shutdown)
+			select {
+			case <-queueDone:
+			case <-shutdown.Done():
+			}
+			cancel()
 			return
 		}
 		for _, change := range snapshot.Changes {

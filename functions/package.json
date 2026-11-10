@@ -2,6 +2,8 @@
   "name": "functions",
   "scripts": {
     "build": "tsc",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
@@ -14,29 +16,21 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "@twurple/auth": "^5.2.3",
-    "@twurple/chat": "^5.2.3",
-    "cross-fetch": "^3.1.5",
-    "ethers": "^5.7.1",
-    "express-rate-limit": "^7.5.1",
-    "express-session": "^1.17.3",
-    "firebase-admin": "^11.5.0",
-    "firebase-functions": "^5.0.1",
-    "simple-oauth2": "^4.3.0",
-    "ws": "^8.14.1"
+    "cross-fetch": "^4.1.0",
+    "express-rate-limit": "^8.7.1",
+    "express-session": "^1.19.0",
+    "firebase-admin": "^13.10.0",
+    "firebase-functions": "^6.6.0",
+    "simple-oauth2": "^5.1.0"
   },
   "devDependencies": {
-    "@types/express-session": "^1.17.5",
-    "@types/node": "18.11.18",
-    "@types/simple-oauth2": "^4.1.1",
-    "firebase-functions-test": "^2.3.0",
-    "firebase-tools": "^13.8.0",
-    "prettier": "^2.7.1",
-    "typescript": "^4.8.2",
-    "vitest": "^3.2.7"
+    "@types/express-session": "^1.19.0",
+    "@types/node": "^22",
+    "@types/simple-oauth2": "^5.0.8",
+    "firebase-tools": "^15.34.1",
+    "prettier": "^3.9.10",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
   },
-  "private": true,
-  "overrides": {
-    "vite": "6.3.6"
-  }
+  "private": true
 }

@@ -24,13 +24,17 @@ import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
+import 'package:rtchat/models/user.dart';
 
 class RebuildableWidget extends StatefulWidget {
   final Widget Function(BuildContext) builder;
   final Set<DateTime> rebuildAt;
 
-  const RebuildableWidget(
-      {super.key, required this.builder, required this.rebuildAt});
+  const RebuildableWidget({
+    super.key,
+    required this.builder,
+    required this.rebuildAt,
+  });
 
   @override
   State<RebuildableWidget> createState() => _RebuildableWidgetState();
@@ -42,7 +46,6 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
   @override
   void initState() {
     super.initState();
-
     _setTimers();
   }
 
@@ -58,25 +61,30 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
 
   @override
   void dispose() {
-    super.dispose();
-
     _clearTimers();
+    super.dispose();
   }
 
   void _setTimers() {
     final now = DateTime.now();
-    timers = widget.rebuildAt.expand((dateTime) sync* {
-      final duration = dateTime.difference(now);
-      if (!duration.isNegative) {
-        yield Timer(duration, () => setState(() {}));
-      }
-    }).toSet();
+    timers =
+        widget.rebuildAt.expand((dateTime) sync* {
+          final duration = dateTime.difference(now);
+          if (!duration.isNegative) {
+            yield Timer(duration, () {
+              if (mounted) {
+                setState(() {});
+              }
+            });
+          }
+        }).toSet();
   }
 
   void _clearTimers() {
     for (final timer in timers) {
       timer.cancel();
     }
+    timers.clear();
   }
 
   @override
@@ -86,78 +94,75 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
 }
 
 DateTime? _getExpiration(
-    MessageModel model,
-    EventSubConfigurationModel eventSubConfigurationModel,
-    MessagesModel messagesModel) {
+  MessageModel model,
+  EventSubConfigurationModel eventSubConfigurationModel,
+  MessagesModel messagesModel,
+) {
   if (model is TwitchRaidEventModel) {
-    final raidEventConfig = eventSubConfigurationModel.raidEventConfig;
-    return raidEventConfig.eventDuration > Duration.zero
-        ? model.timestamp.add(raidEventConfig.eventDuration)
+    final config = eventSubConfigurationModel.raidEventConfig;
+    return config.eventDuration > Duration.zero
+        ? model.timestamp.add(config.eventDuration)
         : null;
   } else if (model is TwitchHostEventModel) {
-    final hostEventConfig = eventSubConfigurationModel.hostEventConfig;
-    return hostEventConfig.eventDuration > Duration.zero
-        ? model.timestamp.add(hostEventConfig.eventDuration)
+    final config = eventSubConfigurationModel.hostEventConfig;
+    return config.eventDuration > Duration.zero
+        ? model.timestamp.add(config.eventDuration)
         : null;
   } else if (model is TwitchFollowEventModel) {
-    final followEventConfig = eventSubConfigurationModel.followEventConfig;
-    return followEventConfig.eventDuration > Duration.zero
-        ? model.timestamp.add(followEventConfig.eventDuration)
+    final config = eventSubConfigurationModel.followEventConfig;
+    return config.eventDuration > Duration.zero
+        ? model.timestamp.add(config.eventDuration)
         : null;
   } else if (model is TwitchCheerEventModel) {
-    final cheerEventConfig = eventSubConfigurationModel.cheerEventConfig;
-    return cheerEventConfig.eventDuration > Duration.zero
-        ? model.timestamp.add(cheerEventConfig.eventDuration)
+    final config = eventSubConfigurationModel.cheerEventConfig;
+    return config.eventDuration > Duration.zero
+        ? model.timestamp.add(config.eventDuration)
         : null;
   } else if (model is TwitchSubscriptionEventModel ||
       model is TwitchSubscriptionGiftEventModel ||
       model is TwitchSubscriptionMessageEventModel) {
-    final subEventConfig = eventSubConfigurationModel.subscriptionEventConfig;
-    return subEventConfig.eventDuration > Duration.zero
-        ? model.timestamp.add(subEventConfig.eventDuration)
+    final config = eventSubConfigurationModel.subscriptionEventConfig;
+    return config.eventDuration > Duration.zero
+        ? model.timestamp.add(config.eventDuration)
         : null;
   } else if (model is TwitchPollEventModel) {
-    final pollEventConfig = eventSubConfigurationModel.pollEventConfig;
+    final config = eventSubConfigurationModel.pollEventConfig;
     if (model.status == 'archived' || model.status == 'terminated') {
       return null;
     }
-    return model.endTimestamp.add(pollEventConfig.eventDuration);
+    return model.endTimestamp.add(config.eventDuration);
   } else if (model is TwitchChannelPointRedemptionEventModel) {
-    final channelPointRedemptionEventConfig =
-        eventSubConfigurationModel.channelPointRedemptionEventConfig;
+    final config = eventSubConfigurationModel.channelPointRedemptionEventConfig;
     final unfulfilledDuration =
-        channelPointRedemptionEventConfig.eventDuration +
-            channelPointRedemptionEventConfig.unfulfilledAdditionalDuration;
+        config.eventDuration + config.unfulfilledAdditionalDuration;
 
     if (model.status == TwitchChannelPointRedemptionStatus.unfulfilled &&
         unfulfilledDuration > Duration.zero) {
       return model.timestamp.add(unfulfilledDuration);
     }
     if (model.status == TwitchChannelPointRedemptionStatus.fulfilled &&
-        channelPointRedemptionEventConfig.eventDuration > Duration.zero) {
-      return model.timestamp
-          .add(channelPointRedemptionEventConfig.eventDuration);
+        config.eventDuration > Duration.zero) {
+      return model.timestamp.add(config.eventDuration);
     }
     return null;
   } else if (model is TwitchHypeTrainEventModel) {
-    final hypetrainEventConfig =
-        eventSubConfigurationModel.hypetrainEventConfig;
-    return model.endTimestamp.add(hypetrainEventConfig.eventDuration);
+    final config = eventSubConfigurationModel.hypetrainEventConfig;
+    return model.endTimestamp.add(config.eventDuration);
   } else if (model is TwitchPredictionEventModel) {
-    final predictionEventConfig =
-        eventSubConfigurationModel.predictionEventConfig;
+    final config = eventSubConfigurationModel.predictionEventConfig;
 
     if (model.status == 'canceled') {
       return null;
     }
 
-    return model.endTime.add(predictionEventConfig.eventDuration);
+    return model.endTime.add(config.eventDuration);
   } else if (model is TwitchMessageModel &&
       model.annotations.announcement != null) {
     return messagesModel.announcementPinDuration > Duration.zero
         ? model.timestamp.add(messagesModel.announcementPinDuration)
         : null;
   }
+
   return null;
 }
 
@@ -166,8 +171,11 @@ class _ScrollToBottomWidget extends StatelessWidget {
   final void Function() onPressed;
   final Widget? child;
 
-  const _ScrollToBottomWidget(
-      {required this.show, required this.onPressed, required this.child});
+  const _ScrollToBottomWidget({
+    required this.show,
+    required this.onPressed,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -177,21 +185,61 @@ class _ScrollToBottomWidget extends StatelessWidget {
       curve: Curves.easeOut,
       child: Center(
         child: ElevatedButton(
-            onPressed: onPressed,
-            style: ElevatedButton.styleFrom(
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(32))),
-              padding: const EdgeInsets.all(16),
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32)),
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.arrow_downward),
-                child ?? Container(),
-              ],
-            )),
+            padding: const EdgeInsets.all(16),
+          ),
+          child: Row(
+            children: [const Icon(Icons.arrow_downward), child ?? Container()],
+          ),
+        ),
       ),
     );
   }
+}
+
+/// Suffixes repeated [keys] so every list item has its own key. The chat list
+/// finds moved items by key, and two items with the same key corrupt its
+/// children when they move, which then fails every paint and hit test. A
+/// message can be repeated, e.g. an event delivered twice or a shared chat
+/// message merged from two channels. Repeats are numbered from the end (the
+/// oldest) so keys stay the same as newer messages arrive.
+@visibleForTesting
+List<String> uniqueKeys(List<String> keys) {
+  final seen = <String>{};
+  // The next suffix to try for each repeated key, so a key repeated many
+  // times doesn't retry every suffix it has already taken.
+  final nextRepeat = <String, int>{};
+  final unique = List.of(keys);
+  for (var index = keys.length - 1; index >= 0; index--) {
+    final base = keys[index];
+    var key = base;
+    if (!seen.add(key)) {
+      var repeat = nextRepeat[base] ?? 1;
+      do {
+        key = '$base#$repeat';
+        repeat++;
+      } while (!seen.add(key));
+      nextRepeat[base] = repeat;
+    }
+    unique[index] = key;
+  }
+  return unique;
+}
+
+class _DisplayedMessage {
+  final MessageModel message;
+  final String key;
+  final String? followGroupKey;
+
+  const _DisplayedMessage({
+    required this.message,
+    required this.key,
+    this.followGroupKey,
+  });
 }
 
 class ChatPanelWidget extends StatefulWidget {
@@ -205,6 +253,7 @@ class ChatPanelWidget extends StatefulWidget {
 
 class _ChatPanelWidgetState extends State<ChatPanelWidget>
     with TickerProviderStateMixin {
+  final Set<String> _expandedFollowGroups = {};
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
@@ -220,7 +269,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
   @override
   void initState() {
     super.initState();
-
     _controller.addListener(updateScrollPosition);
   }
 
@@ -229,47 +277,52 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.channel != widget.channel) {
+      _expandedFollowGroups.clear();
       if (_controller.hasClients) {
         _controller.jumpTo(0);
       }
       setState(() {
         _atBottom = true;
+        _pauseAt = null;
       });
     }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(updateScrollPosition);
     _controller.dispose();
-
     super.dispose();
   }
 
   void updateScrollPosition() async {
+    if (!_controller.hasClients) return;
     if (_controller.position.maxScrollExtent - _controller.offset < 100) {
-      if (_refreshPending) {
-        return;
-      }
+      if (_refreshPending) return;
       _refreshPending = true;
       final model = Provider.of<MessagesModel>(context, listen: false);
       final messenger = ScaffoldMessenger.of(context);
       final localizations = AppLocalizations.of(context)!;
       await model.pullMoreMessages();
       _refreshPending = false;
+      if (!mounted) return;
       if (_showScrollNotification && model.messages.length > 5000) {
-        messenger.showSnackBar(SnackBar(
-          content: Text(localizations.longScrollNotification),
-          action: SnackBarAction(
-            label: localizations.stfu,
-            onPressed: () {
-              setState(() {
-                _showScrollNotification = false;
-              });
-            },
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(localizations.longScrollNotification),
+            action: SnackBarAction(
+              label: localizations.stfu,
+              onPressed: () {
+                setState(() {
+                  _showScrollNotification = false;
+                });
+              },
+            ),
           ),
-        ));
+        );
       }
     }
+    if (!_controller.hasClients) return;
     final value = _controller.position.atEdge && _controller.offset == 0;
     if (_atBottom != value) {
       setState(() {
@@ -284,174 +337,299 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     return Stack(
       alignment: AlignmentDirectional.topCenter,
       children: [
-        Consumer2<MessagesModel, EventSubConfigurationModel>(builder:
-            (context, messagesModel, eventSubConfigurationModel, child) {
-          var messages = messagesModel.messages.reversed.toList();
-          _lastMessage = messages.isEmpty ? null : messages.first;
-          if (messages.isEmpty) {
-            return FutureBuilder(
-              future: MessagesAdapter.instance.hasMessages(widget.channel),
-              builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-                if (snapshot.hasData && snapshot.data == false) {
-                  return Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        AppLocalizations.of(context)!.noMessagesEmptyState,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        Consumer2<MessagesModel, EventSubConfigurationModel>(
+          builder: (context, messagesModel, eventSubConfigurationModel, child) {
+            var messages = messagesModel.messages.reversed.toList();
+            _lastMessage = messages.isEmpty ? null : messages.first;
+            if (messages.isEmpty) {
+              return FutureBuilder(
+                future: MessagesAdapter.instance.hasMessages(widget.channel),
+                builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                  if (snapshot.hasData && snapshot.data == false) {
+                    return Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          AppLocalizations.of(context)!.noMessagesEmptyState,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleLarge?.copyWith(
                             color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
-                  );
-                }
-                return const SizedBox();
-              },
-            );
-          }
-          var dropped = 0;
-          if (_pauseAt != null) {
-            final index = messages.indexOf(_pauseAt!);
-            if (index != -1) {
-              dropped = index;
-              messages = messages.sublist(index);
+                    );
+                  }
+                  return const SizedBox();
+                },
+              );
             }
-          } else {
-            messagesModel.pruneMessages();
-          }
-          final expirations = messages
-              .map((message) => _getExpiration(
-                  message, eventSubConfigurationModel, messagesModel))
-              .toList();
-          return Stack(alignment: Alignment.topCenter, children: [
-            RebuildableWidget(
-                rebuildAt: expirations.whereType<DateTime>().toSet(),
-                builder: (context) {
-                  final now = DateTime.now();
-                  final oneSecondAgo = now.subtract(const Duration(seconds: 1));
-                  return ReverseRefreshIndicator(
-                    key: _refreshIndicatorKey,
-                    onRefresh: () =>
-                        MessagesAdapter.instance.subscribe(widget.channel),
-                    // Pull from top to show refresh indicator.
-                    child: PinnableMessageScrollView(
-                      vsync: this,
-                      controller: _controller,
-                      itemBuilder: (index) => StyleModelTheme(
-                          key: Key(messages[index].messageId),
-                          child: Builder(builder: (context) {
-                            var message = messages[index];
-                            // if the message is a TwitchFollowEventModel, we want to merge adjacents.
-                            // return Container() if the message is not the first and a merged model
-                            // if it is the first. keep in mind that the list is reversed.
-                            if (message is TwitchFollowEventModel) {
-                              final merged =
-                                  TwitchFollowEventModel.mergeAdjacent(
-                                      messages, index);
-                              if (merged == null) {
-                                return Container();
-                              }
-                              message = merged;
-                            }
-                            // twitch will often send multiple subscription messages in a row.
-                            // if we see them, suppress the less informative ones.
-                            if (message is TwitchSubscriptionEventModel) {
-                              // if the next or prev message is a TwitchSubscriptionMessageEventModel by the same user and tier, ignore this one.
-                              if (index != messages.length - 1) {
-                                final next = messages[index + 1];
-                                if (next
-                                        is TwitchSubscriptionMessageEventModel &&
-                                    next.subscriberUserName ==
-                                        message.subscriberUserName &&
-                                    next.tier == message.tier) {
-                                  return Container();
-                                }
-                              }
-                              if (index > 0) {
-                                final prev = messages[index - 1];
-                                if (prev
-                                        is TwitchSubscriptionMessageEventModel &&
-                                    prev.subscriberUserName ==
-                                        message.subscriberUserName &&
-                                    prev.tier == message.tier) {
-                                  return Container();
-                                }
-                              }
-                            }
-                            // in a merged view, actions like shoutouts go to
-                            // the channel the message came from.
-                            final source = message.channel;
-                            final chatMessage = ChatHistoryMessage(
-                                message: message,
-                                channel: source ?? widget.channel);
-                            final Widget messageWidget =
-                                messagesModel.channels.length > 1 &&
-                                        source != null
-                                    ? ChannelAttribution(
-                                        provider: source.provider,
-                                        child: chatMessage)
-                                    : chatMessage;
-                            final showSeparator = messagesModel.separators
-                                .contains(messages.length - index - 1);
-                            // only show separators after the first 50.
-                            if (showSeparator && index > 50) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SeparatorWidget(
-                                      widget.channel, message.timestamp),
-                                  messageWidget
-                                ],
-                              );
-                            }
-                            return messageWidget;
-                          })),
-                      findChildIndexCallback: (key) => messages.indexWhere(
-                          (element) => key == Key(element.messageId)),
-                      isPinnedBuilder: (index) {
-                        final expiration = expirations[index];
-                        if (expiration == null ||
-                            // if the message is too expired, it can't be pinned again.
-                            // note: we track unpinned separately to permit animations.
-                            expiration.isBefore(oneSecondAgo)) {
-                          return PinState.notPinnable;
-                        }
-                        return expiration.isAfter(now)
-                            ? PinState.pinned
-                            : PinState.unpinned;
-                      },
-                      count: messages.length,
+            var dropped = 0;
+            if (_pauseAt != null) {
+              final index = messages.indexOf(_pauseAt!);
+              if (index != -1) {
+                dropped = index;
+                messages = messages.sublist(index);
+              }
+            } else {
+              messagesModel.pruneMessages();
+            }
+
+            final displayedMessages = <_DisplayedMessage>[];
+
+            for (var index = 0; index < messages.length; index++) {
+              final message = messages[index];
+
+              if (message is! TwitchFollowEventModel) {
+                displayedMessages.add(
+                  _DisplayedMessage(message: message, key: message.messageId),
+                );
+                continue;
+              }
+
+              final channel = message.channel;
+
+              bool sameRun(MessageModel element) =>
+                  element is TwitchFollowEventModel &&
+                  element.channel == channel;
+
+              // Process only the end of each adjacent run.
+              if (index != messages.length - 1 &&
+                  sameRun(messages[index + 1])) {
+                continue;
+              }
+
+              final lastIndex = messages.lastIndexWhere(
+                (element) => !sameRun(element),
+                index,
+              );
+
+              final group = TwitchFollowEventModel.merged(
+                messages.sublist(lastIndex + 1, index + 1).reversed.toList(),
+              );
+
+              final groupKey = 'follow-${group.channel}-${group.messageId}';
+
+              if (_expandedFollowGroups.contains(groupKey)) {
+                for (
+                  var followerIndex = 0;
+                  followerIndex < group.followers.length;
+                  followerIndex++
+                ) {
+                  final follower = group.followers[followerIndex];
+
+                  final individual = TwitchFollowEventModel(
+                    followers: [follower],
+                    messageId: '${group.messageId}-follower-$followerIndex',
+                    timestamp: group.timestamp,
+                  )..channel = group.channel;
+
+                  displayedMessages.add(
+                    _DisplayedMessage(
+                      message: individual,
+                      key: '$groupKey-follower-$followerIndex',
                     ),
                   );
-                }),
-            _ScrollToBottomWidget(
-              show: !_atBottom,
-              onPressed: () async {
-                updateScrollPosition();
-                if (_controller.offset < 2500) {
-                  await _controller.animateTo(0,
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOut);
-                } else {
-                  // jump instead, it's a better user experience.
-                  _controller.jumpTo(0);
                 }
-              },
-              child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: dropped == 0 ? 0 : 150,
-                  child: dropped == 0
-                      ? null
-                      : Text(
-                          AppLocalizations.of(context)!
-                              .newMessageCount(dropped),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                        )),
-            ),
-          ]);
-        }),
+              } else {
+                displayedMessages.add(
+                  _DisplayedMessage(
+                    message: group,
+                    key: groupKey,
+                    followGroupKey: groupKey,
+                  ),
+                );
+              }
+            }
+
+            final expirations =
+                displayedMessages
+                    .map(
+                      (entry) => _getExpiration(
+                        entry.message,
+                        eventSubConfigurationModel,
+                        messagesModel,
+                      ),
+                    )
+                    .toList();
+            final keys = uniqueKeys([
+              for (final entry in displayedMessages) entry.key,
+            ]);
+            final keyIndexes = {
+              for (var index = 0; index < keys.length; index++)
+                keys[index]: index,
+            };
+            return Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                RebuildableWidget(
+                  rebuildAt: expirations.whereType<DateTime>().toSet(),
+                  builder: (context) {
+                    final now = DateTime.now();
+                    final oneSecondAgo = now.subtract(
+                      const Duration(seconds: 1),
+                    );
+                    return ReverseRefreshIndicator(
+                      key: _refreshIndicatorKey,
+                      onRefresh:
+                          () => MessagesAdapter.instance.subscribe(
+                            widget.channel,
+                            Provider.of<UserModel>(
+                              context,
+                              listen: false,
+                            ).apiOn(widget.channel.provider),
+                          ),
+                      child: PinnableMessageScrollView(
+                        vsync: this,
+                        controller: _controller,
+                        itemBuilder: (index) {
+                          final entry = displayedMessages[index];
+                          final message = entry.message;
+
+                          return StyleModelTheme(
+                            key: Key(keys[index]),
+                            child: Builder(
+                              builder: (context) {
+                                // Suppress redundant subscription events.
+                                if (message is TwitchSubscriptionEventModel) {
+                                  if (index != displayedMessages.length - 1) {
+                                    final next =
+                                        displayedMessages[index + 1].message;
+                                    if (next
+                                            is TwitchSubscriptionMessageEventModel &&
+                                        next.subscriberUserName ==
+                                            message.subscriberUserName &&
+                                        next.tier == message.tier) {
+                                      return const SizedBox.shrink();
+                                    }
+                                  }
+                                  if (index > 0) {
+                                    final previous =
+                                        displayedMessages[index - 1].message;
+                                    if (previous
+                                            is TwitchSubscriptionMessageEventModel &&
+                                        previous.subscriberUserName ==
+                                            message.subscriberUserName &&
+                                        previous.tier == message.tier) {
+                                      return const SizedBox.shrink();
+                                    }
+                                  }
+                                }
+                                // in a merged view, actions like shoutouts go to
+                                // the channel the message came from.
+                                final source = message.channel;
+                                final chatMessage = ChatHistoryMessage(
+                                  message: message,
+                                  channel: source ?? widget.channel,
+                                  onFollowExpand:
+                                      entry.followGroupKey == null
+                                          ? null
+                                          : () {
+                                            setState(() {
+                                              _expandedFollowGroups.add(
+                                                entry.followGroupKey!,
+                                              );
+                                            });
+                                          },
+                                );
+                                final Widget messageWidget =
+                                    messagesModel.channels.length > 1 &&
+                                            source != null
+                                        ? ChannelAttribution(
+                                          provider: source.provider,
+                                          child: chatMessage,
+                                        )
+                                        : chatMessage;
+                                // Centralized, consistent spacing.
+                                final paddedMessage = Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 2,
+                                  ),
+                                  child: messageWidget,
+                                );
+                                final showSeparator = messagesModel.separators
+                                    .contains(messages.length - index - 1);
+                                // only show separators after the first 50.
+                                if (showSeparator && index > 50) {
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SeparatorWidget(
+                                        widget.channel,
+                                        message.timestamp,
+                                      ),
+                                      paddedMessage,
+                                    ],
+                                  );
+                                }
+                                return paddedMessage;
+                              },
+                            ),
+                          );
+                        },
+                        findChildIndexCallback: (key) {
+                          return key is ValueKey<String>
+                              ? keyIndexes[key.value]
+                              : null;
+                        },
+                        isPinnedBuilder: (index) {
+                          final expiration = expirations[index];
+
+                          if (expiration == null ||
+                              // if the message is too expired, it can't be pinned again.
+                              // note: we track unpinned separately to permit animations.
+                              expiration.isBefore(oneSecondAgo)) {
+                            return PinState.notPinnable;
+                          }
+                          return expiration.isAfter(now)
+                              ? PinState.pinned
+                              : PinState.unpinned;
+                        },
+                        count: displayedMessages.length,
+                      ),
+                    );
+                  },
+                ),
+                _ScrollToBottomWidget(
+                  show: !_atBottom,
+                  onPressed: () async {
+                    if (!_controller.hasClients) return;
+
+                    updateScrollPosition();
+
+                    if (_controller.offset < 2500) {
+                      await _controller.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                      );
+                    } else {
+                      // jump instead, it's a better user experience.
+                      _controller.jumpTo(0);
+                    }
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: dropped == 0 ? 0 : 150,
+                    child:
+                        dropped == 0
+                            ? null
+                            : Text(
+                              AppLocalizations.of(
+                                context,
+                              )!.newMessageCount(dropped),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                            ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
         const ConnectionStatusWidget(),
       ],
     );

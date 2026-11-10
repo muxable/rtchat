@@ -9,22 +9,22 @@ import 'package:rtchat/models/messages/twitch/message.dart';
 final channel = Channel(Providers.twitch, "123", "muxfd");
 
 Map<String, dynamic> chatDoc(String text) => {
-      'type': 'message',
-      'channelId': 'twitch:123',
-      'message': text,
-      'timestamp': Timestamp.fromDate(DateTime(2024)),
-      'tags': {
-        'user-id': '42',
-        'display-name': 'Viewer',
-        'username': 'viewer',
-      },
-      'annotations': {'isAction': false, 'isFirstTimeChatter': false},
-    };
+  'type': 'message',
+  'channelId': 'twitch:123',
+  'message': text,
+  'timestamp': Timestamp.fromDate(DateTime(2024)),
+  'tags': {'user-id': '42', 'display-name': 'Viewer', 'username': 'viewer'},
+  'annotations': {'isAction': false, 'isFirstTimeChatter': false},
+};
 
 void main() {
   test("parsed messages carry the channel they came from", () {
-    final event =
-        toChannelDeltaEvent(channel, const [], "twitch:m1", chatDoc("hi"));
+    final event = toChannelDeltaEvent(
+      channel,
+      const [],
+      "twitch:m1",
+      chatDoc("hi"),
+    );
     expect((event as AppendDeltaEvent).model.channel, channel);
   });
 
@@ -38,10 +38,8 @@ void main() {
         toChannelDeltaEvent(channel, const [], "twitch:m1", chatDoc("hi"))
             as AppendDeltaEvent;
     final messages = applyDeltaEvent([], append);
-    final deleted = toDeltaEvent(
-        const [],
-        "twitch:d1",
-        {
+    final deleted =
+        toDeltaEvent(const [], "twitch:d1", {
           'type': 'messagedeleted',
           'messageId': 'twitch:m1',
           'timestamp': Timestamp.fromDate(DateTime(2024, 1, 2)),

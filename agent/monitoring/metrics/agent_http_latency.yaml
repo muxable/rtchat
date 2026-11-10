@@ -1,0 +1,19 @@
+description: Agent HTTP request latency by route.
+filter: >-
+  resource.type="gce_instance"
+  logName="projects/rtchat-47692/logs/cos_containers"
+  jsonPayload.message="http request"
+valueExtractor: EXTRACT(jsonPayload.latency_ms)
+labelExtractors:
+  path: REGEXP_EXTRACT(jsonPayload.path, "^(/[A-Za-z]*(?:/[A-Za-z]+)?)")
+bucketOptions:
+  exponentialBuckets:
+    numFiniteBuckets: 40
+    growthFactor: 1.4
+    scale: 1
+metricDescriptor:
+  metricKind: DELTA
+  valueType: DISTRIBUTION
+  unit: ms
+  labels:
+  - key: path

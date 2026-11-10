@@ -91,8 +91,11 @@ class FakeInstallTask implements VoicePackInstallTask {
   void Function()? onEnd;
 
   FakeInstallTask(this.pack, {this.allowMetered = false})
-      : _latest = VoicePackProgress(
-            VoicePackInstallPhase.waiting, 0, pack.downloadSize) {
+    : _latest = VoicePackProgress(
+        VoicePackInstallPhase.waiting,
+        0,
+        pack.downloadSize,
+      ) {
     _done.future.ignore();
   }
 
@@ -140,32 +143,36 @@ class FakeInstallTask implements VoicePackInstallTask {
 }
 
 /// An installed Supertonic pack [id] speaking [languages].
-InstalledVoicePack installedPack(String id,
-        {int version = 1, List<String> languages = const ['en']}) =>
-    InstalledVoicePack(
-      pack: VoicePack(
-        id: id,
-        name: id,
-        version: version,
-        modelType: VoicePackModelType.supertonic,
-        languages: languages,
-        files: [
-          VoicePackFile(
-              url: Uri.parse('https://example.com/$id'),
-              size: 1,
-              sha256: 'a' * 64,
-              path: 'onnx/vocoder.onnx'),
-        ],
+InstalledVoicePack installedPack(
+  String id, {
+  int version = 1,
+  List<String> languages = const ['en'],
+}) => InstalledVoicePack(
+  pack: VoicePack(
+    id: id,
+    name: id,
+    version: version,
+    modelType: VoicePackModelType.supertonic,
+    languages: languages,
+    files: [
+      VoicePackFile(
+        url: Uri.parse('https://example.com/$id'),
+        size: 1,
+        sha256: 'a' * 64,
+        path: 'onnx/vocoder.onnx',
       ),
-      directory: '/packs/$id',
-      sizeOnDisk: 1,
-      installedAt: DateTime(2026),
-    );
+    ],
+  ),
+  directory: '/packs/$id',
+  sizeOnDisk: 1,
+  installedAt: DateTime(2026),
+);
 
 /// [pack], installed.
 InstalledVoicePack installedPackOf(VoicePack pack, {int sizeOnDisk = 1}) =>
     InstalledVoicePack(
-        pack: pack,
-        directory: '/packs/${pack.id}',
-        sizeOnDisk: sizeOnDisk,
-        installedAt: DateTime(2026));
+      pack: pack,
+      directory: '/packs/${pack.id}',
+      sizeOnDisk: sizeOnDisk,
+      installedAt: DateTime(2026),
+    );

@@ -37,19 +37,20 @@ class InstalledVoicePack {
   }
 
   factory InstalledVoicePack.fromJson(
-          Map<String, Object?> json, String directory) =>
-      InstalledVoicePack(
-        pack: VoicePack.fromJson(json['pack'] as Map<String, Object?>),
-        directory: directory,
-        sizeOnDisk: json['size'] as int,
-        installedAt: DateTime.parse(json['installed_at'] as String),
-      );
+    Map<String, Object?> json,
+    String directory,
+  ) => InstalledVoicePack(
+    pack: VoicePack.fromJson(json['pack'] as Map<String, Object?>),
+    directory: directory,
+    sizeOnDisk: json['size'] as int,
+    installedAt: DateTime.parse(json['installed_at'] as String),
+  );
 
   Map<String, Object?> toJson() => {
-        'pack': pack.toJson(),
-        'size': sizeOnDisk,
-        'installed_at': installedAt.toUtc().toIso8601String(),
-      };
+    'pack': pack.toJson(),
+    'size': sizeOnDisk,
+    'installed_at': installedAt.toUtc().toIso8601String(),
+  };
 
   @override
   String toString() => 'InstalledVoicePack(${pack.id} v${pack.version})';

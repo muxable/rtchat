@@ -3,10 +3,9 @@ import * as path from "path";
 
 // functions.config() caches its values; reset them to test missing config.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const runtimeConfig = require(path.join(
-  __dirname,
-  "../node_modules/firebase-functions/lib/v1/config.js"
-));
+const runtimeConfig = require(
+  path.join(__dirname, "../node_modules/firebase-functions/lib/v1/config.js"),
+);
 import {
   isInvalidRefreshError,
   isValidState,
@@ -78,8 +77,8 @@ describe("withRefreshToken", () => {
     expect(
       withRefreshToken(
         { refresh_token: "old" },
-        { access_token: "new", expires_in: 3599 }
-      )
+        { access_token: "new", expires_in: 3599 },
+      ),
     ).toEqual({ access_token: "new", expires_in: 3599, refresh_token: "old" });
   });
 
@@ -87,8 +86,8 @@ describe("withRefreshToken", () => {
     expect(
       withRefreshToken(
         { refresh_token: "old" },
-        { access_token: "a", refresh_token: "new" }
-      ).refresh_token
+        { access_token: "a", refresh_token: "new" },
+      ).refresh_token,
     ).toBe("new");
   });
 });
@@ -98,17 +97,17 @@ describe("isInvalidRefreshError", () => {
     expect(
       isInvalidRefreshError({
         data: { payload: { message: "Invalid refresh token" } },
-      })
+      }),
     ).toBe(true);
     expect(
-      isInvalidRefreshError({ data: { payload: { error: "invalid_grant" } } })
+      isInvalidRefreshError({ data: { payload: { error: "invalid_grant" } } }),
     ).toBe(true);
   });
 
   it("ignores transient errors", () => {
     expect(isInvalidRefreshError(new Error("ECONNRESET"))).toBe(false);
     expect(
-      isInvalidRefreshError({ data: { payload: { error: "server_error" } } })
+      isInvalidRefreshError({ data: { payload: { error: "server_error" } } }),
     ).toBe(false);
   });
 });

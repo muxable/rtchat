@@ -16,22 +16,22 @@ void main() {
       'subscriptionEventConfig': {
         'showEvent': true,
         'showIndividualGifts': true,
-        'eventDuration': 30
+        'eventDuration': 30,
       },
       'cheerEventConfig': {'showEvent': false, 'eventDuration': 30},
       'raidEventConfig': {
         'showEvent': true,
         'eventDuration': 6,
-        'enableShoutoutButton': true
+        'enableShoutoutButton': true,
       },
       'pollEventConfig': {'showEvent': true, 'eventDuration': 6},
       'channelPointRedemptionEventConfig': {
         'showEvent': true,
         'eventDuration': 6,
-        'unfulfilledAdditionalDuration': 0
+        'unfulfilledAdditionalDuration': 0,
       },
       'hypetrainEventConfig': {'showEvent': true, 'eventDuration': 6},
-      'predictionEventConfig': {'showEvent': true, 'eventDuration': 6}
+      'predictionEventConfig': {'showEvent': true, 'eventDuration': 6},
     };
     final model = EventSubConfigurationModel.fromJson(json);
     final want = model.toJson();

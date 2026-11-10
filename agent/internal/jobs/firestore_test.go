@@ -13,7 +13,9 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/option"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 )
 
@@ -38,41 +40,35 @@ func TestFirestoreLeaseReplicasTakeover(t *testing.T) {
 	var wg sync.WaitGroup
 	for i := 0; i < 3; i++ {
 		wg.Add(1)
-		go func(i int) {
+		go func() {
 			defer wg.Done()
-			ok, err := leases.Acquire(ctx, "refresh", fmt.Sprint(i), "slot", now, time.Minute)
-			if err != nil {
-				t.Error(err)
-			}
-			if ok {
+			if leases.Acquire(ctx, "refresh", "slot", now, time.Minute) {
 				acquired.Add(1)
 			}
-		}(i)
+		}()
 	}
 	wg.Wait()
 	if acquired.Load() != 1 {
 		t.Fatal(acquired.Load())
 	}
-	ok, err := leases.Acquire(ctx, "refresh", "takeover", "slot", now.Add(time.Minute), time.Minute)
-	if err != nil || !ok {
-		t.Fatal(ok, err)
+	if !leases.Acquire(ctx, "refresh", "slot", now.Add(time.Minute), time.Minute) {
+		t.Fatal("expired lease not taken over")
 	}
-	if err := leases.Finish(ctx, "refresh", "stale", "slot", true); err == nil {
-		t.Fatal("stale owner finished")
+	leases.Finish(ctx, "refresh", "slot", false)
+	if !leases.Acquire(ctx, "refresh", "slot", now.Add(time.Minute), time.Minute) {
+		t.Fatal("failed slot not retried")
 	}
-	if err := leases.Finish(ctx, "refresh", "takeover", "slot", false); err != nil {
-		t.Fatal(err)
+	leases.Finish(ctx, "refresh", "slot", true)
+	if leases.Acquire(ctx, "refresh", "slot", now.Add(24*time.Hour), time.Minute) {
+		t.Fatal("completed slot ran again")
 	}
-	ok, err = leases.Acquire(ctx, "refresh", "retry", "slot", now.Add(time.Minute), time.Minute)
-	if err != nil || !ok {
-		t.Fatal(ok, err)
+	if !leases.Acquire(ctx, "refresh", "next", now.Add(time.Minute), time.Minute) {
+		t.Fatal("next slot not taken after completion")
 	}
-	if err := leases.Finish(ctx, "refresh", "retry", "slot", true); err != nil {
-		t.Fatal(err)
-	}
-	ok, err = leases.Acquire(ctx, "refresh", "duplicate", "slot", now.Add(24*time.Hour), time.Minute)
-	if err != nil || ok {
-		t.Fatal(ok, err)
+	canceled, cancel := context.WithCancel(ctx)
+	cancel()
+	if leases.Acquire(canceled, "other", "slot", now, time.Minute) {
+		t.Fatal("unconfirmed lease reported as held")
 	}
 }
 func TestFirestoreCleanupIdempotencyAndActivity(t *testing.T) {
@@ -143,8 +139,12 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 	started := time.Now().Add(-time.Second)
 	ref := db.Collection("channels").Doc("kick:1")
 	ref.Set(ctx, map[string]interface{}{"viewerCount": int64(100), "title": "new webhook"})
-	if err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"viewerCount": int64(1), "title": "stale poll"}}}); err != nil {
+	written, err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"viewerCount": int64(1), "title": "stale poll"}}})
+	if err != nil {
 		t.Fatal(err)
+	}
+	if written != 0 {
+		t.Fatalf("stale poll counted %d writes", written)
 	}
 	doc, err := ref.Get(ctx)
 	if err != nil {
@@ -153,26 +153,70 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 	if doc.Data()["title"] != "new webhook" {
 		t.Fatal(doc.Data())
 	}
-	if err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"followerCount": int64(42)}}}); err != nil {
-		t.Fatal(err)
+	if written, err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"followerCount": int64(42)}}}); err != nil || written != 1 {
+		t.Fatal(written, err)
 	}
 	doc, _ = ref.Get(ctx)
 	if doc.Data()["followerCount"] != int64(42) {
 		t.Fatal(doc.Data())
 	}
 }
+func TestFirestoreMetadataSkipsUnchanged(t *testing.T) {
+	db := emulator(t)
+	ctx := context.Background()
+	service := Service{Client: db}
+	at := time.Now().UTC().Truncate(time.Millisecond)
+	data := map[string]interface{}{"viewerCount": int64(5), "login": "live", "onlineAt": at, "title": nil}
+	if written, err := service.write(ctx, time.Now(), []ChannelUpdate{{"kick:2", data}}); err != nil || written != 1 {
+		t.Fatal(written, err)
+	}
+	ref := db.Collection("channels").Doc("kick:2")
+	before, err := ref.Get(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	updates := []ChannelUpdate{{"kick:2", data}, {"kick:2", map[string]interface{}{"viewerCount": int64(5)}}}
+	if written, err := service.write(ctx, time.Now(), updates); err != nil || written != 0 {
+		t.Fatal("unchanged data written", written, err)
+	}
+	after, err := ref.Get(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !after.UpdateTime.Equal(before.UpdateTime) {
+		t.Fatal("unchanged data bumped the document")
+	}
+	if written, err := service.write(ctx, time.Now(), []ChannelUpdate{{"kick:2", map[string]interface{}{"viewerCount": int64(6), "followerCount": int64(1)}}}); err != nil || written != 1 {
+		t.Fatal(written, err)
+	}
+	after, _ = ref.Get(ctx)
+	if after.Data()["viewerCount"] != int64(6) || after.Data()["followerCount"] != int64(1) || after.Data()["login"] != "live" {
+		t.Fatal(after.Data())
+	}
+}
 func TestFirestoreKickActiveBatching(t *testing.T) {
 	db := emulator(t)
 	ctx := context.Background()
 	now := time.Now()
-	writes := db.Batch()
-	for i := 0; i < 52; i++ {
-		writes.Set(db.Collection("webhooks").Doc(fmt.Sprint("kick:", i)), map[string]interface{}{"lastActiveAt": now})
+	writes := db.BulkWriter(ctx)
+	var jobs []*firestore.BulkWriterJob
+	set := func(id string, data map[string]interface{}) {
+		job, err := writes.Set(db.Collection("webhooks").Doc(id), data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		jobs = append(jobs, job)
 	}
-	writes.Set(db.Collection("webhooks").Doc("kick:idle"), map[string]interface{}{"lastActiveAt": now.Add(-25 * time.Hour)})
-	writes.Set(db.Collection("webhooks").Doc("twitch:123"), map[string]interface{}{"lastActiveAt": now})
-	if _, err := writes.Commit(ctx); err != nil {
-		t.Fatal(err)
+	for i := 0; i < 52; i++ {
+		set(fmt.Sprint("kick:", i), map[string]interface{}{"lastActiveAt": now})
+	}
+	set("kick:idle", map[string]interface{}{"lastActiveAt": now.Add(-25 * time.Hour)})
+	set("twitch:123", map[string]interface{}{"lastActiveAt": now})
+	writes.End()
+	for _, job := range jobs {
+		if _, err := job.Results(); err != nil {
+			t.Fatal(err)
+		}
 	}
 	calls, total := 0, 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -273,3 +317,60 @@ func TestFirestoreCleanupRejectsMalformedSubscriptionIDs(t *testing.T) {
 		t.Fatal("malformed subscription record was deleted", err)
 	}
 }
+
+// The refresh job timed out writing channels one transaction at a time: two
+// serial round trips per channel. A batch of updates must cost a few.
+func TestFirestoreMetadataWritesInFewRoundTrips(t *testing.T) {
+	if os.Getenv("FIRESTORE_EMULATOR_HOST") == "" {
+		t.Skip("set FIRESTORE_EMULATOR_HOST for transaction integration tests")
+	}
+	var rpcs atomic.Int32
+	count := grpc.WithChainUnaryInterceptor(func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		rpcs.Add(1)
+		return invoker(ctx, method, req, reply, cc, opts...)
+	})
+	stream := grpc.WithChainStreamInterceptor(func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		rpcs.Add(1)
+		return streamer(ctx, desc, cc, method, opts...)
+	})
+	ctx := context.Background()
+	conn, err := grpc.NewClient(os.Getenv("FIRESTORE_EMULATOR_HOST"), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithPerRPCCredentials(emulatorAdmin{}), count, stream)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := firestore.NewClient(ctx, fmt.Sprintf("jobs-%d", time.Now().UnixNano()), option.WithGRPCConn(conn))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	service := Service{Client: db}
+	var updates []ChannelUpdate
+	for i := 0; i < 300; i++ {
+		if i%2 == 0 { // half the channels already exist
+			if _, err := db.Collection("channels").Doc(fmt.Sprint("twitch:", i)).Set(ctx, map[string]interface{}{"viewerCount": int64(0)}); err != nil {
+				t.Fatal(err)
+			}
+		}
+		updates = append(updates, ChannelUpdate{fmt.Sprint("twitch:", i), map[string]interface{}{"viewerCount": int64(i + 1), "login": fmt.Sprint("user", i)}})
+	}
+	rpcs.Store(0)
+	written, err := service.write(ctx, time.Now(), updates)
+	if err != nil || written != 300 {
+		t.Fatal(written, err)
+	}
+	if n := rpcs.Load(); n > 30 {
+		t.Fatalf("%d round trips to write %d channels", n, len(updates))
+	}
+	doc, err := db.Collection("channels").Doc("twitch:298").Get(ctx)
+	if err != nil || doc.Data()["viewerCount"] != int64(299) || doc.Data()["login"] != "user298" {
+		t.Fatal(doc.Data(), err)
+	}
+}
+
+// emulatorAdmin is the credential the Firestore client sends the emulator.
+type emulatorAdmin struct{}
+
+func (emulatorAdmin) GetRequestMetadata(context.Context, ...string) (map[string]string, error) {
+	return map[string]string{"authorization": "Bearer owner"}, nil
+}
+func (emulatorAdmin) RequireTransportSecurity() bool { return false }

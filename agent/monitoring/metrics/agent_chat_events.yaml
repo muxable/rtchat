@@ -1,0 +1,23 @@
+description: Chat events received by the agent, summed from its periodic per-provider, kind and Firestore write outcome counts.
+filter: >-
+  resource.type="gce_instance"
+  logName="projects/rtchat-47692/logs/cos_containers"
+  jsonPayload.message="chat events"
+valueExtractor: EXTRACT(jsonPayload.count)
+labelExtractors:
+  provider: EXTRACT(jsonPayload.provider)
+  kind: EXTRACT(jsonPayload.kind)
+  outcome: EXTRACT(jsonPayload.outcome)
+bucketOptions:
+  exponentialBuckets:
+    numFiniteBuckets: 20
+    growthFactor: 2
+    scale: 1
+metricDescriptor:
+  metricKind: DELTA
+  valueType: DISTRIBUTION
+  unit: "1"
+  labels:
+  - key: provider
+  - key: kind
+  - key: outcome

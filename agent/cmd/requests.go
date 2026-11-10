@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io"
 	"math/rand"
 	"sync"
@@ -118,11 +119,21 @@ func (m *requestManager) applyLocked(req *agent.Request, kind firestore.Document
 	default:
 		return
 	}
+	if _, ok := existing.(*handler.AnonymousTwitchClient); ok {
+		// Anonymous reading is the preferred mode; refreshing an assignment
+		// should keep its reader instead of opening another IRC connection.
+		return
+	}
 	if _, ok := existing.(*handler.AuthenticatedTwitchClient); ok && m.skipUpgrade() {
 		zap.L().Info("already authenticated", zap.String("id", req.String()))
 		return
 	}
 	client, err := m.newClient(req)
+	if errors.Is(err, handler.ErrChannelUnavailable) {
+		// The assignment names a channel Twitch doesn't have; nothing to read.
+		zap.L().Info("twitch channel unavailable", zap.String("id", req.String()))
+		return
+	}
 	if err != nil {
 		zap.L().Error("failed to open request", zap.Error(err))
 		return

@@ -1,6 +1,9 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/api.dart';
+import 'package:rtchat/models/channels.dart';
+
+import 'fakes/fake_accounts.dart';
 
 class _Callable extends Fake implements HttpsCallable {}
 
@@ -18,15 +21,20 @@ class _Functions extends Fake implements FirebaseFunctions {
   }
 
   @override
-  HttpsCallable httpsCallableFromUrl(String url,
-      {HttpsCallableOptions? options}) {
+  HttpsCallable httpsCallableFromUrl(
+    String url, {
+    HttpsCallableOptions? options,
+  }) {
     this.url = url;
     return callable;
   }
 
   @override
-  void useFunctionsEmulator(String host, int port,
-      {bool automaticHostMapping = true}) {
+  void useFunctionsEmulator(
+    String host,
+    int port, {
+    bool automaticHostMapping = true,
+  }) {
     emulatorHost = host;
     emulatorPort = port;
   }
@@ -52,5 +60,19 @@ void main() {
     expect(functions.emulatorPort, 5999);
     expect(functions.name, 'subscribe');
     expect(functions.url, isNull);
+  });
+
+  test('each account calls through its own app', () {
+    final twitch = fakeAccount(
+      Channel(Providers.twitch, '1', 'muxfd'),
+      appName: '[DEFAULT]',
+    );
+    final kick = fakeAccount(Channel(Providers.kick, '2', 'muxfd'));
+
+    expect(Api.forAccount(twitch).app, same(twitch.app));
+    expect(Api.forAccount(kick).app, same(kick.app));
+    expect(Api.forAccount(twitch), isNot(same(Api.forAccount(kick))));
+    // the same app keeps the same Api, and with it any emulator settings.
+    expect(Api.forAccount(kick), same(Api.forApp(kick.app)));
   });
 }

@@ -14,31 +14,23 @@ type memoryLeases struct {
 	leases map[string]Lease
 }
 
-func (s *memoryLeases) Acquire(_ context.Context, name, owner, slot string, now time.Time, ttl time.Duration) (bool, error) {
+func (s *memoryLeases) Acquire(_ context.Context, name, slot string, now time.Time, ttl time.Duration) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if !canAcquire(s.leases[name], slot, now) {
-		return false, nil
+		return false
 	}
-	lease := s.leases[name]
-	lease.Owner = owner
-	lease.ExpiresAt = now.Add(ttl)
-	s.leases[name] = lease
-	return true, nil
+	s.leases[name] = Lease{ExpiresAt: now.Add(ttl), CompletedSlot: s.leases[name].CompletedSlot}
+	return true
 }
-func (s *memoryLeases) Finish(_ context.Context, name, owner, slot string, success bool) error {
+func (s *memoryLeases) Finish(_ context.Context, name, slot string, success bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	lease := s.leases[name]
-	if lease.Owner != owner {
-		return errors.New("lost owner")
-	}
-	lease.ExpiresAt = time.Time{}
+	lease := Lease{CompletedSlot: s.leases[name].CompletedSlot}
 	if success {
 		lease.CompletedSlot = slot
 	}
 	s.leases[name] = lease
-	return nil
 }
 func TestReplicasAndCompletion(t *testing.T) {
 	store := &memoryLeases{leases: map[string]Lease{}}
@@ -64,24 +56,18 @@ func TestReplicasAndCompletion(t *testing.T) {
 		t.Fatalf("runs = %d", calls.Load())
 	}
 }
-func TestExpiryTakeoverAndStaleOwner(t *testing.T) {
+func TestExpiryTakeover(t *testing.T) {
 	store := &memoryLeases{leases: map[string]Lease{}}
 	ctx := context.Background()
 	now := time.Now()
-	ok, err := store.Acquire(ctx, "job", "dead", "slot", now, time.Minute)
-	if !ok || err != nil {
-		t.Fatal(ok, err)
+	if !store.Acquire(ctx, "job", "slot", now, time.Minute) {
+		t.Fatal("free lease not taken")
 	}
-	ok, _ = store.Acquire(ctx, "job", "new", "slot", now.Add(59*time.Second), time.Minute)
-	if ok {
+	if store.Acquire(ctx, "job", "slot", now.Add(59*time.Second), time.Minute) {
 		t.Fatal("took live lease")
 	}
-	ok, _ = store.Acquire(ctx, "job", "new", "slot", now.Add(time.Minute), time.Minute)
-	if !ok {
+	if !store.Acquire(ctx, "job", "slot", now.Add(time.Minute), time.Minute) {
 		t.Fatal("expired lease not taken")
-	}
-	if err := store.Finish(ctx, "job", "dead", "slot", true); err == nil {
-		t.Fatal("stale owner completed")
 	}
 }
 func TestFailureRetriedAndCancellation(t *testing.T) {

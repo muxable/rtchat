@@ -40,7 +40,7 @@ func (s *Server) embed(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	r = r.WithContext(ctx)
 	if r.Method != "GET" {
-		http.Error(w, "method not allowed", 405)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	provider := r.URL.Query().Get("provider")
@@ -58,19 +58,19 @@ func (s *Server) embed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if s.AppToken == nil {
-		http.Error(w, "provider unavailable", 503)
+		http.Error(w, "provider unavailable", http.StatusServiceUnavailable)
 		return
 	}
 	token, err := s.AppToken(r.Context(), provider)
 	if err != nil {
-		http.Error(w, "provider unavailable", 503)
+		http.Error(w, "provider unavailable", http.StatusServiceUnavailable)
 		return
 	}
 	switch provider {
 	case "twitch":
 		user, err := twitch.New(s.HTTP, s.TwitchClientID, token).User(r.Context(), "id", channel)
 		if err != nil {
-			http.Error(w, "provider unavailable", 502)
+			http.Error(w, "provider unavailable", http.StatusBadGateway)
 			return
 		}
 		login := user.Login
@@ -80,12 +80,12 @@ func (s *Server) embed(w http.ResponseWriter, r *http.Request) {
 		}
 		// Parent is the page embedding the player, not this redirect's API hostname.
 		q := url.Values{"channel": {login}, "controls": {"false"}, "parent": {"chat.rtirl.com"}, "muted": {"true"}}
-		http.Redirect(w, r, "https://player.twitch.tv/?"+q.Encode(), 302)
+		http.Redirect(w, r, "https://player.twitch.tv/?"+q.Encode(), http.StatusFound)
 	case "kick":
 		var data struct{ Data []struct{ Slug string } }
 		err := kick.New(s.HTTP, token).Get(r.Context(), "/channels?broadcaster_user_id="+channel, &data)
 		if err != nil {
-			http.Error(w, "provider unavailable", 502)
+			http.Error(w, "provider unavailable", http.StatusBadGateway)
 			return
 		}
 		slug := ""
@@ -96,7 +96,7 @@ func (s *Server) embed(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
 			return
 		}
-		http.Redirect(w, r, "https://player.kick.com/"+url.PathEscape(slug)+"?muted=true", 302)
+		http.Redirect(w, r, "https://player.kick.com/"+url.PathEscape(slug)+"?muted=true", http.StatusFound)
 	}
 }
 func (s *Server) metadata(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +105,7 @@ func (s *Server) metadata(w http.ResponseWriter, r *http.Request) {
 	r = r.WithContext(ctx)
 	w.Header().Set("Cache-Control", "no-store")
 	if r.Method != "POST" {
-		http.Error(w, "method not allowed", 405)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	var body struct {
@@ -123,16 +123,16 @@ func (s *Server) metadata(w http.ResponseWriter, r *http.Request) {
 		UserID   string `json:"user_id"`
 	}
 	if err := twitch.New(s.HTTP, s.TwitchClientID, "").Validate(r.Context(), body.Token, &validation); err != nil || !channelPattern.MatchString(validation.UserID) {
-		http.Error(w, "invalid token", 401)
+		http.Error(w, "invalid token", http.StatusUnauthorized)
 		return
 	}
 	name := s.MetadataClients[validation.ClientID]
 	if name == "" {
-		http.Error(w, "client id not registered, contact kevin@muxable.com", 403)
+		http.Error(w, "client id not registered, contact kevin@muxable.com", http.StatusForbidden)
 		return
 	}
 	if err := s.Store.Metadata(r.Context(), "twitch:"+validation.UserID, map[string]any{"key": body.Key, "value": body.Value, "clientId": validation.ClientID, "name": name}); err != nil {
-		http.Error(w, "temporarily unavailable", 503)
+		http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
 		return
 	}
 	w.WriteHeader(204)

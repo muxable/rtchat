@@ -7,22 +7,24 @@ class TwitchRaidEventModel extends MessageModel {
   final TwitchUserModel from;
   final int viewers;
 
-  const TwitchRaidEventModel(
-      {required super.timestamp,
-      required super.messageId,
-      required this.from,
-      required this.viewers});
+  const TwitchRaidEventModel({
+    required super.timestamp,
+    required super.messageId,
+    required this.from,
+    required this.viewers,
+  });
 }
 
 class TwitchHostEventModel extends MessageModel {
   final TwitchUserModel from;
   final int viewers;
 
-  const TwitchHostEventModel(
-      {required super.timestamp,
-      required super.messageId,
-      required this.from,
-      required this.viewers});
+  const TwitchHostEventModel({
+    required super.timestamp,
+    required super.messageId,
+    required this.from,
+    required this.viewers,
+  });
 }
 
 class TwitchFollowEventModel extends MessageModel {
@@ -35,40 +37,52 @@ class TwitchFollowEventModel extends MessageModel {
   });
 
   static TwitchFollowEventModel fromDocumentData(
-      String messageId, Map<String, dynamic> data) {
-    return TwitchFollowEventModel(followers: [
-      TwitchUserModel(
+    String messageId,
+    Map<String, dynamic> data,
+  ) {
+    return TwitchFollowEventModel(
+      followers: [
+        TwitchUserModel(
           userId: data['event']['user_id'],
           login: data['event']['user_login'],
-          displayName: data['event']['user_name'])
-    ], messageId: messageId, timestamp: data['timestamp'].toDate());
+          displayName: data['event']['user_name'],
+        ),
+      ],
+      messageId: messageId,
+      timestamp: data['timestamp'].toDate(),
+    );
   }
 
   /// Combines follow events from the same channel into one.
   static TwitchFollowEventModel merged(List<MessageModel> models) {
     return TwitchFollowEventModel(
-        followers: models
-            .whereType<TwitchFollowEventModel>()
-            .expand((element) => element.followers)
-            .toList(),
-        messageId: models.first.messageId,
-        timestamp: models.last.timestamp)
-      ..channel = models.first.channel;
+      followers:
+          models
+              .whereType<TwitchFollowEventModel>()
+              .expand((element) => element.followers)
+              .toList(),
+      messageId: models.first.messageId,
+      timestamp: models.last.timestamp,
+    )..channel = models.first.channel;
   }
 
   /// Merges the run of adjacent follow events from the same channel that
   /// [index] in [messages] belongs to. Returns null unless [index] is the end
   /// of its run (the highest index), where the merged event is shown.
   static TwitchFollowEventModel? mergeAdjacent(
-      List<MessageModel> messages, int index) {
+    List<MessageModel> messages,
+    int index,
+  ) {
     final channel = messages[index].channel;
     bool sameRun(MessageModel element) =>
         element is TwitchFollowEventModel && element.channel == channel;
     if (index != messages.length - 1 && sameRun(messages[index + 1])) {
       return null;
     }
-    final lastIndex =
-        messages.lastIndexWhere((element) => !sameRun(element), index);
+    final lastIndex = messages.lastIndexWhere(
+      (element) => !sameRun(element),
+      index,
+    );
     return merged(messages.sublist(lastIndex + 1, index + 1).reversed.toList());
   }
 }
@@ -125,14 +139,15 @@ class TwitchPollEventModel extends MessageModel {
 
   static TwitchPollEventModel fromDocumentData(Map<String, dynamic>? data) {
     final m = TwitchPollEventModel(
-        choices: parseChoices(data!),
-        pollTitle: data['event']['title'],
-        isCompleted: false,
-        messageId: "poll${data['event']['id']}",
-        timestamp: data['timestamp'].toDate(),
-        startTimestamp: DateTime.parse(data['event']['started_at']),
-        endTimestamp: DateTime.parse(data['event']['ends_at']),
-        status: 'ongoing');
+      choices: parseChoices(data!),
+      pollTitle: data['event']['title'],
+      isCompleted: false,
+      messageId: "poll${data['event']['id']}",
+      timestamp: data['timestamp'].toDate(),
+      startTimestamp: DateTime.parse(data['event']['started_at']),
+      endTimestamp: DateTime.parse(data['event']['ends_at']),
+      status: 'ongoing',
+    );
     return m;
   }
 
@@ -142,14 +157,15 @@ class TwitchPollEventModel extends MessageModel {
 
   TwitchPollEventModel withEnd(Map<String, dynamic>? data) {
     final m = TwitchPollEventModel(
-        choices: parseChoices(data!),
-        pollTitle: data['event']['title'],
-        isCompleted: true,
-        messageId: "poll${data['event']['id']}",
-        timestamp: data['timestamp'].toDate(),
-        startTimestamp: DateTime.parse(data['event']['started_at']),
-        endTimestamp: DateTime.parse(data['event']['ended_at']),
-        status: data['event']['status']);
+      choices: parseChoices(data!),
+      pollTitle: data['event']['title'],
+      isCompleted: true,
+      messageId: "poll${data['event']['id']}",
+      timestamp: data['timestamp'].toDate(),
+      startTimestamp: DateTime.parse(data['event']['started_at']),
+      endTimestamp: DateTime.parse(data['event']['ended_at']),
+      status: data['event']['status'],
+    );
     return m;
   }
 
@@ -163,11 +179,12 @@ class TwitchPollEventModel extends MessageModel {
       final int channelPointVotes = entry['channel_points_votes'] ?? 0;
 
       var poll = PollChoiceModel(
-          id: id,
-          title: title,
-          bitVotes: bitVotes,
-          channelPointVotes: channelPointVotes,
-          votes: votes);
+        id: id,
+        title: title,
+        bitVotes: bitVotes,
+        channelPointVotes: channelPointVotes,
+        votes: votes,
+      );
       lst.add(poll);
     }
     return lst;

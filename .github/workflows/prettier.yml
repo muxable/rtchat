@@ -1,0 +1,19 @@
+name: Prettier
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Use Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # Keep in sync with the prettier version in functions/package-lock.json.
+      # functions/ is excluded in .prettierignore; it runs its own check.
+      - run: npx -y prettier@3.9.10 --check .

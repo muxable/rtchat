@@ -26,15 +26,30 @@ type Response struct {
 }
 
 // HTTPError deliberately excludes response bodies, which may contain credentials.
-type HTTPError struct{ Status int }
+// Explained records only whether the provider gave a reason for the rejection.
+type HTTPError struct {
+	Status    int
+	Explained bool
+}
 
 func (e *HTTPError) Error() string { return fmt.Sprintf("provider returned HTTP %d", e.Status) }
 
 func (r *Response) Err() error {
 	if r.StatusCode < 200 || r.StatusCode >= 300 {
-		return &HTTPError{Status: r.StatusCode}
+		return &HTTPError{Status: r.StatusCode, Explained: explained(r.Body)}
 	}
 	return nil
+}
+
+// explained reports whether a JSON error body carries a non-blank "message",
+// the field Twitch and Kick use to say why they rejected a request.
+func explained(body []byte) bool {
+	var result struct{ Message any }
+	if json.Unmarshal(body, &result) != nil {
+		return false
+	}
+	message, _ := result.Message.(string)
+	return strings.TrimSpace(message) != ""
 }
 
 func (r *Response) Decode(out any) error {
@@ -92,15 +107,25 @@ func (c Client) Do(ctx context.Context, method, path string, body any) (*Respons
 	return &Response{StatusCode: response.StatusCode, Header: response.Header, Body: data}, nil
 }
 
+// Get retries provider 5xx responses up to three times, honoring server backoff
+// and the caller's context. Do remains single-attempt for callers with their own policy.
 func (c Client) Get(ctx context.Context, path string, out any) error {
-	response, err := c.Do(ctx, http.MethodGet, path, nil)
-	if err != nil {
-		return err
+	for attempt := 0; ; attempt++ {
+		response, err := c.Do(ctx, http.MethodGet, path, nil)
+		if err != nil {
+			return err
+		}
+		if response.StatusCode >= 500 && response.StatusCode < 600 && attempt < 3 {
+			if err := Wait(ctx, RetryDelay(response.Header, attempt)); err != nil {
+				return err
+			}
+			continue
+		}
+		if err := response.Err(); err != nil {
+			return err
+		}
+		return response.Decode(out)
 	}
-	if err := response.Err(); err != nil {
-		return err
-	}
-	return response.Decode(out)
 }
 
 func (c Client) DoJSON(ctx context.Context, method, path string, body any) (int, map[string]any, error) {

@@ -10,8 +10,10 @@ List<String> labels(QuickLinksModel model) =>
 void main() {
   group("QuickLinkSource", () {
     test("fromJson falls back to the url when label is missing", () {
-      final s = QuickLinkSource.fromJson(
-          {"icon": "link", "url": "https://rtirl.com"});
+      final s = QuickLinkSource.fromJson({
+        "icon": "link",
+        "url": "https://rtirl.com",
+      });
       expect(s.label, "https://rtirl.com");
       expect(s.url, Uri.parse("https://rtirl.com"));
     });
@@ -19,10 +21,14 @@ void main() {
     test("equality uses url and label but not icon", () {
       final url = Uri.parse("https://rtirl.com");
       expect(QuickLinkSource("a", url, "x"), QuickLinkSource("b", url, "x"));
-      expect(QuickLinkSource("a", url, "x"),
-          isNot(QuickLinkSource("a", url, "y")));
-      expect(QuickLinkSource("a", url, "x"),
-          isNot(QuickLinkSource("a", Uri.parse("https://x.com"), "x")));
+      expect(
+        QuickLinkSource("a", url, "x"),
+        isNot(QuickLinkSource("a", url, "y")),
+      );
+      expect(
+        QuickLinkSource("a", url, "x"),
+        isNot(QuickLinkSource("a", Uri.parse("https://x.com"), "x")),
+      );
     });
 
     test("toString is the url", () {
@@ -31,10 +37,11 @@ void main() {
   });
 
   group("QuickLinksModel", () {
-    QuickLinksModel model3() => QuickLinksModel.fromJson({})
-      ..addSource(source("a"))
-      ..addSource(source("b"))
-      ..addSource(source("c"));
+    QuickLinksModel model3() =>
+        QuickLinksModel.fromJson({})
+          ..addSource(source("a"))
+          ..addSource(source("b"))
+          ..addSource(source("c"));
 
     test("addSource and removeSource", () {
       final model = model3();

@@ -23,9 +23,10 @@ void main() {
   });
 
   test("json round trip", () {
-    final model = QRModel.fromJson({})
-      ..changeGradient()
-      ..changeGradient();
+    final model =
+        QRModel.fromJson({})
+          ..changeGradient()
+          ..changeGradient();
     final decoded = QRModel.fromJson(model.toJson());
     expect(decoded.toJson(), {"currentGradient": 2});
     expect(decoded.currentGradient, model.currentGradient);

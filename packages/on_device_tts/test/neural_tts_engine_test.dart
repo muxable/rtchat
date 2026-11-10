@@ -22,25 +22,28 @@ class FakeNative {
     _messenger
       ..setMockMethodCallHandler(_methods, _handle)
       ..setMockStreamHandler(
-          _events,
-          MockStreamHandler.inline(
-              onListen: (_, sink) => _sink = sink,
-              onCancel: (_) => _sink = null));
+        _events,
+        MockStreamHandler.inline(
+          onListen: (_, sink) => _sink = sink,
+          onCancel: (_) => _sink = null,
+        ),
+      );
   }
 
   static TestDefaultBinaryMessenger get _messenger =>
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
 
-  void dispose() => _messenger
-    ..setMockMethodCallHandler(_methods, null)
-    ..setMockStreamHandler(_events, null);
+  void dispose() =>
+      _messenger
+        ..setMockMethodCallHandler(_methods, null)
+        ..setMockStreamHandler(_events, null);
 
   List<String> get methods => calls.map((call) => call.method).toList();
 
   List<Map<Object?, Object?>> argsOf(String method) => [
-        for (final call in calls)
-          if (call.method == method) call.arguments as Map<Object?, Object?>,
-      ];
+    for (final call in calls)
+      if (call.method == method) call.arguments as Map<Object?, Object?>,
+  ];
 
   void emit(String id, String type) =>
       _sink?.success({'utteranceId': id, 'type': type, 'elapsedMs': 100});
@@ -78,17 +81,19 @@ InstalledVoicePack supertonicPack({List<VoicePackSpeaker>? speakers}) =>
         name: 'Supertonic 3',
         modelType: VoicePackModelType.supertonic,
         languages: const ['en', 'ko', 'es'],
-        speakers: speakers ??
+        speakers:
+            speakers ??
             const [
               VoicePackSpeaker(index: 0, name: 'F1'),
               VoicePackSpeaker(index: 1, name: 'Marco'),
             ],
         files: [
           VoicePackFile(
-              url: Uri.parse('https://example.com/vocoder.onnx'),
-              size: 1,
-              sha256: 'a' * 64,
-              path: 'onnx/vocoder.onnx'),
+            url: Uri.parse('https://example.com/vocoder.onnx'),
+            size: 1,
+            sha256: 'a' * 64,
+            path: 'onnx/vocoder.onnx',
+          ),
         ],
         config: const {
           'voice_styles': ['voice_styles/F1.json', 'voice_styles/M1.json'],
@@ -105,9 +110,11 @@ void main() {
   late FakeNative native;
   late NeuralTtsEngine engine;
 
-  NeuralTtsEngine create({int steps = 5}) => NeuralTtsEngine(supertonicPack(),
-      steps: steps,
-      platform: OnnxTtsPlatform(methods: _methods, events: _events));
+  NeuralTtsEngine create({int steps = 5}) => NeuralTtsEngine(
+    supertonicPack(),
+    steps: steps,
+    platform: OnnxTtsPlatform(methods: _methods, events: _events),
+  );
 
   setUp(() {
     native = FakeNative();
@@ -120,10 +127,18 @@ void main() {
   });
 
   /// Speaks [text] and lets the fake finish playing it.
-  Future<void> speakNow(String text,
-      {TtsVoice? voice, double rate = 0.5, String? language}) async {
-    final speaking =
-        engine.speak(text, voice: voice, rate: rate, language: language);
+  Future<void> speakNow(
+    String text, {
+    TtsVoice? voice,
+    double rate = 0.5,
+    String? language,
+  }) async {
+    final speaking = engine.speak(
+      text,
+      voice: voice,
+      rate: rate,
+      language: language,
+    );
     await pumpEventQueue();
     native.finish();
     await speaking;
@@ -148,12 +163,19 @@ void main() {
   });
 
   test('a failed load is retried on the next speak', () async {
-    native.onLoad = () async =>
-        throw PlatformException(code: 'load_failed', message: 'OOM');
+    native.onLoad =
+        () async =>
+            throw PlatformException(code: 'load_failed', message: 'OOM');
     await expectLater(
-        engine.speak('Hello there everyone'),
-        throwsA(isA<NeuralTtsLoadException>()
-            .having((e) => e.cause.message, 'cause', 'OOM')));
+      engine.speak('Hello there everyone'),
+      throwsA(
+        isA<NeuralTtsLoadException>().having(
+          (e) => e.cause.message,
+          'cause',
+          'OOM',
+        ),
+      ),
+    );
     expect(engine.isLoaded, isFalse);
     // other errors aren't load failures.
     native.onLoad = () async => throw PlatformException(code: 'bad_args');
@@ -165,13 +187,18 @@ void main() {
   });
 
   test('speaks the whole message with the language, voice and speed', () async {
-    await speakNow('Muxfd said: that was the cleanest clutch, GG everyone!',
-        rate: 0.8);
-    await speakNow('Hola a todos',
-        voice: const TtsVoice(id: 'M1', name: 'Marco', locale: 'es'));
+    await speakNow(
+      'Muxfd said: that was the cleanest clutch, GG everyone!',
+      rate: 0.8,
+    );
+    await speakNow(
+      'Hola a todos',
+      voice: const TtsVoice(id: 'M1', name: 'Marco', locale: 'es'),
+    );
     final [first, second] = native.argsOf('speak');
-    expect(first['segments'],
-        ['Muxfd said: that was the cleanest clutch, GG everyone!']);
+    expect(first['segments'], [
+      'Muxfd said: that was the cleanest clutch, GG everyone!',
+    ]);
     expect(first['language'], 'en');
     expect(first['voiceId'], 'F1', reason: "the pack's first speaker");
     expect(first['speed'], 1.6);
@@ -179,8 +206,13 @@ void main() {
   });
 
   test('maps the rate to the native speed', () {
-    expect([0.0, 0.4, 0.5, 1.0, 5.0].map(NeuralTtsEngine.speedForRate),
-        [0.7, 0.8, 1.0, 2.0, 2.0]);
+    expect([0.0, 0.4, 0.5, 1.0, 5.0].map(NeuralTtsEngine.speedForRate), [
+      0.7,
+      0.8,
+      1.0,
+      2.0,
+      2.0,
+    ]);
   });
 
   test('speaks nothing for blank text', () async {
@@ -227,11 +259,16 @@ void main() {
       TtsVoice(id: 'F1', name: 'F1', locale: 'ko'),
       TtsVoice(id: 'M1', name: 'Marco', locale: 'ko'),
     ]);
-    engine = NeuralTtsEngine(supertonicPack(speakers: const [
-      VoicePackSpeaker(index: 0, name: 'F1', language: 'es'),
-    ]));
-    expect(await engine.voices(),
-        const [TtsVoice(id: 'F1', name: 'F1', locale: 'es')]);
+    engine = NeuralTtsEngine(
+      supertonicPack(
+        speakers: const [
+          VoicePackSpeaker(index: 0, name: 'F1', language: 'es'),
+        ],
+      ),
+    );
+    expect(await engine.voices(), const [
+      TtsVoice(id: 'F1', name: 'F1', locale: 'es'),
+    ]);
   });
 
   test('release unloads, and the next speak loads again', () async {

@@ -14,31 +14,49 @@ import '../../fakes/fake_voice_pack_repository.dart';
 
 void main() {
   late FakeVoicePackRepository repository;
+  late TtsModel tts;
 
-  Future<void> open(WidgetTester tester,
-      {Widget home = const VoicePacksScreen(), bool isSupported = true}) async {
-    repository = FakeVoicePackRepository();
+  Future<void> open(
+    WidgetTester tester, {
+    Widget home = const VoicePacksScreen(),
+    bool isSupported = true,
+    List<VoicePack>? catalog,
+  }) async {
+    repository =
+        FakeVoicePackRepository()
+          ..catalog =
+              catalog ??
+              [
+                bundledVoicePacks.singleWhere(
+                  (pack) => pack.id == 'supertonic-3',
+                ),
+              ];
     final packs = VoicePacksModel(repository, isSupported: isSupported);
-    final tts = TtsModel.fromJson(const {},
-        engine: FakeTtsEngine(), reportError: (e, st) => throw e);
+    tts = TtsModel.fromJson(
+      const {},
+      engine: FakeTtsEngine(),
+      reportError: (e, st) => throw e,
+    );
     addTearDown(() {
       packs.dispose();
       tts.dispose();
     });
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: tts),
-        ChangeNotifierProvider.value(value: packs),
-      ],
-      child: MaterialApp(
-        localizationsDelegates: const [
-          ...AppLocalizations.localizationsDelegates,
-          LocaleNamesLocalizationsDelegate(),
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: tts),
+          ChangeNotifierProvider.value(value: packs),
         ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: home,
+        child: MaterialApp(
+          localizationsDelegates: const [
+            ...AppLocalizations.localizationsDelegates,
+            LocaleNamesLocalizationsDelegate(),
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: home,
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
   }
 
@@ -51,25 +69,32 @@ void main() {
 
   FakeInstallTask task() => repository.tasks['supertonic-3']!;
 
-  testWidgets('lists a pack with its size, languages and license',
-      (tester) async {
+  testWidgets('lists a pack with its size, languages and license', (
+    tester,
+  ) async {
     await open(tester);
 
     expect(find.text('Supertonic 3'), findsOneWidget);
     expect(find.text('10 voices · 401 MB'), findsOneWidget);
     // sorted by name.
     expect(
-        find.textContaining(
-            RegExp(r'^31 languages: Arabic, Bulgarian, .*, Vietnamese$')),
-        findsOneWidget);
+      find.textContaining(
+        RegExp(r'^31 languages: Arabic, Bulgarian, .*, Vietnamese$'),
+      ),
+      findsOneWidget,
+    );
     expect(find.textContaining('machine-generated'), findsOneWidget);
     expect(find.text('Supertonic 3 by Supertone Inc.'), findsOneWidget);
     expect(find.textContaining('forbids harmful uses'), findsOneWidget);
     expect(find.text('OpenRAIL-M'), findsOneWidget);
 
     // the size on disk once installed.
-    repository
-        .add(installedPackOf(bundledVoicePacks.single, sizeOnDisk: 402000000));
+    repository.add(
+      installedPackOf(
+        bundledVoicePacks.singleWhere((pack) => pack.id == 'supertonic-3'),
+        sizeOnDisk: 402000000,
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('10 voices · 402 MB'), findsOneWidget);
   });
@@ -98,11 +123,11 @@ void main() {
     await tester.pump();
     expect(find.text('Downloading: 100 MB of 401 MB'), findsOneWidget);
     expect(
-        tester
-            .widget<LinearProgressIndicator>(
-                find.byType(LinearProgressIndicator))
-            .value,
-        closeTo(100 / 401, 0.001));
+      tester
+          .widget<LinearProgressIndicator>(find.byType(LinearProgressIndicator))
+          .value,
+      closeTo(100 / 401, 0.001),
+    );
 
     task().emit(VoicePackInstallPhase.verifying, 401000000);
     await tester.pump();
@@ -118,8 +143,9 @@ void main() {
     expect(find.textContaining("Couldn't install"), findsNothing);
   });
 
-  testWidgets('a download waiting for Wi-Fi can use mobile data',
-      (tester) async {
+  testWidgets('a download waiting for Wi-Fi can use mobile data', (
+    tester,
+  ) async {
     await open(tester);
     await tap(tester, find.text('Download'));
     final first = task();
@@ -147,7 +173,9 @@ void main() {
       await tester.tap(find.byType(OutlinedButton));
       await tester.pumpAndSettle();
       expect(
-          find.text('Delete Supertonic 3? This frees 402 MB.'), findsOneWidget);
+        find.text('Delete Supertonic 3? This frees 402 MB.'),
+        findsOneWidget,
+      );
     }
 
     await tapDelete();
@@ -164,16 +192,19 @@ void main() {
     expect(find.text('Download'), findsOneWidget);
   });
 
-  testWidgets('a failed install says so and can be tried again',
-      (tester) async {
+  testWidgets('a failed install says so and can be tried again', (
+    tester,
+  ) async {
     await open(tester);
     await tap(tester, find.text('Download'));
     task().fail(const VoicePackDownloadException('boom'));
     await tester.pumpAndSettle();
     expect(
-        find.text(
-            "Couldn't install Supertonic 3. Check your connection and try again."),
-        findsOneWidget);
+      find.text(
+        "Couldn't install Supertonic 3. Check your connection and try again.",
+      ),
+      findsOneWidget,
+    );
 
     await tap(tester, find.text('Download'));
     expect(repository.tasks, contains('supertonic-3'));
@@ -182,7 +213,9 @@ void main() {
 
   testWidgets('offers an update for an outdated pack', (tester) async {
     await open(tester);
-    final pack = bundledVoicePacks.single;
+    final pack = bundledVoicePacks.singleWhere(
+      (pack) => pack.id == 'supertonic-3',
+    );
     repository.add(installedPackOf(pack));
     repository.catalog = [
       VoicePack.fromJson({...pack.toJson(), 'version': 2}),
@@ -191,5 +224,39 @@ void main() {
 
     await tap(tester, find.text('Update'));
     expect(repository.tasks, contains('supertonic-3'));
+  });
+  testWidgets('lists both packs and selects the installed pack explicitly', (
+    tester,
+  ) async {
+    await open(tester, catalog: bundledVoicePacks);
+    final current = bundledVoicePacks.singleWhere(
+      (pack) => pack.id == 'supertonic-3',
+    );
+    final smaller = bundledVoicePacks.singleWhere(
+      (pack) => pack.id == 'supertonic-2',
+    );
+    repository.add(installedPackOf(current));
+    repository.add(installedPackOf(smaller));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<RadioGroup<String>>(find.byType(RadioGroup<String>))
+          .groupValue,
+      current.id,
+    );
+    await tester.scrollUntilVisible(
+      find.text('Supertonic 2'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tap(tester, find.text('Supertonic 2'));
+    await tester.pumpAndSettle();
+    expect(tts.preferredVoicePackId, smaller.id);
+    expect(
+      tester
+          .widget<RadioGroup<String>>(find.byType(RadioGroup<String>))
+          .groupValue,
+      smaller.id,
+    );
   });
 }

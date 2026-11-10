@@ -19,7 +19,9 @@ class PinnableMessageSliver extends SingleChildRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      BuildContext context, RenderPinnableMessageSliver renderObject) {
+    BuildContext context,
+    RenderPinnableMessageSliver renderObject,
+  ) {
     renderObject
       ..vsync = vsync
       ..pinned = pinned;
@@ -31,15 +33,18 @@ class RenderPinnableMessageSliver extends RenderSliverToBoxAdapter {
   late final CurvedAnimation _animation;
   bool _pinned;
 
-  RenderPinnableMessageSliver(
-      {required TickerProvider vsync, required bool pinned, super.child})
-      : _vsync = vsync,
-        _pinned = pinned {
+  RenderPinnableMessageSliver({
+    required TickerProvider vsync,
+    required bool pinned,
+    super.child,
+  }) : _vsync = vsync,
+       _pinned = pinned {
     _controller = AnimationController(
-        vsync: vsync,
-        value: pinned ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 300),
-        reverseDuration: const Duration(milliseconds: 300));
+      vsync: vsync,
+      value: pinned ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 300),
+      reverseDuration: const Duration(milliseconds: 300),
+    );
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOut)
       ..addListener(markNeedsLayout);
   }

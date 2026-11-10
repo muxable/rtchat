@@ -41,8 +41,8 @@ class StreamPreviewModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        'isHighDefinition': _isHighDefinition,
-        'volume': _volume,
-        'showBatteryPrompt': _showBatteryPrompt,
-      };
+    'isHighDefinition': _isHighDefinition,
+    'volume': _volume,
+    'showBatteryPrompt': _showBatteryPrompt,
+  };
 }

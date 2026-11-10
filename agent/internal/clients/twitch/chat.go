@@ -3,6 +3,7 @@ package twitch
 import (
 	"context"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -66,11 +67,41 @@ func (c *Client) Ban(ctx context.Context, channel, moderator, user string, durat
 	if duration != 0 {
 		data["duration"], data["reason"] = duration, reason
 	}
-	return c.write(ctx, "POST", moderationPath("/moderation/bans", channel, moderator, nil), map[string]any{"data": data})
+	return c.writeBan(ctx, "POST", moderationPath("/moderation/bans", channel, moderator, nil), map[string]any{"data": data})
 }
 
 func (c *Client) Unban(ctx context.Context, channel, moderator, user string) error {
-	return c.write(ctx, "DELETE", moderationPath("/moderation/bans", channel, moderator, url.Values{"user_id": {user}}), nil)
+	return c.writeBan(ctx, "DELETE", moderationPath("/moderation/bans", channel, moderator, url.Values{"user_id": {user}}), nil)
+}
+
+// ModerationRejected is a recognized refusal of a moderation action by Twitch.
+// Other refusals keep their redacted HTTP error and are classified by the caller.
+type ModerationRejected struct{ Message string }
+
+func (e *ModerationRejected) Error() string { return e.Message }
+
+func (c *Client) writeBan(ctx context.Context, method, path string, body any) error {
+	response, err := c.Do(ctx, method, path, body)
+	if err != nil {
+		return err
+	}
+	if response.StatusCode == 400 {
+		var result struct{ Message string }
+		if response.Decode(&result) == nil {
+			// Prefer stable, specific messages for recognized ban-state rejections.
+			switch strings.TrimSuffix(strings.ToLower(strings.TrimSpace(result.Message)), ".") {
+			case "user is already banned", "the user specified in the user_id field is already banned":
+				return &ModerationRejected{Message: "This user is already banned."}
+			case "user is not banned", "the user specified in the user_id query parameter is not banned":
+				return &ModerationRejected{Message: "This user is not banned."}
+			case "user may not be banned", "the user specified in the user_id field may not be banned":
+				return &ModerationRejected{Message: "Twitch does not allow banning this user."}
+			case "user may not be put in a timeout", "the user specified in the user_id field may not be put in a timeout":
+				return &ModerationRejected{Message: "Twitch does not allow timing out this user."}
+			}
+		}
+	}
+	return response.Err()
 }
 
 func (c *Client) DeleteMessages(ctx context.Context, channel, moderator, message string) error {
@@ -90,10 +121,22 @@ func moderationPath(path, channel, moderator string, params url.Values) string {
 	return path + "?" + params.Encode()
 }
 
+// RaidRejected is Twitch's reason for refusing to start or cancel a raid, e.g.
+// because the target doesn't accept raids or there is no raid to cancel.
+type RaidRejected struct{ Message string }
+
+func (e *RaidRejected) Error() string { return e.Message }
+
 func (c *Client) StartRaid(ctx context.Context, from, to string) (time.Time, error) {
 	response, err := c.Do(ctx, "POST", "/raids?"+url.Values{"from_broadcaster_id": {from}, "to_broadcaster_id": {to}}.Encode(), nil)
 	if err != nil {
 		return time.Time{}, err
+	}
+	if response.StatusCode == 400 {
+		var result struct{ Message string }
+		if response.Decode(&result) == nil && result.Message != "" {
+			return time.Time{}, &RaidRejected{Message: result.Message}
+		}
 	}
 	if err := response.Err(); err != nil {
 		return time.Time{}, err
@@ -113,8 +156,37 @@ func (c *Client) StartRaid(ctx context.Context, from, to string) (time.Time, err
 	return started, nil
 }
 
+// CancelRaid returns a RaidRejected with Twitch's message when there is no
+// pending raid to cancel, e.g. because it already went through.
 func (c *Client) CancelRaid(ctx context.Context, channel string) error {
-	return c.write(ctx, "DELETE", "/raids?"+url.Values{"broadcaster_id": {channel}}.Encode(), nil)
+	response, err := c.Do(ctx, "DELETE", "/raids?"+url.Values{"broadcaster_id": {channel}}.Encode(), nil)
+	if err != nil {
+		return err
+	}
+	if response.StatusCode == 404 {
+		var result struct{ Message string }
+		if response.Decode(&result) == nil && result.Message != "" {
+			return &RaidRejected{Message: result.Message}
+		}
+		return &RaidRejected{Message: "no pending raid"}
+	}
+	return response.Err()
+}
+
+// Shoutout returns an empty reason when accepted, or Twitch's message when
+// rejected, e.g. because the channel is offline or on cooldown.
+func (c *Client) Shoutout(ctx context.Context, from, to, moderator string) (string, error) {
+	response, err := c.Do(ctx, "POST", "/chat/shoutouts?"+url.Values{"from_broadcaster_id": {from}, "to_broadcaster_id": {to}, "moderator_id": {moderator}}.Encode(), nil)
+	if err != nil {
+		return "", err
+	}
+	if response.StatusCode == 400 || response.StatusCode == 429 {
+		var result struct{ Message string }
+		if response.Decode(&result) == nil && result.Message != "" {
+			return result.Message, nil
+		}
+	}
+	return "", response.Err()
 }
 
 func (c *Client) write(ctx context.Context, method, path string, body any) error {

@@ -8,11 +8,13 @@ final kick = Channel(Providers.kick, '2', 'muxfd');
 
 void main() {
   test("twitch channels always have follower counts", () {
-    final metadata = channelMetadataFromData(twitch, {
-      'viewerCount': 10,
-      'language': 'en',
-      'title': 'irl',
-    }) as TwitchChannelMetadata;
+    final metadata =
+        channelMetadataFromData(twitch, {
+              'viewerCount': 10,
+              'language': 'en',
+              'title': 'irl',
+            })
+            as TwitchChannelMetadata;
     expect(metadata.viewerCount, 10);
     expect(metadata.followerCount, 0);
     expect(metadata.title, 'irl');

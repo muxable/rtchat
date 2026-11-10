@@ -44,24 +44,32 @@ class VoiceSettings extends StatelessWidget {
                 return const SizedBox.shrink();
               }
               return _Notice(
-                  text: l10n
-                      .languageUnsupported(languageName(context, language)));
+                text: l10n.languageUnsupported(languageName(context, language)),
+              );
             },
           ),
         ListTile(
           leading: const Icon(Icons.download_for_offline_outlined),
           title: Text(l10n.voicePacks),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const VoicePacksScreen())),
+          onTap:
+              () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const VoicePacksScreen(),
+                ),
+              ),
         ),
         if (isNeural)
           ListTile(
             leading: const Icon(Icons.person_outline),
             title: Text(l10n.voices),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const VoiceLanguagesScreen())),
+            onTap:
+                () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const VoiceLanguagesScreen(),
+                  ),
+                ),
           ),
         const Divider(),
       ],
@@ -80,16 +88,19 @@ class _Notice extends StatelessWidget {
   Widget build(BuildContext context) {
     final onDismiss = this.onDismiss;
     return ListTile(
-      leading: Icon(Icons.info_outline,
-          color: Theme.of(context).colorScheme.primary),
+      leading: Icon(
+        Icons.info_outline,
+        color: Theme.of(context).colorScheme.primary,
+      ),
       title: Text(text, style: Theme.of(context).textTheme.bodyMedium),
-      trailing: onDismiss == null
-          ? null
-          : IconButton(
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-              icon: const Icon(Icons.close),
-              onPressed: onDismiss,
-            ),
+      trailing:
+          onDismiss == null
+              ? null
+              : IconButton(
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                icon: const Icon(Icons.close),
+                onPressed: onDismiss,
+              ),
     );
   }
 }

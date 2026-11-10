@@ -12,16 +12,18 @@ import '../fakes/fake_chat.dart';
 import '../fakes/fake_tts_engine.dart';
 
 FakeChatMessage chat(String text, int i) => FakeChatMessage(
-    messageId: 'm$i',
-    timestamp: DateTime(2024),
-    author: FakeChatUser(userId: '$i', login: 'user$i'),
-    message: text);
+  messageId: 'm$i',
+  timestamp: DateTime(2024),
+  author: FakeChatUser(userId: '$i', login: 'user$i'),
+  message: text,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() => initializeDateFormatting('en'));
 
   final l10n = lookupAppLocalizations(const Locale('en'));
+  final spanish = lookupAppLocalizations(const Locale('es'));
   late SpeechLog log;
   late FakeTtsEngine system;
   late FakeTtsEngine neural;
@@ -32,12 +34,16 @@ void main() {
     log = SpeechLog();
     system = FakeTtsEngine(log: log, name: 'system');
     neural = FakeTtsEngine(
-        log: log,
-        name: 'neural',
-        availableVoices: packVoices(['en', 'es', 'ja']));
+      log: log,
+      name: 'neural',
+      availableVoices: packVoices(['en', 'es', 'ja']),
+    );
     errors = [];
-    model = TtsModel.fromJson({'language': 'es'},
-        engine: system, reportError: (error, _) => errors.add(error));
+    model = TtsModel.fromJson(
+      {'language': 'es'},
+      engine: system,
+      reportError: (error, _) => errors.add(error),
+    );
     model.neuralEngine = neural;
     model.setMode(l10n, TtsMode.enabled);
   });
@@ -61,57 +67,69 @@ void main() {
     await pumpEventQueue();
 
     expect(neural.spoken, [
-      'Text to speech enabled',
-      'user1 said: konnichiwa',
-      'user2 said: hola'
+      spanish.textToSpeechEnabled,
+      lookupAppLocalizations(
+        const Locale('ja'),
+      ).saidMessage('user1', 'konnichiwa'),
+      spanish.saidMessage('user2', 'hola'),
     ]);
-    expect(neural.utterances.map((u) => u.language), ['en', 'ja', 'es'],
-        reason: 'alerts are in the app language');
+    expect(neural.utterances.map((u) => u.language), [
+      'es',
+      'ja',
+      'es',
+    ], reason: 'announcements follow the reading language');
     expect(neural.utterances.last.rate, 0.8);
     expect(system.spoken, isEmpty);
   });
 
-  test('reads a message the neural engine fails with the system voice',
-      () async {
-    await pumpEventQueue();
-    neural.failNext = PlatformException(code: 'speak_failed');
-    model.say(l10n, chat('first', 1));
-    model.say(l10n, chat('second', 2));
-    await pumpEventQueue();
-
-    expect(system.spoken, ['user1 said: first']);
-    expect(neural.spoken.last, 'user2 said: second');
-    expect(errors.single, isA<PlatformException>());
-
-    // but not a message unsaid in the meantime.
-    neural.onSpeak = (_) async {
-      model.unsay('m3');
-      throw PlatformException(code: 'speak_failed');
-    };
-    model.say(l10n, chat('third', 3));
-    await pumpEventQueue();
-    expect(system.spoken, hasLength(1));
-  });
-
   test(
-      'a replaced engine finishes its message and is disposed before the '
+    'reads a message the neural engine fails with the system voice',
+    () async {
+      await pumpEventQueue();
+      neural.failNext = PlatformException(code: 'speak_failed');
+      model.say(l10n, chat('first', 1));
+      model.say(l10n, chat('second', 2));
+      await pumpEventQueue();
+
+      expect(system.spoken, [spanish.saidMessage('user1', 'first')]);
+      expect(neural.spoken.last, spanish.saidMessage('user2', 'second'));
+      expect(errors.single, isA<PlatformException>());
+
+      // but not a message unsaid in the meantime.
+      neural.onSpeak = (_) async {
+        model.unsay('m3');
+        throw PlatformException(code: 'speak_failed');
+      };
+      model.say(l10n, chat('third', 3));
+      await pumpEventQueue();
+      expect(system.spoken, hasLength(1));
+    },
+  );
+
+  test('a replaced engine finishes its message and is disposed before the '
       'next one starts', () async {
     final next = FakeTtsEngine(
-        log: log, name: 'next', availableVoices: neural.availableVoices);
+      log: log,
+      name: 'next',
+      availableVoices: neural.availableVoices,
+    );
     neural.holdSpeech = true;
     model.say(l10n, chat('first', 1));
     await pumpEventQueue();
 
     model.neuralEngine = next;
     await pumpEventQueue();
-    expect((neural.isDisposed, neural.stopCount), (false, 0),
-        reason: 'not cut off');
+    expect(
+      (neural.isDisposed, neural.stopCount),
+      (false, 0),
+      reason: 'not cut off',
+    );
 
     await drain();
     expect(log.events, [
-      'neural: Text to speech enabled',
+      'neural: ${spanish.textToSpeechEnabled}',
       'neural dispose',
-      'next: user1 said: first',
+      'next: ${spanish.saidMessage('user1', 'first')}',
     ]);
     expect(log.maxSpeaking, 1);
 
@@ -131,7 +149,7 @@ void main() {
 
     expect(model.mode, TtsMode.disabled);
     expect(neural.stopCount, greaterThan(0));
-    expect(neural.spoken.last, l10n.textToSpeechTooManyMessages);
+    expect(neural.spoken.last, spanish.textToSpeechTooManyMessages);
     expect(log.maxSpeaking, 1);
   });
 

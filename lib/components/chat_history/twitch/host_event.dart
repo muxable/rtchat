@@ -1,6 +1,8 @@
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:styled_text/styled_text.dart';
@@ -13,17 +15,22 @@ class TwitchHostEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedEventWidget.avatar(
-      avatar: ResilientNetworkImage(model.from.profilePictureUrl),
+      avatar: CachedNetworkImageProvider(
+        model.from.profilePictureUrl.toString(),
+      ),
       child: StyledText(
         text: AppLocalizations.of(context)!.hostEventMessage(
+          htmlEscape.convert(
             model.from.displayName ?? AppLocalizations.of(context)!.anonymous,
-            model.viewers),
+          ),
+          model.viewers,
+        ),
         tags: {
           'b': StyledTextTag(
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(fontWeight: FontWeight.bold)),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
         },
       ),
     );

@@ -14,11 +14,12 @@ class SwipeToRemoveChannelTile extends StatelessWidget {
   /// Shown behind the tile while it's swiped.
   final String label;
 
-  const SwipeToRemoveChannelTile(
-      {super.key,
-      required this.channel,
-      required this.onRemove,
-      required this.label});
+  const SwipeToRemoveChannelTile({
+    super.key,
+    required this.channel,
+    required this.onRemove,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,15 +40,20 @@ class SwipeToRemoveChannelTile extends StatelessWidget {
         color: colors.errorContainer,
         padding: const EdgeInsets.symmetric(horizontal: 24),
         alignment: Alignment.centerRight,
-        child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          Flexible(
-            child: Text(label,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Flexible(
+              child: Text(
+                label,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: colors.onErrorContainer)),
-          ),
-          const SizedBox(width: 12),
-          Icon(Icons.delete_outline, color: colors.onErrorContainer),
-        ]),
+                style: TextStyle(color: colors.onErrorContainer),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Icon(Icons.delete_outline, color: colors.onErrorContainer),
+          ],
+        ),
       ),
       child: tile,
     );
@@ -61,29 +67,33 @@ class InChatChannels extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ViewsModel>(builder: (context, views, child) {
-      final channels = views.channels;
-      if (channels.length < 2) {
-        return const SizedBox.shrink();
-      }
-      final l10n = AppLocalizations.of(context)!;
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Text(l10n.inChat,
-                style: Theme.of(context).textTheme.titleSmall),
-          ),
-          for (final channel in channels)
-            SwipeToRemoveChannelTile(
-              channel: channel,
-              label: l10n.removeFromChat,
-              onRemove: () => views.removeChannel(channel),
+    return Consumer<ViewsModel>(
+      builder: (context, views, child) {
+        final channels = views.channels;
+        if (channels.length < 2) {
+          return const SizedBox.shrink();
+        }
+        final l10n = AppLocalizations.of(context)!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Text(
+                l10n.inChat,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
             ),
-          const Divider(),
-        ],
-      );
-    });
+            for (final channel in channels)
+              SwipeToRemoveChannelTile(
+                channel: channel,
+                label: l10n.removeFromChat,
+                onRemove: () => views.removeChannel(channel),
+              ),
+            const Divider(),
+          ],
+        );
+      },
+    );
   }
 }

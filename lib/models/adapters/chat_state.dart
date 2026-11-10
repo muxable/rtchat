@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:rtchat/api.dart';
 import 'package:rtchat/models/channels.dart';
 
@@ -21,22 +22,26 @@ class Viewers {
       return this;
     }
     return Viewers(
-      broadcaster: broadcaster
-          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
-          .take(10)
-          .toList(),
-      moderators: moderators
-          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
-          .take(10)
-          .toList(),
-      vips: vips
-          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
-          .take(10)
-          .toList(),
-      viewers: viewers
-          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
-          .take(10)
-          .toList(),
+      broadcaster:
+          broadcaster
+              .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+              .take(10)
+              .toList(),
+      moderators:
+          moderators
+              .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+              .take(10)
+              .toList(),
+      vips:
+          vips
+              .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+              .take(10)
+              .toList(),
+      viewers:
+          viewers
+              .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+              .take(10)
+              .toList(),
     );
   }
 
@@ -72,19 +77,18 @@ class TwitchBadgeInfo {
   final String setId;
   final List<BadgeVersion> versions;
 
-  TwitchBadgeInfo({
-    required this.setId,
-    required this.versions,
-  });
+  TwitchBadgeInfo({required this.setId, required this.versions});
 }
 
 class ChatStateAdapter {
   final Api api;
 
-  ChatStateAdapter._({required this.api});
+  /// Calls as [api]'s user. Only [getViewers] reads as the caller.
+  ChatStateAdapter(this.api);
 
+  /// Calls as [DEFAULT]'s user, for reads that don't depend on who calls.
   static ChatStateAdapter get instance =>
-      _instance ??= ChatStateAdapter._(api: Api.instance);
+      _instance ??= ChatStateAdapter(Api.forApp(Firebase.app()));
   static ChatStateAdapter? _instance;
 
   Future<Viewers> getViewers({required String channelId}) {
@@ -104,17 +108,21 @@ class ChatStateAdapter {
 
     for (int attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        final result = await api
-            .callable("getBadges")
-            .call({"provider": Providers.twitch, "channelId": channelId});
+        final result = await api.callable("getBadges").call({
+          "provider": Providers.twitch,
+          "channelId": channelId,
+        });
         if (result.data == null) {
           return [];
         }
         return result.data
-            .map<TwitchBadgeInfo>((badgeInfo) => TwitchBadgeInfo(
-                  setId: badgeInfo["set_id"],
-                  versions: badgeInfo["versions"]
-                      .map<BadgeVersion>((version) => BadgeVersion(
+            .map<TwitchBadgeInfo>(
+              (badgeInfo) => TwitchBadgeInfo(
+                setId: badgeInfo["set_id"],
+                versions:
+                    badgeInfo["versions"]
+                        .map<BadgeVersion>(
+                          (version) => BadgeVersion(
                             id: version["id"],
                             imageUrl1x: version["image_url_1x"],
                             imageUrl2x: version["image_url_2x"],
@@ -123,9 +131,11 @@ class ChatStateAdapter {
                             title: version["title"],
                             clickAction: version["click_action"],
                             clickUrl: version["click_url"],
-                          ))
-                      .toList(),
-                ))
+                          ),
+                        )
+                        .toList(),
+              ),
+            )
             .toList();
       } catch (e) {
         if (e is FirebaseFunctionsException && e.code == 'unavailable') {

@@ -19,46 +19,59 @@ class TwitchPredictionEventModel extends MessageModel {
   final DateTime endTime;
   final List<TwitchPredictionOutcomeModel> outcomes;
 
-  const TwitchPredictionEventModel(
-      {required super.timestamp,
-      required super.messageId,
-      required this.title,
-      this.status,
-      this.winningOutcomeId,
-      required this.endTime,
-      required this.outcomes});
+  const TwitchPredictionEventModel({
+    required super.timestamp,
+    required super.messageId,
+    required this.title,
+    this.status,
+    this.winningOutcomeId,
+    required this.endTime,
+    required this.outcomes,
+  });
 
   static TwitchPredictionEventModel fromDocumentData(
-      Map<String, dynamic> data) {
+    Map<String, dynamic> data,
+  ) {
     return TwitchPredictionEventModel(
-        timestamp: data['timestamp'].toDate(),
-        messageId: "channel.prediction-${data['event']['id']}",
-        title: data['event']['title'],
-        status: "in_progress",
-        endTime: DateTime.parse(data['event']['locks_at']),
-        outcomes: data['event']['outcomes']
-            .map<TwitchPredictionOutcomeModel>((outcome) {
-          return TwitchPredictionOutcomeModel(
+      timestamp: data['timestamp'].toDate(),
+      messageId: "channel.prediction-${data['event']['id']}",
+      title: data['event']['title'],
+      status: "in_progress",
+      endTime: DateTime.parse(data['event']['locks_at']),
+      outcomes:
+          data['event']['outcomes'].map<TwitchPredictionOutcomeModel>((
+            outcome,
+          ) {
+            return TwitchPredictionOutcomeModel(
               outcome['id'],
               outcome['channel_points'] ?? 0,
               outcome['color'],
-              outcome['title']);
-        }).toList());
+              outcome['title'],
+            );
+          }).toList(),
+    );
   }
 
   static TwitchPredictionEventModel fromEndEvent(Map<String, dynamic> data) {
     return TwitchPredictionEventModel(
-        timestamp: data['timestamp'].toDate(),
-        messageId: "channel.prediction-${data['event']['id']}",
-        title: data['event']['title'],
-        status: data['event']['status'],
-        winningOutcomeId: data['event']['winning_outcome_id'],
-        endTime: DateTime.parse(data['event']['ended_at']),
-        outcomes: data['event']['outcomes']
-            .map<TwitchPredictionOutcomeModel>((outcome) {
-          return TwitchPredictionOutcomeModel(outcome['id'],
-              outcome['channel_points'], outcome['color'], outcome['title']);
-        }).toList());
+      timestamp: data['timestamp'].toDate(),
+      messageId: "channel.prediction-${data['event']['id']}",
+      title: data['event']['title'],
+      status: data['event']['status'],
+      winningOutcomeId: data['event']['winning_outcome_id'],
+      endTime: DateTime.parse(data['event']['ended_at']),
+      outcomes:
+          data['event']['outcomes'].map<TwitchPredictionOutcomeModel>((
+            outcome,
+          ) {
+            return TwitchPredictionOutcomeModel(
+              outcome['id'],
+              outcome['channel_points'],
+              outcome['color'],
+              outcome['title'],
+            );
+          }).toList(),
+    );
   }
 
   int get totalPoints {

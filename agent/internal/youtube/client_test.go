@@ -431,3 +431,11 @@ func TestTombstoneDoesNotCollideWithMessage(t *testing.T) {
 		t.Fatal("tombstone not written with the deleted message's id", store.messages)
 	}
 }
+
+func TestYoutubeKind(t *testing.T) {
+	for in, want := range map[string]string{"youtube.textMessageEvent": "message", "youtube.tombstone": "tombstone", "youtube.superChatEvent": "superChatEvent"} {
+		if got := youtubeKind(in); got != want {
+			t.Errorf("youtubeKind(%q) = %q, want %q", in, got, want)
+		}
+	}
+}

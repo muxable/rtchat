@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -98,7 +99,7 @@ func TestKickMetadataParity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if data["viewerCount"] != int64(12) || data["categoryId"] != float64(9) || data["onlineAt"].(time.Time).Hour() != 12 {
+	if data["viewerCount"] != int64(12) || data["categoryId"] != int64(9) || data["onlineAt"].(time.Time).Hour() != 12 {
 		t.Fatal(data)
 	}
 	channel.Stream.Live = false
@@ -165,5 +166,47 @@ func TestFollowerPermissionDoesNotFailMetadata(t *testing.T) {
 	}
 	if writes != 1 {
 		t.Fatal(writes)
+	}
+}
+
+func TestUnchanged(t *testing.T) {
+	at := time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)
+	current := map[string]interface{}{"viewerCount": int64(3), "login": "a", "onlineAt": at, "title": nil, "categoryId": float64(9)}
+	for _, tc := range []struct {
+		update map[string]interface{}
+		want   bool
+	}{
+		{map[string]interface{}{"viewerCount": int64(3), "login": "a", "onlineAt": at.In(time.FixedZone("x", 3600)), "title": nil}, true},
+		{map[string]interface{}{"categoryId": float64(9)}, true},
+		{map[string]interface{}{"viewerCount": int64(4)}, false},
+		{map[string]interface{}{"viewerCount": float64(3)}, false},
+		{map[string]interface{}{"categoryId": int64(9)}, false},
+		{map[string]interface{}{"onlineAt": nil}, false},
+		{map[string]interface{}{"onlineAt": at.Add(time.Millisecond)}, false},
+		{map[string]interface{}{"title": "new"}, false},
+		{map[string]interface{}{"followerCount": int64(0)}, false},
+		{map[string]interface{}{"language": nil}, false},
+	} {
+		if got := unchanged(current, tc.update); got != tc.want {
+			t.Errorf("unchanged(%v) = %v", tc.update, got)
+		}
+	}
+}
+
+func TestKickValueMatchesWebhook(t *testing.T) {
+	for _, tc := range []struct{ in, want interface{} }{
+		{float64(9), int64(9)},
+		{float64(-3), int64(-3)},
+		{1.5, 1.5},
+		{9007199254740992.0, 9007199254740992.0},
+		{"IRL", "IRL"},
+		{nil, nil},
+	} {
+		if got := kickValue(tc.in); got != tc.want {
+			t.Errorf("kickValue(%v) = %#v", tc.in, got)
+		}
+	}
+	if got := kickValue(math.Copysign(0, -1)); got != math.Copysign(0, -1) {
+		t.Errorf("negative zero = %#v", got)
 	}
 }

@@ -2,7 +2,7 @@ package jobs
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"time"
@@ -34,7 +34,10 @@ func (a *API) twitch(ctx context.Context, method, path string, query url.Values,
 	if a.TwitchURL != "" {
 		client.BaseURL = a.TwitchURL
 	}
-	return request(ctx, &client.Client, method, path+"?"+query.Encode(), out)
+	if err := request(ctx, &client.Client, method, path+"?"+query.Encode(), out); err != nil {
+		return fmt.Errorf("Twitch %s %s: %w", method, path, err)
+	}
+	return nil
 }
 
 func (a *API) kick(ctx context.Context, method, path string, query url.Values, out any) error {
@@ -46,7 +49,10 @@ func (a *API) kick(ctx context.Context, method, path string, query url.Values, o
 	if a.KickURL != "" {
 		client.BaseURL = a.KickURL
 	}
-	return request(ctx, &client.Client, method, path+"?"+query.Encode(), out)
+	if err := request(ctx, &client.Client, method, path+"?"+query.Encode(), out); err != nil {
+		return fmt.Errorf("Kick %s %s: %w", method, path, err)
+	}
+	return nil
 }
 
 // Job requests are serial and idempotent; deleting an absent subscription succeeds.
@@ -58,7 +64,7 @@ func request(ctx context.Context, client *clients.Client, method, path string, o
 		}
 		return err
 	}
-	for attempt := 0; attempt < 4; attempt++ {
+	for attempt := 0; ; attempt++ {
 		response, err := client.Do(ctx, method, path, nil)
 		if err != nil {
 			if method == http.MethodDelete {
@@ -78,15 +84,17 @@ func request(ctx context.Context, client *clients.Client, method, path string, o
 		if method == http.MethodDelete && response.StatusCode >= 500 {
 			uncertain = true
 		}
+		if attempt == 3 {
+			return failure(fmt.Errorf("provider retry limit reached after 4 attempts: %w", response.Err()))
+		}
 		delay := clients.RetryDelay(response.Header, attempt)
 		if delay > time.Minute {
-			return failure(errors.New("rate limit retry exceeds job budget"))
+			return failure(fmt.Errorf("provider retry delay exceeds job budget: %w", response.Err()))
 		}
 		if err := clients.Wait(ctx, delay); err != nil {
 			return failure(err)
 		}
 	}
-	return failure(errors.New("provider retry limit reached"))
 }
 
 func params(key string, ids []string) url.Values {

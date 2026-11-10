@@ -5,21 +5,53 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_af.dart';
 import 'app_localizations_ar.dart';
+import 'app_localizations_bg.dart';
 import 'app_localizations_bn.dart';
+import 'app_localizations_ca.dart';
+import 'app_localizations_cs.dart';
+import 'app_localizations_da.dart';
 import 'app_localizations_de.dart';
+import 'app_localizations_el.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
+import 'app_localizations_et.dart';
+import 'app_localizations_fi.dart';
 import 'app_localizations_fr.dart';
+import 'app_localizations_gu.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_hr.dart';
+import 'app_localizations_hu.dart';
+import 'app_localizations_id.dart';
+import 'app_localizations_is.dart';
 import 'app_localizations_it.dart';
 import 'app_localizations_ja.dart';
+import 'app_localizations_kn.dart';
 import 'app_localizations_ko.dart';
+import 'app_localizations_lt.dart';
+import 'app_localizations_lv.dart';
+import 'app_localizations_ml.dart';
+import 'app_localizations_ms.dart';
+import 'app_localizations_nb.dart';
 import 'app_localizations_nl.dart';
+import 'app_localizations_no.dart';
+import 'app_localizations_pa.dart';
 import 'app_localizations_pl.dart';
 import 'app_localizations_pt.dart';
+import 'app_localizations_ro.dart';
 import 'app_localizations_ru.dart';
+import 'app_localizations_sk.dart';
+import 'app_localizations_sl.dart';
+import 'app_localizations_sr.dart';
 import 'app_localizations_sv.dart';
+import 'app_localizations_ta.dart';
+import 'app_localizations_te.dart';
+import 'app_localizations_th.dart';
+import 'app_localizations_tl.dart';
+import 'app_localizations_tr.dart';
 import 'app_localizations_uk.dart';
+import 'app_localizations_vi.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -77,7 +109,7 @@ import 'app_localizations_zh.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -100,31 +132,63 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('af'),
     Locale('ar'),
+    Locale('bg'),
     Locale('bn'),
+    Locale('ca'),
+    Locale('cs'),
+    Locale('da'),
     Locale('de'),
+    Locale('el'),
     Locale('es'),
+    Locale('et'),
+    Locale('fi'),
     Locale('fr'),
+    Locale('gu'),
+    Locale('hi'),
+    Locale('hr'),
+    Locale('hu'),
+    Locale('id'),
+    Locale('is'),
     Locale('it'),
     Locale('ja'),
+    Locale('kn'),
     Locale('ko'),
+    Locale('lt'),
+    Locale('lv'),
+    Locale('ml'),
+    Locale('ms'),
+    Locale('nb'),
     Locale('nl'),
+    Locale('no'),
+    Locale('pa'),
     Locale('pl'),
     Locale('pt'),
+    Locale('ro'),
     Locale('ru'),
+    Locale('sk'),
+    Locale('sl'),
+    Locale('sr'),
     Locale('sv'),
+    Locale('ta'),
+    Locale('te'),
+    Locale('th'),
+    Locale('tl'),
+    Locale('tr'),
     Locale('uk'),
+    Locale('vi'),
     Locale('zh'),
-    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant')
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
   /// Message input field placeholder text
@@ -564,7 +628,10 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'<b>{displayName}</b>, <b>{displayNameTwo}</b>, and {numOthers} others are following you'**
   String followingEvent3(
-      String displayName, String displayNameTwo, int numOthers);
+    String displayName,
+    String displayNameTwo,
+    int numOthers,
+  );
 
   /// Unmute option shown when long pressing on a chat message
   ///
@@ -997,21 +1064,32 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'<b>{gifterUserName}</b> has gifted {total} Tier {tier} subs, totaling {cumulativeTotal}!'**
   String subscriptionGiftEvent(
-      String gifterUserName, int total, String tier, int cumulativeTotal);
+    String gifterUserName,
+    int total,
+    String tier,
+    int cumulativeTotal,
+  );
 
   /// Message displayed when a subscription message event occurs
   ///
   /// In en, this message translates to:
   /// **'<b>{subscriberUserName}</b> has subscribed for {cumulativeMonths} months at Tier {tier}!'**
   String subscriptionMessageEvent(
-      String subscriberUserName, int cumulativeMonths, String tier);
+    String subscriberUserName,
+    int cumulativeMonths,
+    String tier,
+  );
 
   /// Message displayed when a subscriber pays for multiple months at once
   ///
   /// In en, this message translates to:
   /// **'<b>{subscriberUserName}</b> has subscribed at Tier {tier} for {durationMonths} months in advance, {cumulativeMonths} months in total!'**
-  String subscriptionMessageMultiMonthEvent(String subscriberUserName,
-      String tier, int durationMonths, int cumulativeMonths);
+  String subscriptionMessageMultiMonthEvent(
+    String subscriberUserName,
+    String tier,
+    int durationMonths,
+    int cumulativeMonths,
+  );
 
   /// Message displayed when a RealtimeCash tip is made with a donor name
   ///
@@ -1041,15 +1119,22 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points. {userInput}'**
-  String channelPointRedemptionWithUserInput(String redeemerUsername,
-      String rewardName, int rewardCost, String userInput);
+  String channelPointRedemptionWithUserInput(
+    String redeemerUsername,
+    String rewardName,
+    int rewardCost,
+    String userInput,
+  );
 
   /// Message displayed when a channel point redemption event occurs without user input
   ///
   /// In en, this message translates to:
   /// **'<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points.'**
   String channelPointRedemptionWithoutUserInput(
-      String redeemerUsername, String rewardName, int rewardCost);
+    String redeemerUsername,
+    String rewardName,
+    int rewardCost,
+  );
 
   /// Message displayed when a cheer event occurs
   ///
@@ -1621,41 +1706,11 @@ abstract class AppLocalizations {
   /// **'Turn off'**
   String get turnOffTextToSpeech;
 
-  /// Button to add a channel to the default channels
-  ///
-  /// In en, this message translates to:
-  /// **'Add channel'**
-  String get addChannel;
-
   /// Button on a channel search result that adds the channel to the channels shown in chat
   ///
   /// In en, this message translates to:
   /// **'Add to chat'**
   String get addToChat;
-
-  /// Title of the settings page for the channels the app opens with
-  ///
-  /// In en, this message translates to:
-  /// **'Default channels'**
-  String get defaultChannels;
-
-  /// Explains what the default channels are
-  ///
-  /// In en, this message translates to:
-  /// **'The channels shown when the app opens'**
-  String get defaultChannelsSubtitle;
-
-  /// Button on the default channels page that saves the channels currently shown as the default channels
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get save;
-
-  /// Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page
-  ///
-  /// In en, this message translates to:
-  /// **'Reset to my channel'**
-  String get resetToMyChannel;
 
   /// Heading in the channel search sheet for the channels currently shown in chat
   ///
@@ -1675,17 +1730,23 @@ abstract class AppLocalizations {
   /// **'Your {provider} account can\'t chat here'**
   String cantChatWithAccount(String provider);
 
+  /// Hint in the disabled message input when none of the channels shown are on the platform of any of the signed-in accounts
+  ///
+  /// In en, this message translates to:
+  /// **'Your accounts can\'t chat here'**
+  String get cantChatWithAccounts;
+
+  /// Message input field placeholder text when there are several channels to send to, naming the one picked
+  ///
+  /// In en, this message translates to:
+  /// **'Send a message to {channel}...'**
+  String sendAMessageTo(String channel);
+
   /// Shown while swiping a channel search result whose platform already has a channel in chat: adding it replaces that channel
   ///
   /// In en, this message translates to:
   /// **'Replace {channel}'**
   String replaceChannel(String channel);
-
-  /// Shown while swiping a default channel away to remove it from the default channels
-  ///
-  /// In en, this message translates to:
-  /// **'Remove'**
-  String get removeChannel;
 
   /// Title of the screen that lists the neural voice packs that can be downloaded, and of the row in the text to speech settings that opens it
   ///
@@ -1830,6 +1891,41 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unable to share message.'**
   String get shareMessageError;
+  /// Title of the settings page that lists the streaming accounts the app is signed in to
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get accounts;
+
+  /// Explains the accounts settings page: the app can be signed in to one account on each streaming platform at the same time
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to each platform you stream on'**
+  String get accountsSubtitle;
+
+  /// Button on the accounts page that signs in to an account on a platform the app isn't signed in to yet, alongside the accounts it is
+  ///
+  /// In en, this message translates to:
+  /// **'Add {provider} account'**
+  String addProviderAccount(String provider);
+
+  /// Button to sign in with an account on a streaming platform
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with {provider}'**
+  String signInWithProvider(String provider);
+
+  /// Confirmation shown before signing out of one account; the others stay signed in
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of {channel} on {provider}?'**
+  String signOutOfAccount(String channel, String provider);
+
+  /// Button on the accounts page that signs out of every account at once
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of all accounts'**
+  String get signOutOfAll;
 }
 
 class _AppLocalizationsDelegate
@@ -1843,23 +1939,55 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) => <String>[
-        'ar',
-        'bn',
-        'de',
-        'en',
-        'es',
-        'fr',
-        'it',
-        'ja',
-        'ko',
-        'nl',
-        'pl',
-        'pt',
-        'ru',
-        'sv',
-        'uk',
-        'zh'
-      ].contains(locale.languageCode);
+    'af',
+    'ar',
+    'bg',
+    'bn',
+    'ca',
+    'cs',
+    'da',
+    'de',
+    'el',
+    'en',
+    'es',
+    'et',
+    'fi',
+    'fr',
+    'gu',
+    'hi',
+    'hr',
+    'hu',
+    'id',
+    'is',
+    'it',
+    'ja',
+    'kn',
+    'ko',
+    'lt',
+    'lv',
+    'ml',
+    'ms',
+    'nb',
+    'nl',
+    'no',
+    'pa',
+    'pl',
+    'pt',
+    'ro',
+    'ru',
+    'sk',
+    'sl',
+    'sr',
+    'sv',
+    'ta',
+    'te',
+    'th',
+    'tl',
+    'tr',
+    'uk',
+    'vi',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1880,43 +2008,108 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'af':
+      return AppLocalizationsAf();
     case 'ar':
       return AppLocalizationsAr();
+    case 'bg':
+      return AppLocalizationsBg();
     case 'bn':
       return AppLocalizationsBn();
+    case 'ca':
+      return AppLocalizationsCa();
+    case 'cs':
+      return AppLocalizationsCs();
+    case 'da':
+      return AppLocalizationsDa();
     case 'de':
       return AppLocalizationsDe();
+    case 'el':
+      return AppLocalizationsEl();
     case 'en':
       return AppLocalizationsEn();
     case 'es':
       return AppLocalizationsEs();
+    case 'et':
+      return AppLocalizationsEt();
+    case 'fi':
+      return AppLocalizationsFi();
     case 'fr':
       return AppLocalizationsFr();
+    case 'gu':
+      return AppLocalizationsGu();
+    case 'hi':
+      return AppLocalizationsHi();
+    case 'hr':
+      return AppLocalizationsHr();
+    case 'hu':
+      return AppLocalizationsHu();
+    case 'id':
+      return AppLocalizationsId();
+    case 'is':
+      return AppLocalizationsIs();
     case 'it':
       return AppLocalizationsIt();
     case 'ja':
       return AppLocalizationsJa();
+    case 'kn':
+      return AppLocalizationsKn();
     case 'ko':
       return AppLocalizationsKo();
+    case 'lt':
+      return AppLocalizationsLt();
+    case 'lv':
+      return AppLocalizationsLv();
+    case 'ml':
+      return AppLocalizationsMl();
+    case 'ms':
+      return AppLocalizationsMs();
+    case 'nb':
+      return AppLocalizationsNb();
     case 'nl':
       return AppLocalizationsNl();
+    case 'no':
+      return AppLocalizationsNo();
+    case 'pa':
+      return AppLocalizationsPa();
     case 'pl':
       return AppLocalizationsPl();
     case 'pt':
       return AppLocalizationsPt();
+    case 'ro':
+      return AppLocalizationsRo();
     case 'ru':
       return AppLocalizationsRu();
+    case 'sk':
+      return AppLocalizationsSk();
+    case 'sl':
+      return AppLocalizationsSl();
+    case 'sr':
+      return AppLocalizationsSr();
     case 'sv':
       return AppLocalizationsSv();
+    case 'ta':
+      return AppLocalizationsTa();
+    case 'te':
+      return AppLocalizationsTe();
+    case 'th':
+      return AppLocalizationsTh();
+    case 'tl':
+      return AppLocalizationsTl();
+    case 'tr':
+      return AppLocalizationsTr();
     case 'uk':
       return AppLocalizationsUk();
+    case 'vi':
+      return AppLocalizationsVi();
     case 'zh':
       return AppLocalizationsZh();
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

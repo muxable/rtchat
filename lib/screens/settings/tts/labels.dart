@@ -20,7 +20,7 @@ String languageName(BuildContext context, String language) {
 /// [languages] sorted by their names in the app's language.
 List<String> sortLanguages(BuildContext context, Iterable<String> languages) {
   final names = {for (final l in languages) l: languageName(context, l)};
-  return names.keys.toList()
-    ..sort(
-        (a, b) => names[a]!.toLowerCase().compareTo(names[b]!.toLowerCase()));
+  return names.keys.toList()..sort(
+    (a, b) => names[a]!.toLowerCase().compareTo(names[b]!.toLowerCase()),
+  );
 }

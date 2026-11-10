@@ -7,8 +7,11 @@ class ChannelAttribution extends StatelessWidget {
   final String provider;
   final Widget child;
 
-  const ChannelAttribution(
-      {super.key, required this.provider, required this.child});
+  const ChannelAttribution({
+    super.key,
+    required this.provider,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,20 +19,26 @@ class ChannelAttribution extends StatelessWidget {
     // placeholder in a line of the message's text style it gets that line's
     // baseline, which the row lines up with the message's first baseline.
     return Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Expanded(child: child),
-          Padding(
-            padding: const EdgeInsetsDirectional.symmetric(horizontal: 8),
-            child: Text.rich(TextSpan(children: [
-              WidgetSpan(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Expanded(child: child),
+        Padding(
+          padding: const EdgeInsetsDirectional.symmetric(horizontal: 8),
+          child: Text.rich(
+            TextSpan(
+              children: [
+                WidgetSpan(
                   alignment: PlaceholderAlignment.middle,
-                  child: ProviderIcon(provider, size: 12)),
-              // a zero width space gives the line the text style's height.
-              const TextSpan(text: '\u200b'),
-            ])),
+                  child: ProviderIcon(provider, size: 12),
+                ),
+                // a zero width space gives the line the text style's height.
+                const TextSpan(text: '\u200b'),
+              ],
+            ),
           ),
-        ]);
+        ),
+      ],
+    );
   }
 }

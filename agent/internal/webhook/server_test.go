@@ -3,6 +3,7 @@ package webhook
 import (
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 
 	"go.uber.org/zap"
@@ -65,6 +66,9 @@ func TestLoggingMiddleware(t *testing.T) {
 			if len(entries) != 1 {
 				t.Fatalf("got %d log entries, want 1", len(entries))
 			}
+			if test.status >= 500 && entries[0].Level != zap.ErrorLevel {
+				t.Fatal("server failure was not logged as an error")
+			}
 			fields := entries[0].ContextMap()
 			if fields["method"] != http.MethodPost || fields["path"] != "/events" || fields["status"] != int64(test.status) {
 				t.Fatalf("unexpected log fields: %v", fields)
@@ -85,5 +89,23 @@ func TestRegisterProviderReplacesPlaceholder(t *testing.T) {
 	s.Mux.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/kick/webhook", nil))
 	if rec.Code != http.StatusAccepted {
 		t.Fatalf("got %d, want %d", rec.Code, http.StatusAccepted)
+	}
+}
+
+func TestHealthzFailsWhileDraining(t *testing.T) {
+	s := NewServer(Secrets{})
+	draining := &atomic.Bool{}
+	s.Draining = draining
+	probe := func() int {
+		w := httptest.NewRecorder()
+		s.Mux.ServeHTTP(w, httptest.NewRequest("GET", "/healthz", nil))
+		return w.Code
+	}
+	if code := probe(); code != http.StatusOK {
+		t.Fatal("healthy before draining", code)
+	}
+	draining.Store(true)
+	if code := probe(); code != http.StatusServiceUnavailable {
+		t.Fatal("health check should fail while draining", code)
 	}
 }

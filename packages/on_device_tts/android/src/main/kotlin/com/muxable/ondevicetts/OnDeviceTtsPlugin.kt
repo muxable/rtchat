@@ -20,6 +20,8 @@ class OnDeviceTtsPlugin : FlutterPlugin {
         const val MEMORY_CHANNEL = "on_device_tts/memory"
     }
 
+    private val systemTts = SystemTtsPlugin()
+
     private var methods: MethodChannel? = null
     private var events: EventChannel? = null
     private var memoryEvents: EventChannel? = null
@@ -28,6 +30,7 @@ class OnDeviceTtsPlugin : FlutterPlugin {
     private var memory: MemoryEvents? = null
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        systemTts.onAttachedToEngine(binding)
         val power = binding.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
         val wakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "on_device_tts:speak").apply {
             setReferenceCounted(false)
@@ -63,6 +66,7 @@ class OnDeviceTtsPlugin : FlutterPlugin {
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        systemTts.onDetachedFromEngine(binding)
         methods?.setMethodCallHandler(null)
         events?.setStreamHandler(null)
         memoryEvents?.setStreamHandler(null)

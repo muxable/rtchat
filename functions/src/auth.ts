@@ -1,9 +1,9 @@
 import * as crypto from "crypto";
-import * as express from "express";
+import express from "express";
 import { rateLimit } from "express-rate-limit";
-import * as expressSession from "express-session";
+import expressSession from "express-session";
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import fetch from "cross-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import {
@@ -13,89 +13,17 @@ import {
   KICK_SCOPES,
 } from "./kick";
 import {
-  isValidState,
   oauthConfig,
   STREAMELEMENTS_OAUTH_CONFIG,
   STREAMLABS_OAUTH_CONFIG,
   TWITCH_CLIENT_ID,
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
-import { Store, SessionData } from "express-session";
+import { FirestoreStore } from "./session_store";
+import { oauthCallback, signInError } from "./oauth_callback";
 import { getYouTubeProfile, YOUTUBE_SCOPES } from "./youtube_actions";
 
 admin.initializeApp();
-
-export interface StoreOptions {
-  dataset: admin.firestore.Firestore;
-  kind?: string;
-}
-
-export class FirestoreStore extends Store {
-  db: admin.firestore.Firestore;
-  kind: string;
-  constructor(options: StoreOptions) {
-    super();
-    this.db = options.dataset;
-    if (!this.db) {
-      throw new Error("No dataset provided to Firestore Session.");
-    }
-    this.kind = options.kind || "Session";
-  }
-
-  get = (
-    sid: string,
-    callback: (err?: Error | null, session?: SessionData) => void
-  ) => {
-    this.db
-      .collection(this.kind)
-      .doc(sid)
-      .get()
-      .then((doc) => {
-        if (!doc.exists) {
-          return callback();
-        }
-
-        try {
-          const result = JSON.parse(doc.data()!.data);
-          return callback(null, result);
-        } catch (err) {
-          return callback(err as Error);
-        }
-      }, callback);
-  };
-
-  set = (
-    sid: string,
-    session: SessionData,
-    callback?: (err?: Error) => void
-  ) => {
-    callback = callback || (() => {});
-    let sessJson;
-
-    try {
-      sessJson = JSON.stringify(session);
-    } catch (err) {
-      return callback(err as Error);
-    }
-
-    this.db
-      .collection(this.kind)
-      .doc(sid)
-      .set({ data: sessJson })
-      .then(() => {
-        callback!();
-      });
-  };
-
-  destroy = (sid: string, callback?: (err?: Error) => void) => {
-    callback = callback || (() => {});
-    this.db
-      .collection(this.kind)
-      .doc(sid)
-      .delete()
-      .then(() => callback!(), callback);
-  };
-}
 
 const app = express();
 
@@ -110,7 +38,7 @@ app.use(
     limit: 30,
     standardHeaders: "draft-7",
     legacyHeaders: false,
-  })
+  }),
 );
 
 app.use(
@@ -125,7 +53,7 @@ app.use(
     saveUninitialized: true,
     rolling: true,
     cookie: { maxAge: 60000, secure: "auto", httpOnly: true },
-  })
+  }),
 );
 
 declare module "express-session" {
@@ -182,42 +110,39 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "user:read:follows",
       "user:read:moderated_channels",
       "user:read:subscriptions",
-      "user:write:chat"
+      "user:write:chat",
     ],
     state: state,
   });
   res.redirect(`${redirectUri}&force_verify=true`);
 });
 
-app.get("/auth/twitch/callback", async (req, res) => {
-  if (!isValidState(req.session?.state, req.query.state)) {
-    res.redirect("/auth/twitch/redirect");
-    return;
-  }
-  const results = await new AuthorizationCode(TWITCH_OAUTH_CONFIG).getToken({
-    code: String(req.query.code),
-    redirect_uri: `${HOST}/auth/twitch/callback`,
-  });
+app.get(
+  "/auth/twitch/callback",
+  oauthCallback("twitch", async (req, res) => {
+    const results = await new AuthorizationCode(TWITCH_OAUTH_CONFIG).getToken({
+      code: String(req.query.code),
+      redirect_uri: `${HOST}/auth/twitch/callback`,
+    });
 
-  const users = await fetch("https://api.twitch.tv/helix/users", {
-    headers: {
-      Authorization: `Bearer ${results.token.access_token}`,
-      "Client-Id": TWITCH_CLIENT_ID,
-    },
-  }).then((response) => response.json() as any);
+    const users = await fetch("https://api.twitch.tv/helix/users", {
+      headers: {
+        Authorization: `Bearer ${results.token.access_token}`,
+        "Client-Id": TWITCH_CLIENT_ID,
+      },
+    }).then((response) => response.json() as any);
 
-  req.session.state = undefined;
+    const twitchProfile = {
+      id: users["data"][0]["id"],
+      displayName: users["data"][0]["display_name"],
+      login: users["data"][0]["login"],
+      profilePictureUrl: users["data"][0]["profile_image_url"],
+      email: users["data"][0]["email"] || null,
+    };
 
-  const twitchProfile = {
-    id: users["data"][0]["id"],
-    displayName: users["data"][0]["display_name"],
-    login: users["data"][0]["login"],
-    profilePictureUrl: users["data"][0]["profile_image_url"],
-    email: users["data"][0]["email"] || null,
-  };
-
-  await completeSignIn(req, res, "twitch", twitchProfile, results.token);
-});
+    await completeSignIn(req, res, "twitch", twitchProfile, results.token);
+  }),
+);
 
 // Maps a provider account to a Firebase user (creating one if needed), stores
 // the provider's token and profile, and hands a custom token back to the app.
@@ -226,7 +151,7 @@ async function completeSignIn(
   res: express.Response,
   provider: string,
   profile: { id: string },
-  token: object
+  token: object,
 ) {
   // check if this user exists already.
   const userIdRef = admin
@@ -267,7 +192,7 @@ async function completeSignIn(
     res.send("Logged in successfully.");
   } else {
     res.redirect(
-      "com.rtirl.chat://success?token=" + encodeURIComponent(customToken)
+      "com.rtirl.chat://success?token=" + encodeURIComponent(customToken),
     );
   }
 }
@@ -288,31 +213,33 @@ app.get("/auth/kick/redirect", (req, res) => {
   res.redirect(redirectUri);
 });
 
-app.get("/auth/kick/callback", async (req, res) => {
-  const verifier = req.session?.codeVerifier;
-  if (!isValidState(req.session?.state, req.query.state) || !verifier) {
-    res.redirect("/auth/kick/redirect");
-    return;
-  }
-  req.session.state = undefined;
-  req.session.codeVerifier = undefined;
+app.get(
+  "/auth/kick/callback",
+  oauthCallback("kick", async (req, res) => {
+    const verifier = req.session?.codeVerifier;
+    if (!verifier) {
+      res.redirect("/auth/kick/redirect");
+      return;
+    }
+    req.session.codeVerifier = undefined;
 
-  const results = await new AuthorizationCode(oauthConfig("kick")).getToken({
-    code: String(req.query.code),
-    redirect_uri: `${HOST}/auth/kick/callback`,
-    code_verifier: verifier,
-  } as any);
+    const results = await new AuthorizationCode(oauthConfig("kick")).getToken({
+      code: String(req.query.code),
+      redirect_uri: `${HOST}/auth/kick/callback`,
+      code_verifier: verifier,
+    } as any);
 
-  const profile = await getKickProfile(String(results.token.access_token));
-  await completeSignIn(req, res, "kick", profile, results.token);
-});
+    const profile = await getKickProfile(String(results.token.access_token));
+    await completeSignIn(req, res, "kick", profile, results.token);
+  }),
+);
 
 app.get("/auth/youtube/redirect", (req, res) => {
   const state = crypto.randomBytes(20).toString("hex");
   req.session.companion = req.query.companion?.toString();
   req.session.state = state;
   const redirectUri = new AuthorizationCode(
-    oauthConfig("youtube")
+    oauthConfig("youtube"),
   ).authorizeURL({
     redirect_uri: `${HOST}/auth/youtube/callback`,
     scope: YOUTUBE_SCOPES,
@@ -326,59 +253,30 @@ app.get("/auth/youtube/redirect", (req, res) => {
   res.redirect(redirectUri);
 });
 
-type SignInError = "access_denied" | "sign_in_failed" | "no_youtube_channel";
+app.get(
+  "/auth/youtube/callback",
+  oauthCallback("youtube", async (req, res) => {
+    const results = await new AuthorizationCode(
+      oauthConfig("youtube"),
+    ).getToken({
+      code: String(req.query.code),
+      redirect_uri: `${HOST}/auth/youtube/callback`,
+    });
 
-// only fixed codes are echoed back: the error query parameter is attacker
-// controlled, so it's never reflected.
-function signInError(
-  req: express.Request,
-  res: express.Response,
-  message: SignInError
-) {
-  if (req.session.companion) {
-    res.status(400).type("text/plain").send(message);
-  } else {
-    res.redirect(
-      "com.rtirl.chat://error?message=" + encodeURIComponent(message)
-    );
-  }
-}
-
-app.get("/auth/youtube/callback", async (req, res) => {
-  if (!isValidState(req.session?.state, req.query.state)) {
-    res.redirect("/auth/youtube/redirect");
-    return;
-  }
-  req.session.state = undefined;
-  if (req.query.error || !req.query.code) {
-    signInError(
-      req,
-      res,
-      !req.query.error || req.query.error === "access_denied"
-        ? "access_denied"
-        : "sign_in_failed"
-    );
-    return;
-  }
-
-  const results = await new AuthorizationCode(oauthConfig("youtube")).getToken({
-    code: String(req.query.code),
-    redirect_uri: `${HOST}/auth/youtube/callback`,
-  });
-
-  const profile = await getYouTubeProfile(String(results.token.access_token));
-  if (!profile) {
-    signInError(req, res, "no_youtube_channel");
-    return;
-  }
-  await completeSignIn(req, res, "youtube", profile, results.token);
-});
+    const profile = await getYouTubeProfile(String(results.token.access_token));
+    if (!profile) {
+      signInError(req, res, "no_youtube_channel");
+      return;
+    }
+    await completeSignIn(req, res, "youtube", profile, results.token);
+  }),
+);
 
 app.get("/auth/streamlabs/redirect", (req, res) => {
   req.session.token = req.query.token?.toString();
   req.session.provider = req.query.provider?.toString();
   const redirectUri = new AuthorizationCode(
-    STREAMLABS_OAUTH_CONFIG
+    STREAMLABS_OAUTH_CONFIG,
   ).authorizeURL({
     redirect_uri: `${HOST}/auth/streamlabs/callback`,
     scope: ["donations.read", "socket.token"],
@@ -409,7 +307,7 @@ app.get("/auth/streamlabs/callback", async (req, res) => {
     {
       code: String(req.query.code),
       redirect_uri: `${HOST}/auth/streamlabs/callback`,
-    }
+    },
   );
   const usernameDoc = await admin
     .firestore()
@@ -432,7 +330,7 @@ app.get("/auth/streamelements/redirect", (req, res) => {
   req.session.token = req.query.token?.toString();
   req.session.provider = req.query.provider?.toString();
   const redirectUri = new AuthorizationCode(
-    STREAMELEMENTS_OAUTH_CONFIG
+    STREAMELEMENTS_OAUTH_CONFIG,
   ).authorizeURL({
     redirect_uri: `${HOST}/auth/streamelements/callback`,
     scope: ["tips:read"],
@@ -487,7 +385,7 @@ app.get("/auth/streamelements/callback", async (req, res) => {
         token: JSON.stringify({ ...json, expires_at: expiresAt.toISOString() }),
         channelId,
       },
-      { merge: true }
+      { merge: true },
     );
 
   res.redirect("com.rtirl.chat://success?token=1");

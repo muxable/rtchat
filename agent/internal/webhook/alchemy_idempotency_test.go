@@ -107,7 +107,7 @@ func TestAlchemyRetryAfterPartialBatchFailure(t *testing.T) {
 	for _, data := range store.documents {
 		activity := data["activity"].(map[string]interface{})
 		if activity["hash"] == "0xfirst" {
-			if data["timestamp"] != first || data["expiresAt"] != first.Add(14*24*time.Hour) || data["id"] != "first-envelope" {
+			if data["timestamp"] != first || data["expiresAt"] != first.Add(messageTTL) || data["id"] != "first-envelope" {
 				t.Fatal("retry rewrote accepted document", data)
 			}
 			if activity["value"].(json.Number).String() != "0.1234567890123456789" {

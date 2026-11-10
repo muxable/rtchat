@@ -11,10 +11,7 @@ void main() {
   });
 
   test("TwitchMessageConfig json roundtrip with sample", () {
-    final json = {
-      'modMessageDuration': 6,
-      'vipMessageDuration': 6,
-    };
+    final json = {'modMessageDuration': 6, 'vipMessageDuration': 6};
     final model = MessagesModel.fromJson(json);
     final want = model.toJson();
     final got = MessagesModel.fromJson(model.toJson()).toJson();

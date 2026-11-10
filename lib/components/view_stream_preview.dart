@@ -15,40 +15,45 @@ class ViewStreamPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ViewsModel>(builder: (context, views, child) {
-      final channel = views.previewChannel ?? fallback;
-      final channels = views.channels;
-      return Stack(children: [
-        Positioned.fill(child: StreamPreview(channel: channel)),
-        if (channels.length > 1)
-          Positioned(
-            top: 4,
-            left: 4,
-            child: PopupMenuButton<Channel>(
-              tooltip: channel.displayName,
-              initialValue: channel,
-              onSelected: (selected) => views.previewChannel = selected,
-              itemBuilder: (context) => [
-                for (final option in channels)
-                  PopupMenuItem(
-                    value: option,
-                    child: ListTile(
-                      leading: ProviderIcon(option.provider),
-                      title: Text(option.displayName),
+    return Consumer<ViewsModel>(
+      builder: (context, views, child) {
+        final channel = views.previewChannel ?? fallback;
+        final channels = views.channels;
+        return Stack(
+          children: [
+            Positioned.fill(child: StreamPreview(channel: channel)),
+            if (channels.length > 1)
+              Positioned(
+                top: 4,
+                left: 4,
+                child: PopupMenuButton<Channel>(
+                  tooltip: channel.displayName,
+                  initialValue: channel,
+                  onSelected: (selected) => views.previewChannel = selected,
+                  itemBuilder:
+                      (context) => [
+                        for (final option in channels)
+                          PopupMenuItem(
+                            value: option,
+                            child: ListTile(
+                              leading: ProviderIcon(option.provider),
+                              title: Text(option.displayName),
+                            ),
+                          ),
+                      ],
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(4),
                     ),
+                    child: ProviderIcon(channel.provider, size: 16),
                   ),
-              ],
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(4),
                 ),
-                child: ProviderIcon(channel.provider, size: 16),
               ),
-            ),
-          ),
-      ]);
-    });
+          ],
+        );
+      },
+    );
   }
 }

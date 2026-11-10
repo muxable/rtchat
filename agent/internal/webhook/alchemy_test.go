@@ -152,7 +152,7 @@ func TestAlchemyRoutes(t *testing.T) {
 			expected := map[string]interface{}{
 				"channelId": "twitch:123", "webhookId": "unfiltered-id", "id": "notification", "createdAt": "2023-05-01T00:00:00Z",
 				"type": "realtimecash.donation", "notificationType": "ADDRESS_ACTIVITY", "activity": notification.Event.Activity[0],
-				"donor": "Alice 🌍", "message": "Thanks!", "timestamp": now, "expiresAt": now.Add(14 * 24 * time.Hour),
+				"donor": "Alice 🌍", "message": "Thanks!", "timestamp": now, "expiresAt": now.Add(messageTTL),
 			}
 			if len(store.messages) != 1 || !reflect.DeepEqual(store.messages[0], expected) {
 				t.Fatalf("messages: %#v", store.messages)

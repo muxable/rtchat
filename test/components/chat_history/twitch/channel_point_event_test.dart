@@ -9,72 +9,80 @@ import '../../l10n.dart';
 
 void main() {
   testWidgets(
-      'fulfilled channel point redemption should have done icon and message',
-      (WidgetTester tester) async {
-    final model = TwitchChannelPointRedemptionEventModel(
+    'fulfilled channel point redemption should have done icon and message',
+    (WidgetTester tester) async {
+      final model = TwitchChannelPointRedemptionEventModel(
         timestamp: DateTime.now(),
         messageId: "testMessageId",
         redeemerUsername: "automux",
         status: TwitchChannelPointRedemptionStatus.fulfilled,
         rewardName: "Sprint",
         rewardCost: 100,
-        userInput: null);
-    await tester.pumpWidget(buildWidget(model));
+        userInput: null,
+      );
+      await tester.pumpWidget(buildWidget(model));
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    final findText = find.byWidgetPredicate((Widget widget) {
-      return widget is RichText &&
-          widget.text.toPlainText() ==
-              'automux redeemed Sprint for 100 points.';
-    });
+      final findText = find.byWidgetPredicate((Widget widget) {
+        return widget is RichText &&
+            widget.text.toPlainText() ==
+                'automux redeemed Sprint for 100 points.';
+      });
 
-    final findIcon = find.byIcon(Icons.done);
+      final findIcon = find.byIcon(Icons.done);
 
-    expect(findText, findsOneWidget);
-    expect(findIcon, findsOneWidget);
-  });
+      expect(findText, findsOneWidget);
+      expect(findIcon, findsOneWidget);
+    },
+  );
 
   testWidgets(
-      'unfulfilled channel point redemption should have timer icon and message',
-      (WidgetTester tester) async {
-    final model = TwitchChannelPointRedemptionEventModel(
+    'unfulfilled channel point redemption should have timer icon and message',
+    (WidgetTester tester) async {
+      final model = TwitchChannelPointRedemptionEventModel(
         timestamp: DateTime.now(),
         messageId: "testMessageId",
         redeemerUsername: "automux",
         status: TwitchChannelPointRedemptionStatus.unfulfilled,
         rewardName: "WaTeER",
         rewardCost: 350,
-        userInput: "user input Kappa");
-    await tester.pumpWidget(buildWidget(model));
+        userInput: "user input Kappa",
+      );
+      await tester.pumpWidget(buildWidget(model));
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    final findText = find.byWidgetPredicate((Widget widget) {
-      return widget is RichText &&
-          widget.text.toPlainText() ==
-              'automux redeemed WaTeER for 350 points. user input Kappa';
-    });
+      final findText = find.byWidgetPredicate((Widget widget) {
+        return widget is RichText &&
+            widget.text.toPlainText() ==
+                'automux redeemed WaTeER for 350 points. user input Kappa';
+      });
 
-    final findIcon = find.byIcon(Icons.timer);
+      final findIcon = find.byIcon(Icons.timer);
 
-    expect(findText, findsOneWidget);
-    expect(findIcon, findsOneWidget);
-  });
+      expect(findText, findsOneWidget);
+      expect(findIcon, findsOneWidget);
+    },
+  );
 }
 
 Widget buildWidget(TwitchChannelPointRedemptionEventModel model) {
   return TestLocalizations(
-      child: ChangeNotifierProvider<StyleModel>(
-    create: (_) => StyleModel.fromJson({
-      "fontSize": 20.0,
-      "lightnessBoost": 0.179,
-      "isDeletedMessagesVisible": true
-    }),
-    child: Directionality(
+    child: ChangeNotifierProvider<StyleModel>(
+      create:
+          (_) => StyleModel.fromJson({
+            "fontSize": 20.0,
+            "lightnessBoost": 0.179,
+            "isDeletedMessagesVisible": true,
+          }),
+      child: Directionality(
         textDirection: TextDirection.ltr,
         child: MediaQuery(
-            data: const MediaQueryData(),
-            child: TwitchChannelPointRedemptionEventWidget(model))),
-  ));
+          data: const MediaQueryData(),
+          child: TwitchChannelPointRedemptionEventWidget(model),
+        ),
+      ),
+    ),
+  );
 }

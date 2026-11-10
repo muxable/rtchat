@@ -9,11 +9,11 @@ class VoicesEngine implements TtsEngine {
   Object? error;
 
   VoicesEngine(List<String> languages, [List<String> speakers = _speakers])
-      : list = [
-          for (final speaker in speakers)
-            for (final language in languages)
-              TtsVoice(id: speaker, name: speaker, locale: language),
-        ];
+    : list = [
+        for (final speaker in speakers)
+          for (final language in languages)
+            TtsVoice(id: speaker, name: speaker, locale: language),
+      ];
 
   @override
   Future<List<TtsVoice>> voices({String? language}) async {
@@ -36,8 +36,11 @@ void main() {
       expect(LanguageTag.parse('es-419').region, '419');
       expect(LanguageTag.parse('zh-HK').script, 'hant');
       expect(LanguageTag.parse('zh-CN').script, 'hans');
-      expect(['iw', 'in', 'no'].map((t) => LanguageTag.parse(t).language),
-          ['he', 'id', 'nb']);
+      expect(['iw', 'in', 'no'].map((t) => LanguageTag.parse(t).language), [
+        'he',
+        'id',
+        'nb',
+      ]);
     });
 
     test('ranks exact, then the bare language, then other regions', () {
@@ -79,8 +82,11 @@ void main() {
       final route = (await VoiceRouter([supertonic]).route('pt-BR'))!;
       expect(route.engine, same(supertonic));
       expect(route.language, 'pt');
-      expect(route.voices.map((v) => '${v.id}/${v.locale}'),
-          ['F1/pt', 'F2/pt', 'M1/pt']);
+      expect(route.voices.map((v) => '${v.id}/${v.locale}'), [
+        'F1/pt',
+        'F2/pt',
+        'M1/pt',
+      ]);
       expect(await VoiceRouter([supertonic]).route('zh'), isNull);
       expect(await VoiceRouter.empty.route('en'), isNull);
     });
@@ -92,23 +98,33 @@ void main() {
       expect((await router.route('en-GB'))!.language, 'en-GB');
       expect((await router.route('es'))!.engine, same(supertonic));
       expect((english.calls, supertonic.calls), (1, 1));
-      expect(
-          await router.languages(), ['en-US', 'en-GB', 'en', 'es', 'ja', 'pt']);
+      expect(await router.languages(), [
+        'en-US',
+        'en-GB',
+        'en',
+        'es',
+        'ja',
+        'pt',
+      ]);
     });
 
-    test('skips an engine that cannot list its voices, and retries it',
-        () async {
-      final broken = VoicesEngine(['en'])
-        ..error = PlatformException(code: 'load_failed');
-      final errors = <Object>[];
-      final router =
-          VoiceRouter([broken, supertonic], onError: (e, _) => errors.add(e));
-      expect((await router.route('en'))!.engine, same(supertonic));
-      expect(errors.single, isA<PlatformException>());
+    test(
+      'skips an engine that cannot list its voices, and retries it',
+      () async {
+        final broken = VoicesEngine(['en'])
+          ..error = PlatformException(code: 'load_failed');
+        final errors = <Object>[];
+        final router = VoiceRouter([
+          broken,
+          supertonic,
+        ], onError: (e, _) => errors.add(e));
+        expect((await router.route('en'))!.engine, same(supertonic));
+        expect(errors.single, isA<PlatformException>());
 
-      broken.error = null;
-      expect((await router.route('en'))!.engine, same(broken));
-    });
+        broken.error = null;
+        expect((await router.route('en'))!.engine, same(broken));
+      },
+    );
 
     test('picks a voice by id, or a stable one by key', () async {
       final route = (await VoiceRouter([supertonic]).route('en'))!;
@@ -116,8 +132,10 @@ void main() {
       expect(route.voiceWithId('nope').id, 'F1');
       expect(route.voiceWithId(null).id, 'F1');
       for (final key in ['twitch:1', 'twitch:42', 'kick:login:muxfd']) {
-        expect(route.voiceForKey(key).id,
-            _speakers[fnv1a32(key) % _speakers.length]);
+        expect(
+          route.voiceForKey(key).id,
+          _speakers[fnv1a32(key) % _speakers.length],
+        );
       }
     });
   });

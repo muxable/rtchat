@@ -27,10 +27,11 @@ import '../test/fakes/fake_tts_engine.dart';
 const modelDir = String.fromEnvironment('ON_DEVICE_TTS_MODEL_DIR');
 
 FakeChatMessage chat(String text, int i) => FakeChatMessage(
-    messageId: 'm$i-${DateTime.now().microsecondsSinceEpoch}',
-    timestamp: DateTime.now(),
-    author: FakeChatUser(userId: '$i', login: 'user$i'),
-    message: text);
+  messageId: 'm$i-${DateTime.now().microsecondsSinceEpoch}',
+  timestamp: DateTime.now(),
+  author: FakeChatUser(userId: '$i', login: 'user$i'),
+  message: text,
+);
 
 Future<void> waitFor(bool Function() condition) async {
   final deadline = DateTime.now().add(const Duration(seconds: 90));
@@ -44,8 +45,11 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   if (modelDir.isEmpty) {
-    testWidgets('neural TTS (needs ON_DEVICE_TTS_MODEL_DIR)', (_) async {},
-        skip: true);
+    testWidgets(
+      'neural TTS (needs ON_DEVICE_TTS_MODEL_DIR)',
+      (_) async {},
+      skip: true,
+    );
     return;
   }
 
@@ -57,28 +61,35 @@ void main() {
   late TtsModel tts;
 
   List<OnnxTtsEventType> eventsOf(OnnxTtsEventType type) => [
-        for (final e in events)
-          if (e.type == type) e.type
-      ];
+    for (final e in events)
+      if (e.type == type) e.type,
+  ];
 
   setUpAll(() => initializeDateFormatting('en'));
 
   setUp(() {
-    expect(Directory(modelDir).existsSync(), isTrue,
-        reason: 'push the model to $modelDir first');
+    expect(
+      Directory(modelDir).existsSync(),
+      isTrue,
+      reason: 'push the model to $modelDir first',
+    );
     // the pack as the bundled catalog describes it, installed in modelDir.
-    engine = NeuralTtsEngine(InstalledVoicePack(
-      pack: bundledVoicePacks.singleWhere((p) => p.id == 'supertonic-3'),
-      directory: modelDir,
-      sizeOnDisk: 0,
-      installedAt: DateTime.now(),
-    ));
+    engine = NeuralTtsEngine(
+      InstalledVoicePack(
+        pack: bundledVoicePacks.singleWhere((p) => p.id == 'supertonic-3'),
+        directory: modelDir,
+        sizeOnDisk: 0,
+        installedAt: DateTime.now(),
+      ),
+    );
     events.clear();
     eventSub = engine.events.listen(events.add);
     system = FakeTtsEngine();
-    tts = TtsModel.fromJson({'language': 'en'},
-        engine: system, reportError: (e, _) => fail('$e'))
-      ..neuralEngine = engine;
+    tts = TtsModel.fromJson(
+      {'language': 'en'},
+      engine: system,
+      reportError: (e, _) => fail('$e'),
+    )..neuralEngine = engine;
   });
 
   tearDown(() async {
@@ -87,8 +98,9 @@ void main() {
     tts.dispose(); // and the engine with it
   });
 
-  testWidgets('reads the queue in order, one utterance at a time',
-      (tester) async {
+  testWidgets('reads the queue in order, one utterance at a time', (
+    tester,
+  ) async {
     const messages = [
       'hello chat, how is everyone doing today?',
       'the patch is 3.5 now... check example.com for the notes',
@@ -105,13 +117,12 @@ void main() {
     final ids = events.map((e) => e.utteranceId).toSet().toList();
     expect(ids, hasLength(expected));
     expect(events.map((e) => '${e.utteranceId}:${e.type.name}'), [
-      for (final id in ids) ...['$id:firstAudio', '$id:done']
+      for (final id in ids) ...['$id:firstAudio', '$id:done'],
     ]);
     await tester.pump(); // TtsModel notifies after the next frame.
   });
 
-  testWidgets(
-      'routes a mixed-language queue: Supertonic for en and es, the '
+  testWidgets('routes a mixed-language queue: Supertonic for en and es, the '
       'system voice for zh', (tester) async {
     final spanish = Channel(Providers.twitch, 'es', 'es');
     final chinese = Channel(Providers.kick, 'zh', 'zh');
@@ -126,14 +137,16 @@ void main() {
     await waitFor(() => eventsOf(OnnxTtsEventType.done).length == 4);
     await pumpEventQueue();
 
-    expect(system.utterances.map((u) => (u.text, u.language)),
-        [('user3 said: 大家好，今天怎么样？', 'zh')]);
+    expect(system.utterances.map((u) => (u.text, u.language)), [
+      ('user3 said: 大家好，今天怎么样？', 'zh'),
+    ]);
     system.utterances.clear();
     await tester.pump(); // TtsModel notifies after the next frame.
   });
 
-  testWidgets('releases the model, and the next message loads it again',
-      (tester) async {
+  testWidgets('releases the model, and the next message loads it again', (
+    tester,
+  ) async {
     expect(await OnnxTtsPlatform.instance.deviceMemory(), isNotNull);
     tts.setMode(l10n, TtsMode.enabled);
     await waitFor(() => eventsOf(OnnxTtsEventType.done).length == 1);
@@ -146,8 +159,10 @@ void main() {
   });
 
   testWidgets('stop cuts the utterance off at once', (_) async {
-    final speaking = engine.speak('This message goes on, and on, and on, for '
-        'a good long while, until somebody finally stops it.');
+    final speaking = engine.speak(
+      'This message goes on, and on, and on, for '
+      'a good long while, until somebody finally stops it.',
+    );
     await waitFor(() => eventsOf(OnnxTtsEventType.firstAudio).isNotEmpty);
     final stopwatch = Stopwatch()..start();
     await engine.stop();
@@ -159,11 +174,13 @@ void main() {
   testWidgets('the backlog cutoff cuts the neural voice off', (tester) async {
     tts.setMode(l10n, TtsMode.enabled);
     tts.say(
-        l10n,
-        chat(
-            'this is a long message that keeps talking, and talking, and '
-            'talking for quite a while, so the backlog has time to pile up',
-            0));
+      l10n,
+      chat(
+        'this is a long message that keeps talking, and talking, and '
+        'talking for quite a while, so the backlog has time to pile up',
+        0,
+      ),
+    );
     await waitFor(() => eventsOf(OnnxTtsEventType.firstAudio).length == 2);
     for (var i = 1; i <= 25; i++) {
       tts.say(l10n, chat('message number $i', i));

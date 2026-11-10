@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/twitch/shoutout_create_event.dart';
@@ -15,11 +17,14 @@ class TwitchShoutoutCreateEventWidget extends StatelessWidget {
       icon: Icons.campaign,
       child: StyledText(
         text:
-            'Shoutout was given to <b>${model.toBroadcasterUserName}</b> with ${model.viewerCount} viewers',
+            'Shoutout was given to <b>${htmlEscape.convert(model.toBroadcasterUserName)}</b> with ${model.viewerCount} viewers',
         tags: const {
           'b': StyledTextTag(
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.purpleAccent,
+            ),
+          ),
         },
       ),
     );
@@ -37,11 +42,14 @@ class TwitchShoutoutReceiveEventWidget extends StatelessWidget {
       icon: Icons.campaign,
       child: StyledText(
         text:
-            '<b>${model.fromBroadcasterUserName}</b> gave you a shoutout to ${model.viewerCount} viewers',
+            '<b>${htmlEscape.convert(model.fromBroadcasterUserName)}</b> gave you a shoutout to ${model.viewerCount} viewers',
         tags: const {
           'b': StyledTextTag(
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.purpleAccent,
+            ),
+          ),
         },
       ),
     );

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"math"
 	"net/http"
 	"regexp"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/clients"
 	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"github.com/muxable/rtchat/agent/internal/provider"
 )
@@ -64,7 +66,7 @@ func registerChat(api *callable.Server, s *chatRoutes) {
 	if s.sendIRC == nil {
 		s.sendIRC = twitch.SendIRC
 	}
-	for _, name := range []string{"send", "ban", "unban", "timeout", "deleteMessage", "clear", "raid", "cancelRaid"} {
+	for _, name := range []string{"send", "ban", "unban", "timeout", "deleteMessage", "clear", "raid", "cancelRaid", "shoutout"} {
 		name := name
 		api.Register(name, true, func(ctx context.Context, data json.RawMessage) (any, error) {
 			var r chatRequest
@@ -86,18 +88,48 @@ func registerChat(api *callable.Server, s *chatRoutes) {
 			if err != nil {
 				return nil, err
 			}
+			var result any
 			switch r.Provider {
 			case "twitch":
-				return s.twitch(ctx, callable.UID(ctx), token, name, r)
+				result, err = s.twitch(ctx, callable.UID(ctx), token, name, r)
 			case "kick":
-				return s.kick(ctx, token, name, r)
+				result, err = s.kick(ctx, token, name, r)
 			case "youtube":
-				return s.youtube(ctx, callable.UID(ctx), token, name, r)
+				result, err = s.youtube(ctx, callable.UID(ctx), token, name, r)
+			default:
+				return nil, invalid("invalid provider")
 			}
-			return nil, invalid("invalid provider")
+			if rejection := providerRejection(r.Provider, name, err); rejection != nil {
+				return nil, rejection
+			}
+			return result, err
 		})
 	}
 }
+
+// providerRejection classifies a provider's HTTP error that is about the user's
+// request rather than the agent. Every chat action and provider shares it, so a
+// new refusal wording never surfaces as an internal error. The request shapes
+// these actions send are pinned by tests, so an explained rejection is a refusal.
+func providerRejection(p, action string, err error) error {
+	var status *clients.HTTPError
+	if !errors.As(err, &status) {
+		return nil
+	}
+	switch status.Status {
+	case http.StatusTooManyRequests:
+		// A provider rate limit is the user acting too fast, not a server error.
+		return &callable.Error{Code: "resource-exhausted", Message: "too many requests, try again shortly"}
+	case http.StatusBadRequest, http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity:
+		if status.Explained {
+			return &callable.Error{Code: "failed-precondition", Message: providerNames[p] + " rejected this " + action + " request."}
+		}
+	}
+	return nil
+}
+
+var providerNames = map[string]string{"twitch": "Twitch", "kick": "Kick", "youtube": "YouTube"}
+
 func (r chatRequest) validate(action string) error {
 	if r.Provider == "" {
 		return invalid("missing provider")
@@ -114,6 +146,11 @@ func (r chatRequest) validate(action string) error {
 		if action == "timeout" && (r.Length == 0 || r.Reason == "") {
 			return invalid("missing provider, channelId, username, length, reason")
 		}
+		// Twitch's documented timeout bounds; checked here so that a 400 from
+		// Twitch can only be a refusal of the moderation action.
+		if action == "timeout" && r.Provider == "twitch" && (r.Length < 1 || r.Length > 1209600 || r.Length != math.Trunc(r.Length) || utf8.RuneCountInString(r.Reason) > 500) {
+			return invalid("invalid length, reason")
+		}
 	case "deleteMessage":
 		if r.ChannelID == "" || r.MessageID == "" {
 			return invalid("missing provider, channelId, messageId")
@@ -122,9 +159,12 @@ func (r chatRequest) validate(action string) error {
 		if r.ChannelID == "" {
 			return invalid("missing provider, channelId")
 		}
-	case "raid":
+	case "raid", "shoutout":
 		if r.From == "" || r.To == "" {
 			return invalid("missing provider, fromChannelId, toChannelId")
+		}
+		if action == "shoutout" && r.Provider != "twitch" {
+			return invalid("invalid provider")
 		}
 	}
 	if action != "raid" && action != "cancelRaid" {

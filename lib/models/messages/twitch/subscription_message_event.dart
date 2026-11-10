@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
@@ -8,19 +10,26 @@ class SubscriptionMessageEventEmote {
   final int begin;
   final int end;
 
-  const SubscriptionMessageEventEmote(
-      {required this.id, required this.begin, required this.end});
+  const SubscriptionMessageEventEmote({
+    required this.id,
+    required this.begin,
+    required this.end,
+  });
 
   static List<SubscriptionMessageEventEmote> fromDynamicList(
-      List<dynamic>? input) {
+    List<dynamic>? input,
+  ) {
     if (input == null) {
       return [];
     }
     return input
-        .map((e) => SubscriptionMessageEventEmote(
+        .map(
+          (e) => SubscriptionMessageEventEmote(
             id: e['id'] as String,
             begin: e['begin'] as int,
-            end: e['end'] as int))
+            end: e['end'] as int,
+          ),
+        )
         .toList();
   }
 }
@@ -34,26 +43,34 @@ class TwitchSubscriptionMessageEventModel extends MessageModel {
   final List<SubscriptionMessageEventEmote> emotes;
   final String text;
 
-  const TwitchSubscriptionMessageEventModel(
-      {required super.timestamp,
-      required super.messageId,
-      required this.subscriberUserName,
-      required this.tier,
-      required this.cumulativeMonths,
-      required this.durationMonths,
-      required this.streakMonths,
-      required this.emotes,
-      required this.text});
+  const TwitchSubscriptionMessageEventModel({
+    required super.timestamp,
+    required super.messageId,
+    required this.subscriberUserName,
+    required this.tier,
+    required this.cumulativeMonths,
+    required this.durationMonths,
+    required this.streakMonths,
+    required this.emotes,
+    required this.text,
+  });
 
   /// The announcement text, which may contain `<b>` tags for the user name.
-  String localizedText(AppLocalizations l10n) {
+  String localizedText(AppLocalizations l10n, {bool escapeMarkup = false}) {
+    final name =
+        escapeMarkup
+            ? htmlEscape.convert(subscriberUserName)
+            : subscriberUserName;
     final tier = this.tier.replaceAll("000", "");
     if (durationMonths > 1) {
       return l10n.subscriptionMessageMultiMonthEvent(
-          subscriberUserName, tier, durationMonths, cumulativeMonths);
+        name,
+        tier,
+        durationMonths,
+        cumulativeMonths,
+      );
     }
-    return l10n.subscriptionMessageEvent(
-        subscriberUserName, cumulativeMonths, tier);
+    return l10n.subscriptionMessageEvent(name, cumulativeMonths, tier);
   }
 
   String emotesToString() {

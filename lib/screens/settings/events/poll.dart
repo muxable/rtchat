@@ -9,11 +9,11 @@ class PollEventScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.pollConfigurationTitle),
-        ),
-        body: Consumer<EventSubConfigurationModel>(
-            builder: (context, model, child) {
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.pollConfigurationTitle),
+      ),
+      body: Consumer<EventSubConfigurationModel>(
+        builder: (context, model, child) {
           return Column(
             children: [
               Padding(
@@ -21,28 +21,34 @@ class PollEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(AppLocalizations.of(context)!.pollPinDuration,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.bold,
-                        )),
+                    Text(
+                      AppLocalizations.of(context)!.pollPinDuration,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Slider.adaptive(
-                      value: model.pollEventConfig.eventDuration.inSeconds
-                          .toDouble(),
+                      value:
+                          model.pollEventConfig.eventDuration.inSeconds
+                              .toDouble(),
                       min: 0,
                       max: 30,
                       divisions: 15,
                       label: AppLocalizations.of(context)!.durationSeconds(
-                          model.pollEventConfig.eventDuration.inSeconds),
+                        model.pollEventConfig.eventDuration.inSeconds,
+                      ),
                       onChanged: (value) {
                         model.setPollEventDuration(
-                            Duration(seconds: value.toInt()));
+                          Duration(seconds: value.toInt()),
+                        );
                       },
                     ),
                     SwitchListTile.adaptive(
                       title: Text(AppLocalizations.of(context)!.enableEvent),
                       subtitle: Text(
-                          AppLocalizations.of(context)!.showEventInChatHistory),
+                        AppLocalizations.of(context)!.showEventInChatHistory,
+                      ),
                       value: model.pollEventConfig.showEvent,
                       onChanged: (value) {
                         model.setPollEventShowable(value);
@@ -53,6 +59,8 @@ class PollEventScreen extends StatelessWidget {
               ),
             ],
           );
-        }));
+        },
+      ),
+    );
   }
 }

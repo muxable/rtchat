@@ -12,10 +12,14 @@ void main() {
   test('EIP-681 payment URIs are unwrapped', () {
     expect(parseWalletAddress('ethereum:$address'), address.toLowerCase());
     expect(parseWalletAddress('ethereum:$address@137'), address.toLowerCase());
-    expect(parseWalletAddress('ethereum:pay-$address@1?value=1e18'),
-        address.toLowerCase());
-    expect(parseWalletAddress('ethereum:$address/transfer?address=0x0'),
-        address.toLowerCase());
+    expect(
+      parseWalletAddress('ethereum:pay-$address@1?value=1e18'),
+      address.toLowerCase(),
+    );
+    expect(
+      parseWalletAddress('ethereum:$address/transfer?address=0x0'),
+      address.toLowerCase(),
+    );
   });
 
   test('invalid values are rejected', () {
