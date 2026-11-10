@@ -277,6 +277,8 @@
   "languageUnsupported": "നിങ്ങളുടെ വോയ്‌സ് പാക്കുകൾ {language} പിന്തുണയ്ക്കുന്നില്ല; സിസ്റ്റം ശബ്ദം ഉപയോഗിക്കും",
   "neuralFallbackLowMemory": "ന്യൂറൽ ശബ്ദങ്ങൾക്കായി ഈ ഉപകരണത്തിൽ മതിയായ മെമ്മറി ഇല്ലാത്തതിനാൽ സിസ്റ്റം ശബ്ദം ഉപയോഗിച്ച് ചാറ്റ് വായിക്കുന്നു.",
   "neuralFallbackLoadFailed": "ന്യൂറൽ ശബ്ദം ലോഡ് ചെയ്യാനാകാത്തതിനാൽ സിസ്റ്റം ശബ്ദം ഉപയോഗിച്ച് ചാറ്റ് വായിക്കുന്നു.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "അക്കൗണ്ടുകൾ",
   "accountsSubtitle": "നിങ്ങൾ സ്ട്രീം ചെയ്യുന്ന ഓരോ പ്ലാറ്റ്‌ഫോമിലും സൈൻ ഇൻ ചെയ്യുക",
   "addProviderAccount": "{provider} അക്കൗണ്ട് ചേർക്കുക",

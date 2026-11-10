@@ -276,6 +276,8 @@
   "languageUnsupported": "음성 팩이 {language} 언어를 지원하지 않아 시스템 음성을 사용합니다",
   "neuralFallbackLowMemory": "이 기기는 신경망 음성을 실행할 메모리가 부족하여 시스템 음성으로 채팅을 읽습니다.",
   "neuralFallbackLoadFailed": "신경망 음성을 불러오지 못하여 시스템 음성으로 채팅을 읽습니다.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "계정",
   "accountsSubtitle": "방송하는 각 플랫폼에 로그인하세요",
   "addProviderAccount": "{provider} 계정 추가",

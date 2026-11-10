@@ -1172,6 +1172,12 @@ class AppLocalizationsId extends AppLocalizations {
       'Suara neural gagal dimuat, sehingga obrolan dibacakan dengan suara sistem.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Akun';
 
   @override

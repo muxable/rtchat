@@ -277,6 +277,8 @@
   "languageUnsupported": "మీ వాయిస్ ప్యాక్‌లలో {language}కి మద్దతు లేదు; సిస్టమ్ వాయిస్ ఉపయోగించబడుతుంది",
   "neuralFallbackLowMemory": "న్యూరల్ వాయిస్‌ల కోసం ఈ పరికరంలో తగినంత మెమరీ లేదు, కాబట్టి చాట్ సిస్టమ్ వాయిస్‌తో చదవబడుతుంది.",
   "neuralFallbackLoadFailed": "న్యూరల్ వాయిస్ లోడ్ కాలేకపోయింది, కాబట్టి చాట్ సిస్టమ్ వాయిస్‌తో చదవబడుతుంది.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "ఖాతాలు",
   "accountsSubtitle": "మీరు స్ట్రీమ్ చేసే ప్రతి ప్లాట్‌ఫారమ్‌కు సైన్ ఇన్ చేయండి",
   "addProviderAccount": "{provider} ఖాతాను జోడించండి",

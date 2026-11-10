@@ -1180,6 +1180,12 @@ class AppLocalizationsSr extends AppLocalizations {
       'Неуронски глас није могао да се учита, па се чет чита системским гласом.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Налози';
 
   @override

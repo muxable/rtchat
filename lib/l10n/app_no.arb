@@ -277,6 +277,8 @@
   "languageUnsupported": "{language} støttes ikke av stemmepakkene dine; systemstemmen vil bli brukt",
   "neuralFallbackLowMemory": "Denne enheten har ikke nok minne for nevrale stemmer, så chatten leses opp med systemstemmen.",
   "neuralFallbackLoadFailed": "Den nevrale stemmen kunne ikke lastes inn, så chatten leses opp med systemstemmen.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Kontoer",
   "accountsSubtitle": "Logg inn på hver plattform du strømmer på",
   "addProviderAccount": "Legg til {provider}-konto",

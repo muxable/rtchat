@@ -1179,6 +1179,12 @@ class AppLocalizationsIt extends AppLocalizations {
       'Impossibile caricare la voce neurale, quindi la chat viene letta con la voce di sistema.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Account';
 
   @override

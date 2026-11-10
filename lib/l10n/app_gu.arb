@@ -277,6 +277,8 @@
   "languageUnsupported": "તમારા વોઇસ પેક્સ દ્વારા {language} સપોર્ટેડ નથી; સિસ્ટમ અવાજનો ઉપયોગ કરવામાં આવશે",
   "neuralFallbackLowMemory": "આ ડિવાઇસમાં ન્યુરલ અવાજો માટે પૂરતી મેમરી નથી, તેથી ચેટ સિસ્ટમ અવાજથી વાંચવામાં આવે છે.",
   "neuralFallbackLoadFailed": "ન્યુરલ અવાજ લોડ થઈ શક્યો નહીં, તેથી ચેટ સિસ્ટમ અવાજથી વાંચવામાં આવે છે.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "એકાઉન્ટ્સ",
   "accountsSubtitle": "તમે જે પ્લેટફોર્મ પર સ્ટ્રીમ કરો છો તે દરેકમાં સાઇન ઇન કરો",
   "addProviderAccount": "{provider} એકાઉન્ટ ઉમેરો",

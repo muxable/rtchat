@@ -1130,6 +1130,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get neuralFallbackLoadFailed => '신경망 음성을 불러오지 못하여 시스템 음성으로 채팅을 읽습니다.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => '계정';
 
   @override

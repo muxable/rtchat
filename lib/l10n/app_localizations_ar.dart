@@ -1178,6 +1178,12 @@ class AppLocalizationsAr extends AppLocalizations {
       'تعذّر تحميل الصوت العصبي، لذا تُقرأ الدردشة بصوت النظام.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'الحسابات';
 
   @override

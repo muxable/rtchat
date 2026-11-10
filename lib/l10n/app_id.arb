@@ -277,6 +277,8 @@
   "languageUnsupported": "{language} tidak didukung oleh paket suara Anda; suara sistem akan digunakan",
   "neuralFallbackLowMemory": "Perangkat ini tidak memiliki cukup memori untuk suara neural, sehingga obrolan dibacakan dengan suara sistem.",
   "neuralFallbackLoadFailed": "Suara neural gagal dimuat, sehingga obrolan dibacakan dengan suara sistem.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Akun",
   "accountsSubtitle": "Masuk ke setiap platform tempat Anda melakukan siaran",
   "addProviderAccount": "Tambahkan akun {provider}",

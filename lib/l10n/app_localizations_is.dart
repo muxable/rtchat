@@ -1172,6 +1172,12 @@ class AppLocalizationsIs extends AppLocalizations {
       'Ekki tókst að hlaða taugaröddinni, svo spjallið er lesið með kerfisröddinni.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Reikningar';
 
   @override

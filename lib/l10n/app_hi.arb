@@ -277,6 +277,8 @@
   "languageUnsupported": "आपके वॉइस पैक द्वारा {language} समर्थित नहीं है; सिस्टम आवाज़ का उपयोग किया जाएगा",
   "neuralFallbackLowMemory": "इस डिवाइस में न्यूरल आवाज़ों के लिए पर्याप्त मेमोरी नहीं है, इसलिए चैट सिस्टम आवाज़ से पढ़ी जाती है।",
   "neuralFallbackLoadFailed": "न्यूरल आवाज़ लोड नहीं हो सकी, इसलिए चैट सिस्टम आवाज़ से पढ़ी जाती है।",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "खाते",
   "accountsSubtitle": "जिस भी प्लेटफ़ॉर्म पर आप स्ट्रीम करते हैं उस पर साइन इन करें",
   "addProviderAccount": "{provider} खाता जोड़ें",

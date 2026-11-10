@@ -1185,6 +1185,12 @@ class AppLocalizationsUk extends AppLocalizations {
       'Не вдалося завантажити нейромережевий голос, тому чат озвучується системним голосом.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Облікові записи';
 
   @override

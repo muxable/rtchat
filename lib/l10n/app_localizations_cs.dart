@@ -1186,6 +1186,12 @@ class AppLocalizationsCs extends AppLocalizations {
       'Neuronový hlas se nepodařilo načíst, proto je chat předčítán systémovým hlasem.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Účty';
 
   @override

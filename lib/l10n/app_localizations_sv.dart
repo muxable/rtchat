@@ -1166,6 +1166,12 @@ class AppLocalizationsSv extends AppLocalizations {
       'Den neurala rösten kunde inte laddas, så chatten läses upp med systemrösten.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Konton';
 
   @override

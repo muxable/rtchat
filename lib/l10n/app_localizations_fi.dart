@@ -1170,6 +1170,12 @@ class AppLocalizationsFi extends AppLocalizations {
       'Neuraalista ääntä ei voitu ladata. Keskustelu luetaan järjestelmän äänellä.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Tilit';
 
   @override

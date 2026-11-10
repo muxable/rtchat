@@ -1171,6 +1171,12 @@ class AppLocalizationsNo extends AppLocalizations {
       'Den nevrale stemmen kunne ikke lastes inn, så chatten leses opp med systemstemmen.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Kontoer';
 
   @override

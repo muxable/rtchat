@@ -277,6 +277,8 @@
   "languageUnsupported": "Jūsų balso paketai nepalaiko kalbos ({language}); bus naudojamas sistemos balsas",
   "neuralFallbackLowMemory": "Šiame įrenginyje nepakanka atminties neuroniniams balsams, todėl pokalbis skaitomas sistemos balsu.",
   "neuralFallbackLoadFailed": "Nepavyko įkelti neuroninio balso, todėl pokalbis skaitomas sistemos balsu.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Paskyros",
   "accountsSubtitle": "Prisijunkite prie kiekvienos platformos, kurioje transliuojate",
   "addProviderAccount": "Pridėti „{provider}“ paskyrą",

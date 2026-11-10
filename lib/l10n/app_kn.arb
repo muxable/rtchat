@@ -277,6 +277,8 @@
   "languageUnsupported": "ನಿಮ್ಮ ಧ್ವನಿ ಪ್ಯಾಕ್‌ಗಳಿಂದ {language} ಬೆಂಬಲಿತವಾಗಿಲ್ಲ; ಸಿಸ್ಟಮ್ ಧ್ವನಿಯನ್ನು ಬಳಸಲಾಗುತ್ತದೆ",
   "neuralFallbackLowMemory": "ನ್ಯೂರಲ್ ಧ್ವನಿಗಳಿಗಾಗಿ ಈ ಸಾಧನದಲ್ಲಿ ಸಾಕಷ್ಟು ಮೆಮೊರಿ ಇಲ್ಲ, ಆದ್ದರಿಂದ ಚಾಟ್ ಅನ್ನು ಸಿಸ್ಟಮ್ ಧ್ವನಿಯೊಂದಿಗೆ ಓದಲಾಗುತ್ತದೆ.",
   "neuralFallbackLoadFailed": "ನ್ಯೂರಲ್ ಧ್ವನಿಯನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ಚಾಟ್ ಅನ್ನು ಸಿಸ್ಟಮ್ ಧ್ವನಿಯೊಂದಿಗೆ ಓದಲಾಗುತ್ತದೆ.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "ಖಾತೆಗಳು",
   "accountsSubtitle": "ನೀವು ಸ್ಟ್ರೀಮ್ ಮಾಡುವ ಪ್ರತಿಯೊಂದು ಪ್ಲಾಟ್‌ಫಾರ್ಮ್‌ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ",
   "addProviderAccount": "{provider} ಖಾತೆಯನ್ನು ಸೇರಿಸಿ",

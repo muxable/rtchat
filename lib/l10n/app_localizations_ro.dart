@@ -1198,6 +1198,12 @@ class AppLocalizationsRo extends AppLocalizations {
       'Vocea neurală nu a putut fi încărcată, astfel încât chatul este citit cu vocea sistemului.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Conturi';
 
   @override

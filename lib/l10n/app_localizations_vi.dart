@@ -1174,6 +1174,12 @@ class AppLocalizationsVi extends AppLocalizations {
       'Không thể tải giọng đọc AI nên nội dung trò chuyện sẽ được đọc bằng giọng đọc hệ thống.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Tài khoản';
 
   @override

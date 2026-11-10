@@ -276,6 +276,8 @@
   "languageUnsupported": "আপনার ভয়েস প্যাকগুলো {language} সমর্থন করে না; সিস্টেমের কণ্ঠ ব্যবহার করা হবে",
   "neuralFallbackLowMemory": "এই ডিভাইসে নিউরাল কণ্ঠের জন্য পর্যাপ্ত মেমরি নেই, তাই সিস্টেমের কণ্ঠে চ্যাট পড়ে শোনানো হচ্ছে।",
   "neuralFallbackLoadFailed": "নিউরাল কণ্ঠ লোড করা যায়নি, তাই সিস্টেমের কণ্ঠে চ্যাট পড়ে শোনানো হচ্ছে।",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "অ্যাকাউন্ট",
   "accountsSubtitle": "আপনি যেসব প্ল্যাটফর্মে স্ট্রিম করেন, প্রতিটিতে সাইন ইন করুন",
   "addProviderAccount": "{provider} অ্যাকাউন্ট যোগ করুন",

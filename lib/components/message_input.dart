@@ -203,16 +203,17 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     keyboardSubscription = keyboardVisibilityController.onChange.listen((
       visible,
     ) {
+      if (!mounted) return;
       setState(() {
         _isKeyboardVisible = visible;
       });
     });
 
-    ShareChannel()
-      // Register a callback to handle any shared data while app is running
+    final share = AppShare.instance;
+    // Register a callback for incoming shared data.
+    share
       ..onDataReceived = _handleSharedData
-      // Check to see if there is any shared data already via sharing
-      ..getSharedText().then(_handleSharedData);
+      ..initialize();
   }
 
   @override
@@ -274,6 +275,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   @override
   void dispose() {
+    AppShare.instance.onDataReceived = null;
     keyboardSubscription.cancel();
     _chatInputFocusNode.dispose();
     _textEditingController?.dispose();

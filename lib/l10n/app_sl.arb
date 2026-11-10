@@ -277,6 +277,8 @@
   "languageUnsupported": "Vaši glasovni paketi ne podpirajo jezika {language}; uporabljen bo sistemski glas",
   "neuralFallbackLowMemory": "Ta naprava nima dovolj pomnilnika za nevronske glasove, zato se klepet bere s sistemskim glasom.",
   "neuralFallbackLoadFailed": "Nevronskega glasu ni bilo mogoče naložiti, zato se klepet bere s sistemskim glasom.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Računi",
   "accountsSubtitle": "Prijavite se v vsako platformo, na kateri oddajate",
   "addProviderAccount": "Dodaj račun {provider}",

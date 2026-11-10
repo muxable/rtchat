@@ -1173,6 +1173,12 @@ class AppLocalizationsNl extends AppLocalizations {
       'De neurale stem kon niet worden geladen, dus de chat wordt voorgelezen met de systeemstem.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Accounts';
 
   @override

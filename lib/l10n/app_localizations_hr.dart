@@ -1186,6 +1186,12 @@ class AppLocalizationsHr extends AppLocalizations {
       'Neuronski glas nije se mogao učitati, pa se chat čita glasom sustava.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Računi';
 
   @override

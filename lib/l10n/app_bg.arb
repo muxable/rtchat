@@ -277,6 +277,8 @@
   "languageUnsupported": "{language} не се поддържа от вашите гласови пакети; ще се използва системният глас",
   "neuralFallbackLowMemory": "Това устройство няма достатъчно памет за невронни гласове, затова чатът се чете със системния глас.",
   "neuralFallbackLoadFailed": "Невронният глас не можа да се зареди, затова чатът се чете със системния глас.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Профили",
   "accountsSubtitle": "Влезте във всяка платформа, в която стриймвате",
   "addProviderAccount": "Добавяне на профил в {provider}",

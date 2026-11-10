@@ -276,6 +276,8 @@
   "languageUnsupported": "Vos packs de voix ne prennent pas en charge la langue {language} ; la voix du système sera utilisée",
   "neuralFallbackLowMemory": "Cet appareil n'a pas assez de mémoire pour les voix neuronales. Le chat est donc lu avec la voix du système.",
   "neuralFallbackLoadFailed": "La voix neuronale n'a pas pu être chargée. Le chat est donc lu avec la voix du système.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Comptes",
   "accountsSubtitle": "Connectez-vous à chaque plateforme sur laquelle vous diffusez",
   "addProviderAccount": "Ajouter un compte {provider}",

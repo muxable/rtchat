@@ -276,6 +276,8 @@
   "languageUnsupported": "Twoje pakiety głosowe nie obsługują języka {language}; zostanie użyty głos systemowy",
   "neuralFallbackLowMemory": "To urządzenie nie ma wystarczającej ilości pamięci dla głosów neuronowych, więc czat jest odczytywany głosem systemowym.",
   "neuralFallbackLoadFailed": "Nie udało się załadować głosu neuronowego, więc czat jest odczytywany głosem systemowym.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Konta",
   "accountsSubtitle": "Zaloguj się na każdej platformie, na której transmitujesz",
   "addProviderAccount": "Dodaj konto {provider}",

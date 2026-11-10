@@ -277,6 +277,8 @@
   "languageUnsupported": "Jūsu balss pakotnes neatbalsta šo valodu ({language}); tiks izmantota sistēmas balss",
   "neuralFallbackLowMemory": "Šai ierīcei nav pietiekami daudz atmiņas neironu balsīm, tāpēc tērzēšana tiek lasīta ar sistēmas balsi.",
   "neuralFallbackLoadFailed": "Neironu balsi neizdevās ielādēt, tāpēc tērzēšana tiek lasīta ar sistēmas balsi.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Konti",
   "accountsSubtitle": "Pierakstieties katrā platformā, kurā straumējat",
   "addProviderAccount": "Pievienot {provider} kontu",

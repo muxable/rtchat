@@ -1175,6 +1175,12 @@ class AppLocalizationsAf extends AppLocalizations {
       'Die neurale stem kon nie laai nie, daarom word die klets met die stelselstem gelees.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Rekeninge';
 
   @override

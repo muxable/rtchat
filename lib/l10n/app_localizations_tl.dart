@@ -1185,6 +1185,12 @@ class AppLocalizationsTl extends AppLocalizations {
       'Hindi ma-load ang neural na boses, kaya binabasa ang chat gamit ang boses ng sistema.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Mga Account';
 
   @override

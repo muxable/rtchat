@@ -276,6 +276,8 @@
   "languageUnsupported": "Je stempakketten ondersteunen {language} niet; de systeemstem wordt gebruikt",
   "neuralFallbackLowMemory": "Dit apparaat heeft niet genoeg geheugen voor neurale stemmen, dus de chat wordt voorgelezen met de systeemstem.",
   "neuralFallbackLoadFailed": "De neurale stem kon niet worden geladen, dus de chat wordt voorgelezen met de systeemstem.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Accounts",
   "accountsSubtitle": "Log in op elk platform waarop je streamt",
   "addProviderAccount": "{provider}-account toevoegen",

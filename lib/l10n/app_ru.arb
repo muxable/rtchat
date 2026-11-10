@@ -276,6 +276,8 @@
   "languageUnsupported": "Ваши голосовые пакеты не поддерживают язык {language}; будет использован системный голос",
   "neuralFallbackLowMemory": "На этом устройстве недостаточно памяти для нейросетевых голосов, поэтому чат озвучивается системным голосом.",
   "neuralFallbackLoadFailed": "Не удалось загрузить нейросетевой голос, поэтому чат озвучивается системным голосом.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Аккаунты",
   "accountsSubtitle": "Войдите на каждую платформу, где вы ведёте трансляции",
   "addProviderAccount": "Добавить аккаунт {provider}",

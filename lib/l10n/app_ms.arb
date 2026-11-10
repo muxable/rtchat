@@ -277,6 +277,8 @@
   "languageUnsupported": "{language} tidak disokong oleh pek suara anda; suara sistem akan digunakan",
   "neuralFallbackLowMemory": "Peranti ini tidak mempunyai memori yang mencukupi untuk suara neural, jadi sembang dibacakan dengan suara sistem.",
   "neuralFallbackLoadFailed": "Suara neural tidak dapat dimuatkan, jadi sembang dibacakan dengan suara sistem.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Akaun",
   "accountsSubtitle": "Log masuk ke setiap platform tempat anda membuat strim",
   "addProviderAccount": "Tambah akaun {provider}",

@@ -1182,6 +1182,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die neuronale Stimme konnte nicht geladen werden. Der Chat wird daher mit der Systemstimme vorgelesen.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Konten';
 
   @override

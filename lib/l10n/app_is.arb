@@ -277,6 +277,8 @@
   "languageUnsupported": "{language} er ekki stutt af raddpökkunum þínum; kerfisröddin verður notuð",
   "neuralFallbackLowMemory": "Þetta tæki hefur ekki nægt minni fyrir taugaraddir, svo spjallið er lesið með kerfisröddinni.",
   "neuralFallbackLoadFailed": "Ekki tókst að hlaða taugaröddinni, svo spjallið er lesið með kerfisröddinni.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Reikningar",
   "accountsSubtitle": "Skráðu þig inn á hvern vettvang sem þú streymir á",
   "addProviderAccount": "Bæta við {provider}-reikningi",

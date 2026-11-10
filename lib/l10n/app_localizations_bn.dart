@@ -1155,6 +1155,12 @@ class AppLocalizationsBn extends AppLocalizations {
       'নিউরাল কণ্ঠ লোড করা যায়নি, তাই সিস্টেমের কণ্ঠে চ্যাট পড়ে শোনানো হচ্ছে।';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'অ্যাকাউন্ট';
 
   @override

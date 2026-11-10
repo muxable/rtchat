@@ -1183,6 +1183,12 @@ class AppLocalizationsPl extends AppLocalizations {
       'Nie udało się załadować głosu neuronowego, więc czat jest odczytywany głosem systemowym.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Konta';
 
   @override

@@ -276,6 +276,8 @@
   "languageUnsupported": "Dina röstpaket stöder inte {language}; systemrösten används",
   "neuralFallbackLowMemory": "Enheten har inte tillräckligt med minne för neurala röster, så chatten läses upp med systemrösten.",
   "neuralFallbackLoadFailed": "Den neurala rösten kunde inte laddas, så chatten läses upp med systemrösten.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Konton",
   "accountsSubtitle": "Logga in på varje plattform du sänder på",
   "addProviderAccount": "Lägg till {provider}-konto",

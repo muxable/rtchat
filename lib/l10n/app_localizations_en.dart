@@ -1165,6 +1165,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'The neural voice couldn\'t load, so chat is read with the system voice.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Accounts';
 
   @override

@@ -276,6 +276,8 @@
   "languageUnsupported": "你的語音包不支援{language}，將使用系統語音",
   "neuralFallbackLowMemory": "此裝置沒有足夠的記憶體執行神經網路語音，因此將使用系統語音朗讀聊天內容。",
   "neuralFallbackLoadFailed": "無法載入神經網路語音，因此將使用系統語音朗讀聊天內容。",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "帳號",
   "accountsSubtitle": "登入你直播所用的各個平台",
   "addProviderAccount": "新增 {provider} 帳號",

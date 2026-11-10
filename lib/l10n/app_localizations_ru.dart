@@ -1187,6 +1187,12 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось загрузить нейросетевой голос, поэтому чат озвучивается системным голосом.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Аккаунты';
 
   @override

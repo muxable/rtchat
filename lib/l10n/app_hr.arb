@@ -277,6 +277,8 @@
   "languageUnsupported": "Vaši glasovni paketi ne podržavaju jezik ({language}); koristit će se glas sustava",
   "neuralFallbackLowMemory": "Ovaj uređaj nema dovoljno memorije za neuronske glasove, pa se chat čita glasom sustava.",
   "neuralFallbackLoadFailed": "Neuronski glas nije se mogao učitati, pa se chat čita glasom sustava.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Računi",
   "accountsSubtitle": "Prijavite se na svaku platformu na kojoj emitirate",
   "addProviderAccount": "Dodaj {provider} račun",
