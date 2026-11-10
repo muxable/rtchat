@@ -200,8 +200,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     _textEditingController = EmoteTextEditingController(const []);
     _useEmotesOf(widget.channel);
     // Subscribe to keyboard visibility changes.
-    keyboardSubscription =
-        keyboardVisibilityController.onChange.listen((visible) {
+    keyboardSubscription = keyboardVisibilityController.onChange.listen((
+      visible,
+    ) {
       if (!mounted) return;
       setState(() {
         _isKeyboardVisible = visible;

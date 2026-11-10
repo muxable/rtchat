@@ -382,9 +382,9 @@ class _ModerationActions extends StatelessWidget {
                         color: Colors.orangeAccent,
                       ),
                       title: Text(
-                        AppLocalizations.of(context)!.timeoutUser(
-                          m.author.displayName ?? m.author.login,
-                        ),
+                        AppLocalizations.of(
+                          context,
+                        )!.timeoutUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
                         Navigator.pop(context, _ModerationAction.timeout);
@@ -396,9 +396,9 @@ class _ModerationActions extends StatelessWidget {
                         color: Colors.redAccent,
                       ),
                       title: Text(
-                        AppLocalizations.of(context)!.banUser(
-                          m.author.displayName ?? m.author.login,
-                        ),
+                        AppLocalizations.of(
+                          context,
+                        )!.banUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
                         Navigator.pop(context, _ModerationAction.ban);
@@ -410,9 +410,9 @@ class _ModerationActions extends StatelessWidget {
                         color: Colors.greenAccent,
                       ),
                       title: Text(
-                        AppLocalizations.of(context)!.unbanUser(
-                          m.author.displayName ?? m.author.login,
-                        ),
+                        AppLocalizations.of(
+                          context,
+                        )!.unbanUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
                         Navigator.pop(context, _ModerationAction.unban);
@@ -425,9 +425,7 @@ class _ModerationActions extends StatelessWidget {
                       ),
                       title: Text(AppLocalizations.of(context)!.copyMessage),
                       onTap: () {
-                        Clipboard.setData(
-                          ClipboardData(text: m.message),
-                        );
+                        Clipboard.setData(ClipboardData(text: m.message));
                         Navigator.pop(context);
                       },
                     ),
@@ -436,9 +434,7 @@ class _ModerationActions extends StatelessWidget {
                         Icons.share_outlined,
                         color: Colors.blueAccent,
                       ),
-                      title: Text(
-                        AppLocalizations.of(context)!.shareMessage,
-                      ),
+                      title: Text(AppLocalizations.of(context)!.shareMessage),
                       onTap: () async {
                         Navigator.pop(context);
                         try {
@@ -448,8 +444,7 @@ class _ModerationActions extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                AppLocalizations.of(context)!
-                                    .shareMessageError,
+                                AppLocalizations.of(context)!.shareMessageError,
                               ),
                             ),
                           );
@@ -462,9 +457,9 @@ class _ModerationActions extends StatelessWidget {
                         color: Colors.blueAccent,
                       ),
                       title: Text(
-                        AppLocalizations.of(context)!.viewProfile(
-                          m.author.displayName ?? m.author.login,
-                        ),
+                        AppLocalizations.of(
+                          context,
+                        )!.viewProfile(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
                         openUrl(profileUrl);

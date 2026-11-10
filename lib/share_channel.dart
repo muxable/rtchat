@@ -70,10 +70,7 @@ class AppShare with WidgetsBindingObserver {
 
   // Shares text with other apps.
   static Future<void> shareText(String text) async {
-    await _channel.invokeMethod<void>(
-      'shareText',
-      {'text': text},
-    );
+    await _channel.invokeMethod<void>('shareText', {'text': text});
   }
 
   // Retrieves text shared with this app.
