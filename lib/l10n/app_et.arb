@@ -277,6 +277,8 @@
   "languageUnsupported": "Sinu häälepaketid ei toeta keelt {language}; kasutatakse süsteemi häält",
   "neuralFallbackLowMemory": "Sellel seadmel pole neurohäälte jaoks piisavalt mälu, seega loetakse vestlust süsteemi häälega.",
   "neuralFallbackLoadFailed": "Neurohääle laadimine ebaõnnestus, seega loetakse vestlust süsteemi häälega.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Kontod",
   "accountsSubtitle": "Logi sisse igale platvormile, kus teed ülekandeid",
   "addProviderAccount": "Lisa {provider}-konto",

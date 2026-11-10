@@ -276,6 +276,8 @@
   "languageUnsupported": "I tuoi pacchetti vocali non supportano {language}; verrà usata la voce di sistema",
   "neuralFallbackLowMemory": "Questo dispositivo non ha memoria sufficiente per le voci neurali, quindi la chat viene letta con la voce di sistema.",
   "neuralFallbackLoadFailed": "Impossibile caricare la voce neurale, quindi la chat viene letta con la voce di sistema.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Account",
   "accountsSubtitle": "Accedi a ogni piattaforma su cui trasmetti",
   "addProviderAccount": "Aggiungi account {provider}",

@@ -277,6 +277,8 @@
   "languageUnsupported": "A hangcsomagok nem támogatják a(z) {language} nyelvet; a rendszerhang lesz használva",
   "neuralFallbackLowMemory": "Ezen az eszközön nincs elég memória a neurális hangokhoz, ezért a csevegést a rendszerhang olvassa fel.",
   "neuralFallbackLoadFailed": "A neurális hangot nem sikerült betölteni, ezért a csevegést a rendszerhang olvassa fel.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Fiókok",
   "accountsSubtitle": "Jelentkezz be minden platformra, amelyen közvetítesz",
   "addProviderAccount": "{provider}-fiók hozzáadása",

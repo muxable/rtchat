@@ -277,6 +277,8 @@
   "languageUnsupported": "Ваши гласовни пакети не подржавају језик ({language}); користиће се системски глас",
   "neuralFallbackLowMemory": "Овај уређај нема довољно меморије за неуронске гласове, па се чет чита системским гласом.",
   "neuralFallbackLoadFailed": "Неуронски глас није могао да се учита, па се чет чита системским гласом.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Налози",
   "accountsSubtitle": "Пријавите се на сваку платформу на којој стримујете",
   "addProviderAccount": "Додај {provider} налог",

@@ -277,6 +277,8 @@
   "languageUnsupported": "แพ็กเสียงของคุณไม่รองรับภาษา{language} ระบบจะใช้เสียงของระบบแทน",
   "neuralFallbackLowMemory": "อุปกรณ์นี้มีหน่วยความจำไม่เพียงพอสำหรับเสียง Neural จึงอ่านแชทด้วยเสียงของระบบแทน",
   "neuralFallbackLoadFailed": "ไม่สามารถโหลดเสียง Neural ได้ จึงอ่านแชทด้วยเสียงของระบบแทน",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "บัญชี",
   "accountsSubtitle": "ลงชื่อเข้าใช้ในแต่ละแพลตฟอร์มที่คุณสตรีม",
   "addProviderAccount": "เพิ่มบัญชี {provider}",

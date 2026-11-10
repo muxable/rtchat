@@ -277,6 +277,8 @@
   "languageUnsupported": "Gói giọng nói của bạn không hỗ trợ {language}; giọng đọc hệ thống sẽ được sử dụng",
   "neuralFallbackLowMemory": "Thiết bị này không đủ bộ nhớ cho giọng đọc AI nên nội dung trò chuyện sẽ được đọc bằng giọng đọc hệ thống.",
   "neuralFallbackLoadFailed": "Không thể tải giọng đọc AI nên nội dung trò chuyện sẽ được đọc bằng giọng đọc hệ thống.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Tài khoản",
   "accountsSubtitle": "Đăng nhập vào từng nền tảng mà bạn phát sóng",
   "addProviderAccount": "Thêm tài khoản {provider}",

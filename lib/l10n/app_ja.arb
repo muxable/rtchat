@@ -276,6 +276,8 @@
   "languageUnsupported": "音声パックは {language} に対応していないため、システム音声を使用します",
   "neuralFallbackLowMemory": "このデバイスにはニューラル音声を使用するためのメモリが不足しているため、システム音声でチャットを読み上げます。",
   "neuralFallbackLoadFailed": "ニューラル音声を読み込めなかったため、システム音声でチャットを読み上げます。",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "アカウント",
   "accountsSubtitle": "配信する各プラットフォームにログイン",
   "addProviderAccount": "{provider} アカウントを追加",

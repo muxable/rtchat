@@ -277,6 +277,8 @@
   "languageUnsupported": "ਤੁਹਾਡੇ ਵੌਇਸ ਪੈਕਾਂ ਵੱਲੋਂ {language} ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ; ਸਿਸਟਮ ਆਵਾਜ਼ ਵਰਤੀ ਜਾਵੇਗੀ",
   "neuralFallbackLowMemory": "ਇਸ ਡਿਵਾਈਸ ਵਿੱਚ ਨਿਊਰਲ ਆਵਾਜ਼ਾਂ ਲਈ ਲੋੜੀਂਦੀ ਮੈਮੋਰੀ ਨਹੀਂ ਹੈ, ਇਸ ਲਈ ਚੈਟ ਸਿਸਟਮ ਆਵਾਜ਼ ਨਾਲ ਪੜ੍ਹੀ ਜਾਂਦੀ ਹੈ।",
   "neuralFallbackLoadFailed": "ਨਿਊਰਲ ਆਵਾਜ਼ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕੀ, ਇਸ ਲਈ ਚੈਟ ਸਿਸਟਮ ਆਵਾਜ਼ ਨਾਲ ਪੜ੍ਹੀ ਜਾਂਦੀ ਹੈ।",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "ਖਾਤੇ",
   "accountsSubtitle": "ਜਿਸ ਵੀ ਪਲੇਟਫਾਰਮ 'ਤੇ ਤੁਸੀਂ ਸਟ੍ਰੀਮ ਕਰਦੇ ਹੋ, ਉਸ ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ",
   "addProviderAccount": "{provider} ਖਾਤਾ ਸ਼ਾਮਲ ਕਰੋ",

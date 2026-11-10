@@ -2280,6 +2280,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get neuralFallbackLoadFailed => '無法載入神經網路語音，因此將使用系統語音朗讀聊天內容。';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => '帳號';
 
   @override

@@ -276,6 +276,8 @@
   "languageUnsupported": "لا تدعم حزم الأصوات لديك اللغة {language}؛ سيُستخدم صوت النظام",
   "neuralFallbackLowMemory": "لا توجد ذاكرة كافية على هذا الجهاز للأصوات العصبية، لذا تُقرأ الدردشة بصوت النظام.",
   "neuralFallbackLoadFailed": "تعذّر تحميل الصوت العصبي، لذا تُقرأ الدردشة بصوت النظام.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "الحسابات",
   "accountsSubtitle": "سجّل الدخول إلى كل منصة تبث عليها",
   "addProviderAccount": "إضافة حساب {provider}",

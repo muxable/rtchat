@@ -277,6 +277,8 @@
   "languageUnsupported": "Limba {language} nu este acceptată de pachetele tale de voci; va fi folosită vocea sistemului",
   "neuralFallbackLowMemory": "Acest dispozitiv nu are suficientă memorie pentru vocile neurale, astfel încât chatul este citit cu vocea sistemului.",
   "neuralFallbackLoadFailed": "Vocea neurală nu a putut fi încărcată, astfel încât chatul este citit cu vocea sistemului.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Conturi",
   "accountsSubtitle": "Conectează-te pe fiecare platformă pe care faci stream",
   "addProviderAccount": "Adaugă cont {provider}",

@@ -276,6 +276,8 @@
   "languageUnsupported": "Ваші голосові пакети не підтримують мову {language}; буде використано системний голос",
   "neuralFallbackLowMemory": "На цьому пристрої недостатньо пам'яті для нейромережевих голосів, тому чат озвучується системним голосом.",
   "neuralFallbackLoadFailed": "Не вдалося завантажити нейромережевий голос, тому чат озвучується системним голосом.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Облікові записи",
   "accountsSubtitle": "Увійдіть на кожну платформу, де ви ведете трансляції",
   "addProviderAccount": "Додати обліковий запис {provider}",

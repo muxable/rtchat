@@ -277,6 +277,8 @@
   "languageUnsupported": "{language} word nie deur jou stempakkette ondersteun nie; die stelselstem sal gebruik word",
   "neuralFallbackLowMemory": "Hierdie toestel het nie genoeg geheue vir neurale stemme nie, daarom word die klets met die stelselstem gelees.",
   "neuralFallbackLoadFailed": "Die neurale stem kon nie laai nie, daarom word die klets met die stelselstem gelees.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Rekeninge",
   "accountsSubtitle": "Meld aan by elke platform waarop jy stroom",
   "addProviderAccount": "Voeg {provider}-rekening by",

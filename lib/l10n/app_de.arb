@@ -276,6 +276,8 @@
   "languageUnsupported": "Deine Sprachpakete unterstützen {language} nicht; die Systemstimme wird verwendet",
   "neuralFallbackLowMemory": "Dieses Gerät hat nicht genug Arbeitsspeicher für neuronale Stimmen. Der Chat wird daher mit der Systemstimme vorgelesen.",
   "neuralFallbackLoadFailed": "Die neuronale Stimme konnte nicht geladen werden. Der Chat wird daher mit der Systemstimme vorgelesen.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Konten",
   "accountsSubtitle": "Melde dich auf jeder Plattform an, auf der du streamst",
   "addProviderAccount": "{provider}-Konto hinzufügen",

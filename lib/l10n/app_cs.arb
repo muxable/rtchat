@@ -277,6 +277,8 @@
   "languageUnsupported": "Vaše hlasové balíčky nepodporují jazyk {language}; použije se systémový hlas",
   "neuralFallbackLowMemory": "Toto zařízení nemá dostatek paměti pro neuronové hlasy, proto je chat předčítán systémovým hlasem.",
   "neuralFallbackLoadFailed": "Neuronový hlas se nepodařilo načíst, proto je chat předčítán systémovým hlasem.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Účty",
   "accountsSubtitle": "Přihlaste se na každou platformu, na které streamujete",
   "addProviderAccount": "Přidat účet {provider}",

@@ -277,6 +277,8 @@
   "languageUnsupported": "உங்கள் குரல் தொகுப்புகளால் {language} ஆதரிக்கப்படவில்லை; சிஸ்டம் குரல் பயன்படுத்தப்படும்",
   "neuralFallbackLowMemory": "இந்தச் சாதனத்தில் நியூரல் குரல்களுக்குப் போதுமான நினைவகம் இல்லை, எனவே அரட்டை சிஸ்டம் குரல் மூலம் படிக்கப்படுகிறது.",
   "neuralFallbackLoadFailed": "நியூரல் குரலை ஏற்ற முடியவில்லை, எனவே அரட்டை சிஸ்டம் குரல் மூலம் படிக்கப்படுகிறது.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "கணக்குகள்",
   "accountsSubtitle": "நீங்கள் ஸ்ட்ரீம் செய்யும் ஒவ்வொரு தளத்திலும் உள்நுழையவும்",
   "addProviderAccount": "{provider} கணக்கைச் சேர்",

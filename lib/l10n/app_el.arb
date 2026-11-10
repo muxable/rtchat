@@ -277,6 +277,8 @@
   "languageUnsupported": "Η γλώσσα {language} δεν υποστηρίζεται από τα πακέτα φωνής σας· θα χρησιμοποιηθεί η φωνή συστήματος",
   "neuralFallbackLowMemory": "Αυτή η συσκευή δεν διαθέτει αρκετή μνήμη για νευρωνικές φωνές, επομένως η συνομιλία διαβάζεται με τη φωνή συστήματος.",
   "neuralFallbackLoadFailed": "Δεν ήταν δυνατή η φόρτωση της νευρωνικής φωνής, επομένως η συνομιλία διαβάζεται με τη φωνή συστήματος.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Λογαριασμοί",
   "accountsSubtitle": "Συνδεθείτε σε κάθε πλατφόρμα στην οποία μεταδίδετε",
   "addProviderAccount": "Προσθήκη λογαριασμού {provider}",

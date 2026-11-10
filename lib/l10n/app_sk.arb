@@ -277,6 +277,8 @@
   "languageUnsupported": "Vaše hlasové balíky nepodporujú jazyk {language}; použije sa systémový hlas",
   "neuralFallbackLowMemory": "Toto zariadenie nemá dostatok pamäte pre neurónové hlasy, preto sa čet číta systémovým hlasom.",
   "neuralFallbackLoadFailed": "Neurónový hlas sa nepodarilo načítať, preto sa čet číta systémovým hlasom.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Účty",
   "accountsSubtitle": "Prihláste sa na každú platformu, na ktorej vysielate",
   "addProviderAccount": "Pridať účet {provider}",

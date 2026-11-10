@@ -277,6 +277,8 @@
   "languageUnsupported": "Äänipakettisi eivät tue kieltä {language}. Käytetään järjestelmän ääntä",
   "neuralFallbackLowMemory": "Tämän laitteen muisti ei riitä neuraalisille äänille. Keskustelu luetaan järjestelmän äänellä.",
   "neuralFallbackLoadFailed": "Neuraalista ääntä ei voitu ladata. Keskustelu luetaan järjestelmän äänellä.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Tilit",
   "accountsSubtitle": "Kirjaudu jokaiseen palveluun, jossa lähetät",
   "addProviderAccount": "Lisää {provider}-tili",

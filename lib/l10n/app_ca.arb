@@ -277,6 +277,8 @@
   "languageUnsupported": "Els teus paquets de veu no admeten l'idioma {language}; s'utilitzarà la veu del sistema",
   "neuralFallbackLowMemory": "Aquest dispositiu no té prou memòria per a les veus neuronals, de manera que el xat es llegeix amb la veu del sistema.",
   "neuralFallbackLoadFailed": "No s'ha pogut carregar la veu neuronal, de manera que el xat es llegeix amb la veu del sistema.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Comptes",
   "accountsSubtitle": "Inicia la sessió a cada plataforma on facis directes",
   "addProviderAccount": "Afegeix un compte de {provider}",

@@ -277,6 +277,8 @@
   "languageUnsupported": "{language} dili ses paketleriniz tarafından desteklenmiyor; sistem sesi kullanılacak",
   "neuralFallbackLowMemory": "Bu cihazda nöral sesler için yeterli bellek olmadığından sohbet sistem sesiyle okunur.",
   "neuralFallbackLoadFailed": "Nöral ses yüklenemediğinden sohbet sistem sesiyle okunur.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Hesaplar",
   "accountsSubtitle": "Yayın yaptığınız her platformda oturum açın",
   "addProviderAccount": "{provider} hesabı ekle",

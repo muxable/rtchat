@@ -277,6 +277,8 @@
   "languageUnsupported": "Hindi sinusuportahan ng iyong mga voice pack ang {language}; gagamitin ang boses ng sistema",
   "neuralFallbackLowMemory": "Walang sapat na memory ang device na ito para sa mga neural na boses, kaya binabasa ang chat gamit ang boses ng sistema.",
   "neuralFallbackLoadFailed": "Hindi ma-load ang neural na boses, kaya binabasa ang chat gamit ang boses ng sistema.",
+  "shareMessage": "Share message",
+  "shareMessageError": "Unable to share message.",
   "accounts": "Mga Account",
   "accountsSubtitle": "Mag-sign in sa bawat platform kung saan ka nag-i-stream",
   "addProviderAccount": "Magdagdag ng {provider} account",
