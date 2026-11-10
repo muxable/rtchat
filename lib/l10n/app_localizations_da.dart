@@ -1166,6 +1166,12 @@ class AppLocalizationsDa extends AppLocalizations {
       'Den neurale stemme kunne ikke indlæses, så chatten læses med systemstemmen.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Konti';
 
   @override

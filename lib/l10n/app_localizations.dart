@@ -1891,6 +1891,7 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unable to share message.'**
   String get shareMessageError;
+
   /// Title of the settings page that lists the streaming accounts the app is signed in to
   ///
   /// In en, this message translates to:

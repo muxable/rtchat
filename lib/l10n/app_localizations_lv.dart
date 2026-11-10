@@ -1184,6 +1184,12 @@ class AppLocalizationsLv extends AppLocalizations {
       'Neironu balsi neizdevās ielādēt, tāpēc tērzēšana tiek lasīta ar sistēmas balsi.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Konti';
 
   @override

@@ -1171,6 +1171,12 @@ class AppLocalizationsGu extends AppLocalizations {
       'ન્યુરલ અવાજ લોડ થઈ શક્યો નહીં, તેથી ચેટ સિસ્ટમ અવાજથી વાંચવામાં આવે છે.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'એકાઉન્ટ્સ';
 
   @override

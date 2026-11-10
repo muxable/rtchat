@@ -1194,6 +1194,12 @@ class AppLocalizationsCa extends AppLocalizations {
       'No s\'ha pogut carregar la veu neuronal, de manera que el xat es llegeix amb la veu del sistema.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Comptes';
 
   @override

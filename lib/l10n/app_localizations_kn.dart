@@ -1186,6 +1186,12 @@ class AppLocalizationsKn extends AppLocalizations {
       'ನ್ಯೂರಲ್ ಧ್ವನಿಯನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ಚಾಟ್ ಅನ್ನು ಸಿಸ್ಟಮ್ ಧ್ವನಿಯೊಂದಿಗೆ ಓದಲಾಗುತ್ತದೆ.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'ಖಾತೆಗಳು';
 
   @override

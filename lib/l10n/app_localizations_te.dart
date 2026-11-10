@@ -1179,6 +1179,12 @@ class AppLocalizationsTe extends AppLocalizations {
       'న్యూరల్ వాయిస్ లోడ్ కాలేకపోయింది, కాబట్టి చాట్ సిస్టమ్ వాయిస్‌తో చదవబడుతుంది.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'ఖాతాలు';
 
   @override

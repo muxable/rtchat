@@ -1198,6 +1198,12 @@ class AppLocalizationsTa extends AppLocalizations {
       'நியூரல் குரலை ஏற்ற முடியவில்லை, எனவே அரட்டை சிஸ்டம் குரல் மூலம் படிக்கப்படுகிறது.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'கணக்குகள்';
 
   @override

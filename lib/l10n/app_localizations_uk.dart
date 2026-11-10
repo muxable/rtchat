@@ -1182,14 +1182,13 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'Не вдалося завантажити нейромережевий голос, тому чат озвучується системним голосом.';
 
   @override
   String get shareMessage => 'Share message';
 
   @override
   String get shareMessageError => 'Unable to share message.';
-      'Не вдалося завантажити нейромережевий голос, тому чат озвучується системним голосом.';
 
   @override
   String get accounts => 'Облікові записи';

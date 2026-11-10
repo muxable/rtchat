@@ -1130,6 +1130,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get neuralFallbackLoadFailed => '신경망 음성을 불러오지 못하여 시스템 음성으로 채팅을 읽습니다.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => '계정';
 
   @override
@@ -1151,13 +1157,5 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
-
-  @override
-  String get shareMessage => 'Share message';
-
-  @override
-  String get shareMessageError => 'Unable to share message.';
   String get signOutOfAll => '모든 계정에서 로그아웃';
 }

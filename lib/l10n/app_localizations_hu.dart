@@ -1179,6 +1179,12 @@ class AppLocalizationsHu extends AppLocalizations {
       'A neurális hangot nem sikerült betölteni, ezért a csevegést a rendszerhang olvassa fel.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Fiókok';
 
   @override

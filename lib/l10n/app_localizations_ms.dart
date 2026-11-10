@@ -1171,6 +1171,12 @@ class AppLocalizationsMs extends AppLocalizations {
       'Suara neural tidak dapat dimuatkan, jadi sembang dibacakan dengan suara sistem.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Akaun';
 
   @override

@@ -1580,12 +1580,13 @@
     "description": "Shown once in the text to speech settings when the installed voice pack failed to load, e.g. for lack of memory"
   },
   "shareMessage": "Share message",
-    "shareMessageError": "Unable to share message.",
   "@shareMessage": {
     "description": "Label for sharing a chat message"
   },
+  "shareMessageError": "Unable to share message.",
   "@shareMessageError": {
     "description": "Error shown when sharing a chat message fails"
+  },
   "accounts": "Accounts",
   "@accounts": {
     "description": "Title of the settings page that lists the streaming accounts the app is signed in to"

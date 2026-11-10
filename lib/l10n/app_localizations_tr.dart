@@ -1177,6 +1177,12 @@ class AppLocalizationsTr extends AppLocalizations {
       'Nöral ses yüklenemediğinden sohbet sistem sesiyle okunur.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Hesaplar';
 
   @override

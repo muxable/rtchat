@@ -1188,6 +1188,12 @@ class AppLocalizationsSk extends AppLocalizations {
       'Neurónový hlas sa nepodarilo načítať, preto sa čet číta systémovým hlasom.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Účty';
 
   @override

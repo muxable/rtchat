@@ -1186,6 +1186,12 @@ class AppLocalizationsLt extends AppLocalizations {
       'Nepavyko įkelti neuroninio balso, todėl pokalbis skaitomas sistemos balsu.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Paskyros';
 
   @override

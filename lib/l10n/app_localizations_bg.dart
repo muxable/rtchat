@@ -1195,6 +1195,12 @@ class AppLocalizationsBg extends AppLocalizations {
       'Невронният глас не можа да се зареди, затова чатът се чете със системния глас.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Профили';
 
   @override

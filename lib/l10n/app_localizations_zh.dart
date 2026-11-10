@@ -1124,15 +1124,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get neuralFallbackLowMemory => '此设备没有足够的内存运行神经网络语音，因此将使用系统语音朗读聊天内容。';
 
   @override
-  String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+  String get neuralFallbackLoadFailed => '无法加载神经网络语音，因此将使用系统语音朗读聊天内容。';
 
   @override
   String get shareMessage => 'Share message';
 
   @override
   String get shareMessageError => 'Unable to share message.';
-  String get neuralFallbackLoadFailed => '无法加载神经网络语音，因此将使用系统语音朗读聊天内容。';
 
   @override
   String get accounts => '账号';

@@ -1162,6 +1162,12 @@ class AppLocalizationsTh extends AppLocalizations {
       'ไม่สามารถโหลดเสียง Neural ได้ จึงอ่านแชทด้วยเสียงของระบบแทน';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'บัญชี';
 
   @override

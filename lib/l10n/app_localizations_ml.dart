@@ -1194,6 +1194,12 @@ class AppLocalizationsMl extends AppLocalizations {
       'ന്യൂറൽ ശബ്ദം ലോഡ് ചെയ്യാനാകാത്തതിനാൽ സിസ്റ്റം ശബ്ദം ഉപയോഗിച്ച് ചാറ്റ് വായിക്കുന്നു.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'അക്കൗണ്ടുകൾ';
 
   @override

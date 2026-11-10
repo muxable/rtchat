@@ -1191,6 +1191,12 @@ class AppLocalizationsSl extends AppLocalizations {
       'Nevronskega glasu ni bilo mogoče naložiti, zato se klepet bere s sistemskim glasom.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Računi';
 
   @override

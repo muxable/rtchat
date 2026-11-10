@@ -1162,6 +1162,12 @@ class AppLocalizationsEt extends AppLocalizations {
       'Neurohääle laadimine ebaõnnestus, seega loetakse vestlust süsteemi häälega.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Kontod';
 
   @override

@@ -1193,6 +1193,12 @@ class AppLocalizationsEl extends AppLocalizations {
       'Δεν ήταν δυνατή η φόρτωση της νευρωνικής φωνής, επομένως η συνομιλία διαβάζεται με τη φωνή συστήματος.';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Λογαριασμοί';
 
   @override

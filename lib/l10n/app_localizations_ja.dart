@@ -1128,14 +1128,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'ニューラル音声を読み込めなかったため、システム音声でチャットを読み上げます。';
 
   @override
   String get shareMessage => 'Share message';
 
   @override
   String get shareMessageError => 'Unable to share message.';
-      'ニューラル音声を読み込めなかったため、システム音声でチャットを読み上げます。';
 
   @override
   String get accounts => 'アカウント';

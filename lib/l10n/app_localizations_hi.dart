@@ -1176,6 +1176,12 @@ class AppLocalizationsHi extends AppLocalizations {
       'न्यूरल आवाज़ लोड नहीं हो सकी, इसलिए चैट सिस्टम आवाज़ से पढ़ी जाती है।';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'खाते';
 
   @override

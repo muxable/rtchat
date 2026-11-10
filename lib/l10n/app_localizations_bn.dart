@@ -1152,14 +1152,13 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'নিউরাল কণ্ঠ লোড করা যায়নি, তাই সিস্টেমের কণ্ঠে চ্যাট পড়ে শোনানো হচ্ছে।';
 
   @override
   String get shareMessage => 'Share message';
 
   @override
   String get shareMessageError => 'Unable to share message.';
-      'নিউরাল কণ্ঠ লোড করা যায়নি, তাই সিস্টেমের কণ্ঠে চ্যাট পড়ে শোনানো হচ্ছে।';
 
   @override
   String get accounts => 'অ্যাকাউন্ট';

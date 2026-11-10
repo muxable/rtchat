@@ -1173,6 +1173,12 @@ class AppLocalizationsPa extends AppLocalizations {
       'ਨਿਊਰਲ ਆਵਾਜ਼ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕੀ, ਇਸ ਲਈ ਚੈਟ ਸਿਸਟਮ ਆਵਾਜ਼ ਨਾਲ ਪੜ੍ਹੀ ਜਾਂਦੀ ਹੈ।';
 
   @override
+  String get shareMessage => 'Share message';
+
+  @override
+  String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'ਖਾਤੇ';
 
   @override

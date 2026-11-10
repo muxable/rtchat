@@ -1169,6 +1169,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareMessageError => 'Unable to share message.';
+
+  @override
   String get accounts => 'Accounts';
 
   @override
