@@ -313,14 +313,51 @@ class _ModerationActions extends StatelessWidget {
         onLongPress: () async {
           FocusManager.instance.primaryFocus?.unfocus();
           final messenger = ScaffoldMessenger.of(context);
-          final action = await showDialog<_ModerationAction>(
+          final action = await showModalBottomSheet<_ModerationAction>(
             context: context,
+            isScrollControlled: true,
             builder: (context) {
-              return Dialog(
+              return SafeArea(
                 child: ListView(
                   shrinkWrap: true,
                   primary: false,
                   children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 56,
+                          child: Center(
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundImage:
+                                  author is TwitchUserModel
+                                      ? NetworkImage(
+                                        author.profilePictureUrl.toString(),
+                                      )
+                                      : null,
+                              child:
+                                  author is! TwitchUserModel
+                                      ? const Icon(Icons.person)
+                                      : null,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            author.displayName ?? author.login,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          tooltip:
+                              MaterialLocalizations.of(
+                                context,
+                              ).closeButtonTooltip,
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
                     if (kDebugMode) Text("DEBUG: id=${m.messageId}"),
                     ListTile(
                       leading: const Icon(Icons.timer, color: Colors.grey),
