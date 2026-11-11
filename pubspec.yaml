@@ -11,8 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   audioplayers: ^6.8.1
+  cached_network_image: ^4.0.6
   cloud_firestore: ^7.1.0
   cloud_functions: ^7.0.1
+  dchs_motion_sensors: ^3.0.0
   firebase_analytics: ^13.0.1
   firebase_auth: ^7.0.1
   firebase_core: ^5.1.0
@@ -23,41 +25,39 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_localized_locales: ^2.0.5
-  on_device_tts:
-    path: packages/on_device_tts
+  flutter_markdown_plus: ^1.0.12
   flutter_web_auth_2: ^5.1.0
   intl: ^0.20.3
   linkify: ^5.0.0
   metadata_fetch: ^0.4.2
   mobile_scanner: ^7.4.2
-  dchs_motion_sensors: ^3.0.0
+  on_device_tts:
+    path: packages/on_device_tts
   package_info_plus: ^10.2.2
   path_provider: ^2.1.6
   provider: ^6.1.5+1
   qr_flutter: ^4.1.0
-  streaming_shared_preferences: ^2.0.0
   sticky_headers: ^0.3.0+2
+  streaming_shared_preferences: ^2.0.0
   styled_text: ^10.0.0
   url_launcher: ^6.3.3
+  uuid: ^4.6.0
   wakelock_plus: ^1.8.2
   webview_flutter: ^4.14.1
   webview_flutter_android: ^4.14.1
   webview_flutter_wkwebview: ^3.27.2
-  uuid: ^4.6.0
-  flutter_markdown_plus: ^1.0.12
-  cached_network_image: ^4.0.6
 
 dev_dependencies:
-  webview_flutter_platform_interface: ^2.15.1
   audioplayers_platform_interface: ^7.2.0
-  leak_tracker_flutter_testing: ^3.0.10
+  flutter_cache_manager: ^3.4.5
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
+  http: ^1.6.0
   integration_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
-  flutter_cache_manager: ^3.4.5
-  http: ^1.6.0
+  leak_tracker_flutter_testing: ^3.0.10
+  webview_flutter_platform_interface: ^2.15.1
 
 flutter:
   config:
