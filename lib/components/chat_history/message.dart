@@ -335,6 +335,7 @@ class _ModerationActions extends StatelessWidget {
                                         author.profilePictureUrl.toString(),
                                       )
                                       : null,
+                              onBackgroundImageError: (_, _) {},
                               child:
                                   author is! TwitchUserModel
                                       ? const Icon(Icons.person)
