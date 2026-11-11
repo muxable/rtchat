@@ -336,7 +336,7 @@ class _ModerationActions extends StatelessWidget {
                                       )
                                       : null,
                               onBackgroundImageError:
-                                  author is TwitchUserModel ? (_, __) {} : null,
+                                  author is TwitchUserModel ? (_, _) {} : null,
                               child:
                                   author is! TwitchUserModel
                                       ? const Icon(Icons.person)
