@@ -375,17 +375,17 @@ class _SidebarState extends State<Sidebar> {
       ),
 
       ListTile(
-        leading: const Icon(Icons.build_outlined),
-        title: Text(AppLocalizations.of(context)!.settings),
-        onTap: () async {
-          await Navigator.pushNamed(context, "/settings");
-        },
-      ),
-      ListTile(
         leading: const Icon(Icons.manage_accounts_outlined),
         title: Text(AppLocalizations.of(context)!.accounts),
         onTap: () async {
           await Navigator.pushNamed(context, "/settings/accounts");
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.build_outlined),
+        title: Text(AppLocalizations.of(context)!.settings),
+        onTap: () async {
+          await Navigator.pushNamed(context, "/settings");
         },
       ),
       Consumer<UserModel>(
