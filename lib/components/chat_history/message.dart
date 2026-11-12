@@ -294,6 +294,19 @@ class _ModerationActions extends StatelessWidget {
     required this.child,
   });
 
+  bool get _isSubscriber {
+    final m = message;
+
+    if (m is! TwitchMessageModel) return false;
+
+    final badges = m.tags['badges-raw'];
+
+    return badges
+            ?.split(',')
+            .any((badge) => badge.split('/').first == 'subscriber') ??
+        false;
+  }
+
   @override
   Widget build(BuildContext context) {
     // moderate as the account whose channel this is.
@@ -345,9 +358,25 @@ class _ModerationActions extends StatelessWidget {
                           ),
                         ),
                         Expanded(
-                          child: Text(
-                            author.displayName ?? author.login,
-                            style: Theme.of(context).textTheme.titleMedium,
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  author.displayName ?? author.login,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (_isSubscriber) ...[
+                                const SizedBox(width: 8),
+                                const Icon(
+                                  Icons.star,
+                                  size: 18,
+                                  color: Colors.purpleAccent,
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                         IconButton(
