@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
 import 'package:rtchat/components/auth/twitch.dart';
+import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/components/disco.dart';
 import 'package:rtchat/components/drawer/end_drawer.dart';
@@ -17,13 +18,14 @@ import 'package:rtchat/components/view_stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/activity_feed.dart';
+import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
-import 'package:rtchat/tts_foreground_service.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/views.dart';
+import 'package:rtchat/tts_foreground_service.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -400,6 +402,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 channels: views.sendableChannels,
                                 onChannelSelected:
                                     (channel) => views.sendChannel = channel,
+                                onRaid: (username) {
+                                  final primaryChannel = views.primaryChannel;
+                                  if (primaryChannel == null ||
+                                      primaryChannel.provider !=
+                                          Providers.twitch) {
+                                    return;
+                                  }
+                                  final raidingAccount = userModel.accountFor(
+                                    primaryChannel,
+                                  );
+                                  if (raidingAccount == null) {
+                                    return;
+                                  }
+                                  showModalBottomSheet<void>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(16),
+                                      ),
+                                    ),
+                                    builder: (context) {
+                                      return DraggableScrollableSheet(
+                                        initialChildSize: 0.8,
+                                        maxChildSize: 0.9,
+                                        expand: false,
+                                        builder: (context, controller) {
+                                          return ChannelSearchBottomSheetWidget(
+                                            isRaid: true,
+                                            initialQuery: username ?? '',
+                                            onChannelSelect: views.openChannel,
+                                            onChannelAdd: views.addChannel,
+                                            channels: views.channels,
+                                            onRaid:
+                                                (channel) =>
+                                                    ActionsAdapter.forAccount(
+                                                      raidingAccount,
+                                                    ).raid(
+                                                      raidingAccount.channel,
+                                                      channel,
+                                                    ),
+                                            controller: controller,
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
                               ),
                         );
                       },
