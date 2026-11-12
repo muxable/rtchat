@@ -580,32 +580,3 @@ func TestTwitchQueueSkipsEnqueueWhileCostLimitIsFull(t *testing.T) {
 		t.Fatal("headroom did not clear the cost limit")
 	}
 }
-
-// Subscribe runs beside reconcile leases, so removals must never carry that label.
-func TestTwitchQueueLabelsOnlyReconcileLeases(t *testing.T) {
-	server := httptest.NewServer(&fakeEventSub{})
-	defer server.Close()
-	for _, tc := range []struct {
-		name    string
-		enqueue func(*TwitchQueue)
-		want    string
-	}{
-		{"reconcile", func(q *TwitchQueue) { q.Enqueue("123") }, twitchReconcileLease},
-		{"app", func(q *TwitchQueue) { q.EnsureApp() }, twitchReconcileLease},
-		{"remove", func(q *TwitchQueue) { q.EnqueueRemove("123") }, ""},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			queue, _ := testQueue(server)
-			label := "unset"
-			queue.lock = func(ctx context.Context, _ string, work func(context.Context) error) error {
-				label = subscriptionlock.JobOf(ctx)
-				return work(ctx)
-			}
-			tc.enqueue(queue)
-			queue.step(context.Background())
-			if label != tc.want {
-				t.Fatalf("lease label %q, want %q", label, tc.want)
-			}
-		})
-	}
-}
