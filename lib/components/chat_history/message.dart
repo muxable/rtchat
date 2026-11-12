@@ -13,6 +13,7 @@ import 'package:rtchat/components/chat_history/kick/events.dart';
 import 'package:rtchat/components/chat_history/kick/message.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
+import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
 import 'package:rtchat/components/chat_history/twitch/cheer_event.dart';
 import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
@@ -294,19 +295,6 @@ class _ModerationActions extends StatelessWidget {
     required this.child,
   });
 
-  bool get _isSubscriber {
-    final m = message;
-
-    if (m is! TwitchMessageModel) return false;
-
-    final badges = m.tags['badges-raw'];
-
-    return badges
-            ?.split(',')
-            .any((badge) => badge.split('/').first == 'subscriber') ??
-        false;
-  }
-
   @override
   Widget build(BuildContext context) {
     // moderate as the account whose channel this is.
@@ -335,59 +323,94 @@ class _ModerationActions extends StatelessWidget {
                   shrinkWrap: true,
                   primary: false,
                   children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 56,
-                          child: Center(
-                            child: CircleAvatar(
-                              radius: 20,
-                              backgroundImage:
-                                  author is TwitchUserModel
-                                      ? NetworkImage(
-                                        author.profilePictureUrl.toString(),
-                                      )
-                                      : null,
-                              onBackgroundImageError:
-                                  author is TwitchUserModel ? (_, _) {} : null,
-                              child:
-                                  author is! TwitchUserModel
-                                      ? const Icon(Icons.person)
-                                      : null,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Row(
+                    SizedBox(
+                      height: 56,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final badges =
+                              m is TwitchMessageModel ? m.badges : [];
+                          return Row(
                             children: [
+                              // Profile picture.
+                              SizedBox(
+                                width: 56,
+                                child: Center(
+                                  child: CircleAvatar(
+                                    radius: 20,
+                                    backgroundImage:
+                                        author is TwitchUserModel
+                                            ? NetworkImage(
+                                              author.profilePictureUrl
+                                                  .toString(),
+                                            )
+                                            : null,
+                                    onBackgroundImageError:
+                                        author is TwitchUserModel
+                                            ? (_, _) {}
+                                            : null,
+                                    child:
+                                        author is! TwitchUserModel
+                                            ? const Icon(Icons.person)
+                                            : null,
+                                  ),
+                                ),
+                              ),
+                              // Username: gives up space before badges do.
                               Flexible(
                                 child: Text(
                                   author.displayName ?? author.login,
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  overflow: TextOverflow.ellipsis,
                                   style:
                                       Theme.of(context).textTheme.titleMedium,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              if (_isSubscriber) ...[
-                                const SizedBox(width: 8),
-                                const Icon(
-                                  Icons.star,
-                                  size: 18,
-                                  color: Colors.purpleAccent,
-                                ),
+                              if (m is TwitchMessageModel) ...[
+                                // Subscriber badge always gets priority.
+                                if (m.isSubscriber)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 6),
+                                    child: Icon(
+                                      Icons.star,
+                                      size: 20,
+                                      color: Colors.purpleAccent,
+                                    ),
+                                  ),
+                                // Twitch badges scroll horizontally.
+                                if (badges.isNotEmpty)
+                                  Flexible(
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children:
+                                            badges.map((badge) {
+                                              return TwitchBadgeWidget(
+                                                badgeSetId: badge.key,
+                                                version: badge.version,
+                                                height: 20,
+                                                ignoreSettings: true,
+                                              );
+                                            }).toList(),
+                                      ),
+                                    ),
+                                  ),
                               ],
+                              // Close button stays at the right.
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 36,
+                                  height: 36,
+                                ),
+                                onPressed: () => Navigator.pop(context),
+                              ),
                             ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          tooltip:
-                              MaterialLocalizations.of(
-                                context,
-                              ).closeButtonTooltip,
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
+                          );
+                        },
+                      ),
                     ),
                     if (kDebugMode) Text("DEBUG: id=${m.messageId}"),
                     ListTile(
