@@ -7,30 +7,32 @@ class TwitchBadgeWidget extends StatelessWidget {
   final String badgeSetId;
   final String version;
   final double? height;
+  final bool ignoreSettings;
 
   const TwitchBadgeWidget({
     super.key,
     required this.badgeSetId,
     required this.version,
     this.height,
+    this.ignoreSettings = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Consumer<TwitchBadgeModel>(
       builder: (context, model, child) {
-        if (!model.isEnabled(badgeSetId)) {
+        if (!ignoreSettings && !model.isEnabled(badgeSetId)) {
           return const SizedBox();
         }
         for (final badgeSet in model.badgeSets) {
           if (badgeSet.setId != badgeSetId) {
             continue;
           }
-          for (final version in badgeSet.versions) {
-            if (version.id != this.version) {
+          for (final badgeVersion in badgeSet.versions) {
+            if (badgeVersion.id != version) {
               continue;
             }
-            final url = Uri.tryParse(version.imageUrl1x);
+            final url = Uri.tryParse(badgeVersion.imageUrl1x);
             if (url == null) {
               return const SizedBox();
             }
