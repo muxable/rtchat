@@ -63,6 +63,14 @@ void main() {
     classes: ['ImageStreamCompleterHandle', '_LiveImage'],
   );
 
+  // Unmount the widget after each test so its resources are disposed.
+  void disposeWidget(WidgetTester tester) {
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+    });
+  }
+
   Widget app(Channel? channel, {Channel? account, List<Account>? accounts}) =>
       MultiProvider(
         providers: [
@@ -138,6 +146,7 @@ void main() {
       "are the channel's messages are sent to",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await tester.pumpWidget(app(kick, account: kick));
         await tester.pump();
 
@@ -152,6 +161,7 @@ void main() {
       "follow the channel when it changes",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await tester.pumpWidget(app(twitch, account: twitch));
         await tester.pump();
         await tester.pumpWidget(app(kick, account: twitch));
@@ -168,6 +178,7 @@ void main() {
       "aren't reloaded while the channel stays the same",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await tester.pumpWidget(app(kick, account: kick));
         await tester.pump();
         await tester.pumpWidget(
@@ -185,6 +196,7 @@ void main() {
       "the input is disabled with a hint naming the account",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await tester.pumpWidget(app(null, account: twitch));
         await tester.pump();
 
@@ -207,6 +219,7 @@ void main() {
       "the input is enabled again once there is one",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await tester.pumpWidget(app(null, account: twitch));
         await tester.pump();
         await tester.pumpWidget(app(twitch, account: twitch));
@@ -246,6 +259,7 @@ void main() {
       "goes through the channel's own account",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await send(tester, kick);
 
         expect(twitchApi.calls, isEmpty);
@@ -262,6 +276,7 @@ void main() {
       "to someone else's channel goes through its provider's account",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await send(tester, Channel(Providers.twitch, '99', 'someone'));
 
         expect(kickApi.calls, isEmpty);
@@ -315,6 +330,7 @@ void main() {
       "is hidden with one channel to send to",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         views.removeChannel(kick);
         await tester.pumpWidget(pickerApp(views, accounts));
         await tester.pump();
@@ -328,6 +344,7 @@ void main() {
       "shows the first channel until another is picked",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await tester.pumpWidget(pickerApp(views, accounts));
         await tester.pump();
 
@@ -349,6 +366,7 @@ void main() {
       "sends only to the channel picked, with its emotes and limit",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await tester.pumpWidget(pickerApp(views, accounts));
         await tester.pump();
         await pick(tester, 'KickMux');
@@ -377,6 +395,7 @@ void main() {
       "slash commands go to the channel picked",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await tester.pumpWidget(pickerApp(views, accounts));
         await tester.pump();
         await pick(tester, 'KickMux');
@@ -391,6 +410,7 @@ void main() {
       "remembers the channel picked",
       experimentalLeakTesting: ignoreImages,
       (tester) async {
+        disposeWidget(tester);
         await tester.pumpWidget(pickerApp(views, accounts));
         await tester.pump();
         await pick(tester, 'KickMux');
