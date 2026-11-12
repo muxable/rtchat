@@ -13,7 +13,6 @@ import (
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/chatmessage"
 	"github.com/muxable/rtchat/agent/internal/provider"
-	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -80,64 +79,56 @@ func (s *Service) subscribeTwitch(ctx context.Context, uid, channel string) (int
 		_, err = ref.Set(ctx, map[string]interface{}{"lastActiveAt": firestore.ServerTimestamp}, firestore.MergeAll)
 		return user.Login, err
 	}
-	// Foreground opens must not wait for a worker's full 90-second lease.
-	// Keep lifecycle work serialized against removals, but run beside a
-	// reconcile, which does the EventSub work this would queue; nothing here
-	// conflicts with it. Let callers retry channels busy otherwise.
-	err = subscriptionlock.WithWaitLimitBeside(ctx, s.DB, "twitch:"+channel, foregroundLeaseWait, []string{twitchReconcileLease}, func(ctx context.Context) error {
-		// A server profile and its stored OAuth grant must identify the same
-		// broadcaster before authenticated-only subscriptions are reconciled.
-		userToken, err := s.API.Tokens.AccessToken(ctx, uid, "twitch")
-		if err != nil {
-			return &callable.Error{Code: "failed-precondition", Message: "reconnect Twitch before subscribing"}
-		}
-		current, err := s.twitchUser(ctx, userToken, nil)
-		if err != nil {
-			return err
-		}
-		if current.ID != channel {
-			return &callable.Error{Code: "permission-denied", Message: "Twitch identity no longer matches profile"}
-		}
-		if err := s.checkTwitchSecret(); err != nil {
-			return err
-		}
-		// Twitch's rate and cost limits make EventSub creation too slow and
-		// too likely to fail for the request; the worker reconciles it.
-		s.Queue.Enqueue(channel)
-		pending := false
-		if err := s.DB.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-			pending = false
-			profileDoc, err := tx.Get(ref)
-			if err != nil {
-				return err
-			}
-			data := profileDoc.Data()
-			if stringID(profile(data, "twitch")["id"]) != channel {
-				return &callable.Error{Code: "permission-denied", Message: "Twitch profile changed"}
-			}
-			updates := map[string]interface{}{"lastActiveAt": firestore.ServerTimestamp}
-			if data["lastActiveAt"] == nil {
-				updates["welcomePendingChannel"] = channel
-				pending = true
-			} else {
-				pending = data["welcomePendingChannel"] == channel
-			}
-			if err = tx.Set(ref, updates, firestore.MergeAll); err != nil {
-				return err
-			}
-			return tx.Set(s.DB.Collection("channels").Doc("twitch:"+channel), map[string]interface{}{"lastActiveAt": firestore.ServerTimestamp}, firestore.MergeAll)
-		}); err != nil {
-			return err
-		}
-		if pending {
-			return s.welcome(ctx, uid, channel, user.Login)
-		}
-		return nil
-	})
-	if errors.Is(err, subscriptionlock.ErrBusy) {
-		return nil, unavailable("Twitch subscriptions are busy; try again shortly")
+	// A server profile and its stored OAuth grant must identify the same
+	// broadcaster before authenticated-only subscriptions are reconciled. This
+	// takes no lifecycle lease: the reconcile it queues takes one, and is
+	// ordered against removals there.
+	userToken, err := s.API.Tokens.AccessToken(ctx, uid, "twitch")
+	if err != nil {
+		return nil, &callable.Error{Code: "failed-precondition", Message: "reconnect Twitch before subscribing"}
 	}
-	return user.Login, err
+	current, err := s.twitchUser(ctx, userToken, nil)
+	if err != nil {
+		return nil, err
+	}
+	if current.ID != channel {
+		return nil, &callable.Error{Code: "permission-denied", Message: "Twitch identity no longer matches profile"}
+	}
+	if err := s.checkTwitchSecret(); err != nil {
+		return nil, err
+	}
+	// Twitch's rate and cost limits make EventSub creation too slow and
+	// too likely to fail for the request; the worker reconciles it.
+	s.Queue.Enqueue(channel)
+	pending := false
+	if err := s.DB.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		pending = false
+		profileDoc, err := tx.Get(ref)
+		if err != nil {
+			return err
+		}
+		data := profileDoc.Data()
+		if stringID(profile(data, "twitch")["id"]) != channel {
+			return &callable.Error{Code: "permission-denied", Message: "Twitch profile changed"}
+		}
+		updates := map[string]interface{}{"lastActiveAt": firestore.ServerTimestamp}
+		if data["lastActiveAt"] == nil {
+			updates["welcomePendingChannel"] = channel
+			pending = true
+		} else {
+			pending = data["welcomePendingChannel"] == channel
+		}
+		if err = tx.Set(ref, updates, firestore.MergeAll); err != nil {
+			return err
+		}
+		return tx.Set(s.DB.Collection("channels").Doc("twitch:"+channel), map[string]interface{}{"lastActiveAt": firestore.ServerTimestamp}, firestore.MergeAll)
+	}); err != nil {
+		return nil, err
+	}
+	if pending {
+		return user.Login, s.welcome(ctx, uid, channel, user.Login)
+	}
+	return user.Login, nil
 }
 
 type twitchSubscription struct {
