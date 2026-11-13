@@ -1,6 +1,8 @@
 package webhook
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -73,6 +75,11 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 		start := time.Now()
 		writer := &statusWriter{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(writer, r)
+		// A caller that hung up cancels every downstream call, so whatever the
+		// handler wrote describes the hang-up, not the server.
+		if errors.Is(r.Context().Err(), context.Canceled) {
+			writer.status = 499
+		}
 		level := zap.InfoLevel
 		if writer.status >= 500 {
 			level = zap.ErrorLevel
