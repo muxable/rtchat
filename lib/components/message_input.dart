@@ -151,12 +151,16 @@ class MessageInputWidget extends StatefulWidget {
   /// account on the channel's provider.
   final Future<List<Emote>> Function(Channel channel)? loadEmotes;
 
+  /// Opens the raid picker with an optional username part
+  final ValueChanged<String?>? onRaid;
+
   const MessageInputWidget({
     super.key,
     required this.channel,
     this.channels = const [],
     this.onChannelSelected,
     this.loadEmotes,
+    this.onRaid,
   });
 
   @override
@@ -273,17 +277,24 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     });
   }
 
-  @override
-  void dispose() {
-    AppShare.instance.onDataReceived = null;
-    keyboardSubscription.cancel();
-    _chatInputFocusNode.dispose();
-    _textEditingController?.dispose();
-    super.dispose();
-  }
-
   void sendMessage(String value) async {
     value = value.trim();
+
+    final raidMatch = RegExp(
+      r'^/raid(?:\s+(.+))?$',
+      caseSensitive: false,
+    ).firstMatch(value);
+
+    if (raidMatch != null && widget.channel?.provider == Providers.twitch) {
+      final username = raidMatch.group(1)?.trim();
+
+      _textEditingController?.clear();
+      widget.onRaid?.call(
+        username == null || username.isEmpty ? null : username,
+      );
+      return;
+    }
+
     final channel = widget.channel;
     if (value.isEmpty || channel == null) {
       return;
