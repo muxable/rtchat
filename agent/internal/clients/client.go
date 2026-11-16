@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptrace"
 	"strings"
 	"time"
 )
@@ -73,28 +74,43 @@ func (c Client) Do(ctx context.Context, method, path string, body any) (*Respons
 			return nil, err
 		}
 	}
-	req, err := http.NewRequestWithContext(ctx, method, strings.TrimRight(c.BaseURL, "/")+path, bytes.NewReader(encoded))
-	if err != nil {
-		return nil, errors.New("invalid provider request")
-	}
-	req.Header = c.Headers.Clone()
-	if req.Header == nil {
-		req.Header = make(http.Header)
-	}
-	req.Header.Set("Accept", "application/json")
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
 	client := c.HTTP
 	if client == nil {
 		client = &http.Client{Timeout: 10 * time.Second}
 	}
-	response, err := client.Do(req)
-	if err != nil {
+	var response *http.Response
+	// A request the transport began sending but never wrote, e.g. because the
+	// connection failed during setup, had no effect, so it is resent once
+	// whatever its method. A transport that reports neither is ambiguous.
+	for attempt := 0; ; attempt++ {
+		connecting, written := false, false
+		trace := &httptrace.ClientTrace{
+			GetConn:      func(string) { connecting = true },
+			WroteHeaders: func() { written = true },
+			WroteRequest: func(httptrace.WroteRequestInfo) { written = true },
+		}
+		req, err := http.NewRequestWithContext(httptrace.WithClientTrace(ctx, trace), method, strings.TrimRight(c.BaseURL, "/")+path, bytes.NewReader(encoded))
+		if err != nil {
+			return nil, errors.New("invalid provider request")
+		}
+		req.Header = c.Headers.Clone()
+		if req.Header == nil {
+			req.Header = make(http.Header)
+		}
+		req.Header.Set("Accept", "application/json")
+		if body != nil {
+			req.Header.Set("Content-Type", "application/json")
+		}
+		response, err = client.Do(req)
+		if err == nil {
+			break
+		}
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
-		return nil, errors.New("provider transport failure")
+		if !connecting || written || attempt == 1 {
+			return nil, errors.New("provider transport failure")
+		}
 	}
 	defer response.Body.Close()
 	data, err := io.ReadAll(io.LimitReader(response.Body, (8<<20)+1))
