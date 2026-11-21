@@ -23,6 +23,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/catalog"
 	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"github.com/muxable/rtchat/agent/internal/handler"
+	"github.com/muxable/rtchat/agent/internal/hedge"
 	"github.com/muxable/rtchat/agent/internal/ircauth"
 	"github.com/muxable/rtchat/agent/internal/oauthhttp"
 	"github.com/muxable/rtchat/agent/internal/observability"
@@ -136,7 +137,7 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	client, err := firestore.NewClient(ctx, "rtchat-47692")
+	client, err := firestore.NewClient(ctx, "rtchat-47692", hedge.Firestore())
 	if err != nil {
 		zap.L().Fatal("failed to create firestore client", zap.Error(err))
 	}

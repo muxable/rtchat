@@ -431,8 +431,7 @@ func installReconnect(client chatConnection, source oauth2.TokenSource) {
 	})
 }
 
-// createMessage writes one message document within a bounded budget, hedging
-// stalled attempts so a single hung RPC cannot drop the message.
+// createMessage writes one message document within a bounded budget.
 func createMessage(ctx context.Context, create func(context.Context) error) (duplicate bool, err error) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
