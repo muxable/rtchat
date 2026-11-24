@@ -106,10 +106,9 @@ internal interface SynthesisTrace {
 /** Thrown when a model directory can't be loaded. */
 class SupertonicLoadException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
-
 /**
  * Supertonic 3: duration predictor → text encoder → flow-matching vector
- * estimator (N steps) → vocoder, each an ONNX Runtime session.
+ * estimator (N steps) → vocoder, each a flutter_onnx graph session.
  */
 internal class SupertonicModel(
     val config: SupertonicConfig,

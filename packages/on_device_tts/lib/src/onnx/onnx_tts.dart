@@ -1,6 +1,6 @@
 import 'onnx_tts_platform.dart';
 
-/// A neural TTS model running natively on ONNX Runtime.
+/// A loaded neural speech model backed by flutter_onnx.
 ///
 /// ```dart
 /// final tts = await OnnxTts.load(modelDir: '/path/to/supertonic-3');

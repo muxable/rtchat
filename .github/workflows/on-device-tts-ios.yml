@@ -1,7 +1,7 @@
 name: Supertonic speech
 
-# Runs the plugin's Swift tests (the OnDeviceTtsCore Swift package) on the
-# iOS simulator, with real Supertonic 3 synthesis through ONNX Runtime.
+# The Swift unit suite uses a reference evaluator. The Flutter device suite
+# exercises the production graph worker and the native speech pipeline.
 
 on:
   push:
@@ -137,6 +137,12 @@ jobs:
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v6
         if: runner.os == 'Linux'
+      - name: Run Kotlin parity tests against the Python tensors
+        if: runner.os == 'Linux'
+        run: |
+          flutter build apk --config-only
+          cd android
+          SUPERTONIC_PARITY_DIR="$RUNNER_TEMP/reference" ./gradlew :on_device_tts:testDebugUnitTest --console=plain
       - name: Enable KVM
         if: runner.os == 'Linux'
         run: |

@@ -24,8 +24,8 @@ import kotlin.test.assertTrue
  * reference tensors as little-endian binaries; the manifest names the model
  * directory. Run it with
  * `SUPERTONIC_PARITY_DIR=... ./gradlew :on_device_tts:testDebugUnitTest`
- * from the app's `android/` (the variable also puts the desktop ONNX Runtime
- * on the test classpath).
+ * from the app's `android/`. The standalone JVM suite uses ONNX Runtime as
+ * its graph evaluator.
  */
 class ReferenceParityTest {
     private class Trace : SynthesisTrace {

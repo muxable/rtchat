@@ -53,7 +53,7 @@ public struct SupertonicVoice {
   let dp: GraphTensor
 }
 
-/// A loaded Supertonic 3 model: four ONNX Runtime sessions (duration
+/// A loaded Supertonic 3 model: four graph sessions (duration
 /// predictor, text encoder, vector estimator, vocoder), the text processor
 /// and the voice styles.
 ///

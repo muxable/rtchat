@@ -106,6 +106,10 @@ class _GraphWorker {
 void _serveGraph((String, SendPort) request) async {
   final (path, parent) = request;
   final graph = OnnxSession.fromBytes(File(path).readAsBytesSync());
+  // A tiny difference in predicted duration can change the integer PCM
+  // length. Use the same Dart arithmetic for this graph on both platforms.
+  final backend =
+      graph.outputs.containsKey('duration') ? null : const NativeCpuBackend();
   final commands = ReceivePort();
   parent.send(commands.sendPort);
   await for (final dynamic message in commands) {
@@ -116,15 +120,19 @@ void _serveGraph((String, SendPort) request) async {
         final spec = e.value as Map;
         final data = spec['data'] as TypedData;
         feeds[e.key as String] = Tensor.fromBytes(
-          data is Int64List ? TensorType.int64 : TensorType.float32,
+          switch (data) {
+            Int64List() => TensorType.int64,
+            Float32List() => TensorType.float32,
+            _ =>
+              throw ArgumentError(
+                'Unsupported speech tensor: ${data.runtimeType}',
+              ),
+          },
           (spec['shape'] as List).cast<int>(),
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
         );
       }
-      final outputs = await graph.runAsync(
-        feeds,
-        backend: const NativeCpuBackend(),
-      );
+      final outputs = await graph.runAsync(feeds, backend: backend);
       final output = outputs.values.single;
       parent.send((
         id,

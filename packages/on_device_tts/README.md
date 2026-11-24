@@ -31,7 +31,9 @@ the previous one plays. `doc/native_contract.md` is the platform contract
 Android and iOS implementations share.
 
 Each graph lives in a background Dart isolate. The native engine sends its inputs
-over `on_device_tts/graphs` and receives typed results. Dense CPU products use
+over `on_device_tts/graphs` and receives typed results. The duration predictor uses
+the same Dart arithmetic on both platforms to keep PCM trimming consistent.
+For the encoder, denoiser and vocoder, dense CPU products use
 the package's native kernel on Android and Accelerate on iOS. Provider and
 thread-count arguments remain accepted for existing callers. The graph worker
 uses the CPU backend for every provider request.

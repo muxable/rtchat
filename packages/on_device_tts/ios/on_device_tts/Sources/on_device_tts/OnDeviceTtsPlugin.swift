@@ -4,7 +4,7 @@ import Foundation
 // The engine (OnDeviceTtsCore's sources) is compiled into this module by
 // Package.swift (or the podspec), so there is nothing to import.
 
-/// The iOS side of `on_device_tts`'s ONNX Runtime engine: the
+/// The iOS side of `on_device_tts`'s neural speech engine: the
 /// `on_device_tts/onnx` method channel and the `on_device_tts/onnx/events`
 /// event channel. See `doc/native_contract.md`; the engine itself is
 /// `OnnxTtsEngine` in `ios/on_device_tts/OnDeviceTtsCore`.
