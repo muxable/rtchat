@@ -70,7 +70,7 @@ class ChatHistoryMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final m = message;
-    final formattedTimestamp = DateFormat.jm().format(m.timestamp);
+    final formattedTimestamp = DateFormat('HH:mm').format(m.timestamp);
 
     if (m is TwitchMessageModel) {
       return Consumer<LayoutModel>(
@@ -441,10 +441,27 @@ class _ModerationActions extends StatelessWidget {
                           if (kDebugMode) Text("DEBUG: id=${m.messageId}"),
                           ListTile(
                             leading: const Icon(
-                              Icons.timer,
+                              Icons.comment,
                               color: Colors.grey,
                             ),
-                            title: Text(formattedTimestamp),
+                            title: Row(
+                              children: [
+                                Text(
+                                  formattedTimestamp,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    m.message,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           // muting & unmuting kick users needs provider-aware
                           // persistence, see #1398
