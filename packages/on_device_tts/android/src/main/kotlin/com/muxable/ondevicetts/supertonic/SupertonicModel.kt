@@ -26,14 +26,8 @@
 
 package com.muxable.ondevicetts.supertonic
 
-import ai.onnxruntime.OnnxTensor
-import ai.onnxruntime.OrtEnvironment
-import ai.onnxruntime.OrtException
-import ai.onnxruntime.OrtSession
 import java.io.Closeable
 import java.io.File
-import java.nio.FloatBuffer
-import java.nio.LongBuffer
 
 /** The model's settings from `tts.json`. */
 internal class SupertonicConfig(
@@ -112,22 +106,19 @@ internal interface SynthesisTrace {
 /** Thrown when a model directory can't be loaded. */
 class SupertonicLoadException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
-/** How sessions run: ONNX Runtime's execution provider and thread count. */
-internal data class SessionSettings(val numThreads: Int, val provider: String)
 
 /**
  * Supertonic 3: duration predictor → text encoder → flow-matching vector
  * estimator (N steps) → vocoder, each an ONNX Runtime session.
  */
 internal class SupertonicModel(
-    private val env: OrtEnvironment,
     val config: SupertonicConfig,
     val processor: SupertonicTextProcessor,
     val voices: Map<String, VoiceStyle>,
-    private val durationPredictor: OrtSession,
-    private val textEncoder: OrtSession,
-    private val vectorEstimator: OrtSession,
-    private val vocoder: OrtSession,
+    private val durationPredictor: GraphSession,
+    private val textEncoder: GraphSession,
+    private val vectorEstimator: GraphSession,
+    private val vocoder: GraphSession,
     /** The provider the sessions actually run on, after any fallback. */
     val provider: String,
 ) : Closeable {
@@ -139,8 +130,7 @@ internal class SupertonicModel(
      * and hands each chunk's audio to [onAudio] as soon as it's ready, with
      * [SILENCE_SECONDS] of silence between chunks. Blank text makes no audio.
      *
-     * [runOptions] lets another thread abort a run in flight with
-     * `setTerminate(true)`; the run then throws [OrtException].
+     * Cancellation is checked before every graph execution.
      */
     fun synthesize(
         text: String,
@@ -149,14 +139,14 @@ internal class SupertonicModel(
         speed: Float,
         steps: Int,
         noise: NoiseGenerator,
-        runOptions: OrtSession.RunOptions,
+        cancelled: () -> Boolean,
         trace: SynthesisTrace? = null,
         onAudio: (FloatArray) -> Unit,
     ) {
         val chunks = TextChunker.chunk(text, TextChunker.maxLengthFor(lang))
         for ((i, chunk) in chunks.withIndex()) {
             if (i > 0) onAudio(FloatArray((SILENCE_SECONDS * sampleRate).toInt()))
-            onAudio(infer(chunk, lang, voice, speed, steps, noise, runOptions, trace))
+            onAudio(infer(chunk, lang, voice, speed, steps, noise, cancelled, trace))
         }
     }
 
@@ -168,7 +158,7 @@ internal class SupertonicModel(
         speed: Float,
         steps: Int,
         noise: NoiseGenerator,
-        runOptions: OrtSession.RunOptions,
+        cancelled: () -> Boolean,
         trace: SynthesisTrace? = null,
     ): FloatArray {
         val ids = processor.encode(text, lang)
@@ -177,47 +167,18 @@ internal class SupertonicModel(
         val textMask = FloatArray(ids.size) { 1f }
         trace?.onIds("text_ids", ids, idsShape)
 
-        OnnxTensor.createTensor(env, LongBuffer.wrap(ids), idsShape).use { idsTensor ->
-            OnnxTensor.createTensor(env, FloatBuffer.wrap(textMask), maskShape).use { maskTensor ->
-                OnnxTensor.createTensor(env, FloatBuffer.wrap(voice.ttl), voice.ttlShape).use { ttlTensor ->
-                    OnnxTensor.createTensor(env, FloatBuffer.wrap(voice.dp), voice.dpShape).use { dpTensor ->
-                        // Duration (seconds), scaled by speed.
-                        val rawDuration = durationPredictor.run(
-                            mapOf("text_ids" to idsTensor, "style_dp" to dpTensor, "text_mask" to maskTensor),
-                            runOptions,
-                        ).use { floats(it[0] as OnnxTensor)[0] }
-                        val duration = rawDuration / speed
-                        trace?.onFloats("duration", floatArrayOf(duration), longArrayOf(1))
-
-                        return textEncoder.run(
-                            mapOf("text_ids" to idsTensor, "style_ttl" to ttlTensor, "text_mask" to maskTensor),
-                            runOptions,
-                        ).use { encoded ->
-                            val textEmb = encoded[0] as OnnxTensor
-                            if (trace != null) {
-                                trace.onFloats("text_emb", floats(textEmb), textEmb.info.shape)
-                            }
-                            denoiseAndVocode(
-                                duration, steps, noise, runOptions, trace,
-                                textEmb, ttlTensor, maskTensor,
-                            )
-                        }
-                    }
-                }
-            }
+        val idsTensor = GraphTensor(ids, idsShape)
+        val maskTensor = GraphTensor(textMask, maskShape)
+        val ttlTensor = GraphTensor(voice.ttl, voice.ttlShape)
+        fun run(session: GraphSession, vararg inputs: Pair<String, GraphTensor>): GraphTensor {
+            if (cancelled()) throw InterruptedException("Speech stopped")
+            return session.run(mapOf(*inputs))
         }
-    }
-
-    private fun denoiseAndVocode(
-        duration: Float,
-        steps: Int,
-        noise: NoiseGenerator,
-        runOptions: OrtSession.RunOptions,
-        trace: SynthesisTrace?,
-        textEmb: OnnxTensor,
-        ttlTensor: OnnxTensor,
-        maskTensor: OnnxTensor,
-    ): FloatArray {
+        val duration = run(durationPredictor, "text_ids" to idsTensor,
+            "style_dp" to GraphTensor(voice.dp, voice.dpShape), "text_mask" to maskTensor).floats[0] / speed
+        trace?.onFloats("duration", floatArrayOf(duration), longArrayOf(1))
+        val textEmb = run(textEncoder, "text_ids" to idsTensor, "style_ttl" to ttlTensor, "text_mask" to maskTensor)
+        trace?.onFloats("text_emb", textEmb.floats, textEmb.shape)
         // The reference computes these in float32.
         val wavLength = (duration * sampleRate).toLong()
         val chunkSize = config.chunkSize
@@ -235,33 +196,16 @@ internal class SupertonicModel(
         }
         trace?.onFloats("noise", latent, latentShape)
 
-        OnnxTensor.createTensor(env, FloatBuffer.wrap(latentMask), longArrayOf(1, 1, latentLength.toLong())).use { latentMaskTensor ->
-            OnnxTensor.createTensor(env, FloatBuffer.wrap(floatArrayOf(steps.toFloat())), SCALAR_BATCH).use { totalStepTensor ->
-                for (step in 0 until steps) {
-                    latent = OnnxTensor.createTensor(env, FloatBuffer.wrap(floatArrayOf(step.toFloat())), SCALAR_BATCH).use { stepTensor ->
-                        OnnxTensor.createTensor(env, FloatBuffer.wrap(latent), latentShape).use { latentTensor ->
-                            vectorEstimator.run(
-                                mapOf(
-                                    "noisy_latent" to latentTensor,
-                                    "text_emb" to textEmb,
-                                    "style_ttl" to ttlTensor,
-                                    "latent_mask" to latentMaskTensor,
-                                    "text_mask" to maskTensor,
-                                    "current_step" to stepTensor,
-                                    "total_step" to totalStepTensor,
-                                ),
-                                runOptions,
-                            ).use { floats(it[0] as OnnxTensor) }
-                        }
-                    }
-                    trace?.onFloats("latent_$step", latent, latentShape)
-                }
-            }
+        val mask = GraphTensor(latentMask, longArrayOf(1, 1, latentLength.toLong()))
+        val total = GraphTensor(floatArrayOf(steps.toFloat()), SCALAR_BATCH)
+        for (step in 0 until steps) {
+            latent = run(vectorEstimator, "noisy_latent" to GraphTensor(latent, latentShape),
+                "text_emb" to textEmb, "style_ttl" to ttlTensor, "latent_mask" to mask,
+                "text_mask" to maskTensor, "current_step" to GraphTensor(floatArrayOf(step.toFloat()), SCALAR_BATCH),
+                "total_step" to total).floats
+            trace?.onFloats("latent_$step", latent, latentShape)
         }
-
-        val wav = OnnxTensor.createTensor(env, FloatBuffer.wrap(latent), latentShape).use { latentTensor ->
-            vocoder.run(mapOf("latent" to latentTensor), runOptions).use { floats(it[0] as OnnxTensor) }
-        }
+        val wav = run(vocoder, "latent" to GraphTensor(latent, latentShape)).floats
         trace?.onFloats("wav", wav, longArrayOf(1, wav.size.toLong()))
         val trimmed = (sampleRate * duration).toInt().coerceIn(0, wav.size)
         return if (trimmed == wav.size) wav else wav.copyOf(trimmed)
@@ -290,11 +234,6 @@ internal class SupertonicModel(
 
         private val MODEL_NAMES = listOf("duration_predictor", "text_encoder", "vector_estimator", "vocoder")
 
-        private fun floats(tensor: OnnxTensor): FloatArray {
-            val buffer = tensor.floatBuffer
-            return FloatArray(buffer.remaining()).also { buffer.get(it) }
-        }
-
         /** The model directory's ONNX files: `onnx/` when present, else the directory itself. */
         fun onnxDir(dir: File): File = File(dir, "onnx").takeIf { it.isDirectory } ?: dir
 
@@ -315,10 +254,8 @@ internal class SupertonicModel(
          * four models, and `voice_styles/` with one JSON file per voice.
          */
         fun load(
-            env: OrtEnvironment,
             dir: File,
-            settings: SessionSettings,
-            log: (String) -> Unit,
+            open: (File) -> GraphSession,
         ): SupertonicModel {
             if (!dir.isDirectory) throw SupertonicLoadException("Model directory not found: $dir")
             val onnx = onnxDir(dir)
@@ -345,22 +282,16 @@ internal class SupertonicModel(
                 modelFile(onnx, name) ?: throw SupertonicLoadException("Missing $name.onnx in $onnx")
             }
 
-            val sessions = ArrayList<OrtSession>()
-            var provider = settings.provider
+            val sessions = ArrayList<GraphSession>()
             try {
-                for (file in files) {
-                    val (session, used) = ExecutionProviders.createSession(env, file, settings.copy(provider = provider), log)
-                    // Once a provider fails, use the CPU for the rest too.
-                    provider = used
-                    sessions.add(session)
-                }
-            } catch (e: OrtException) {
+                for (file in files) sessions.add(open(file))
+            } catch (e: Exception) {
                 sessions.forEach { it.close() }
                 throw SupertonicLoadException("Can't load the model in $onnx: ${e.message}", e)
             }
             return SupertonicModel(
-                env, config, SupertonicTextProcessor(indexer), voices,
-                sessions[0], sessions[1], sessions[2], sessions[3], provider,
+                config, SupertonicTextProcessor(indexer), voices,
+                sessions[0], sessions[1], sessions[2], sessions[3], "cpu",
             )
         }
     }

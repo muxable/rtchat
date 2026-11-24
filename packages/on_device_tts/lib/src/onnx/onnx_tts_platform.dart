@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../device_memory.dart';
+import 'graph_worker_stub.dart' if (dart.library.io) 'graph_worker.dart';
 
-/// The ONNX Runtime execution provider a model runs on.
+/// A preferred execution provider for the speech graph.
 ///
-/// Providers the platform doesn't have (e.g. [coreml] on Android) fall back
-/// to [cpu].
+/// The flutter_onnx speech engine currently uses [cpu] for every preference.
 enum OnnxProvider {
   cpu,
 
@@ -164,6 +164,7 @@ class OnnxTtsPlatform {
     int numThreads = 2,
     OnnxProvider provider = OnnxProvider.cpu,
   }) async {
+    installGraphHandler();
     final handle = await _methods.invokeMethod<String>('load', {
       'modelType': modelType,
       'modelDir': modelDir,

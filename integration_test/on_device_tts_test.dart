@@ -1,4 +1,4 @@
-// Runs the on_device_tts native ONNX Runtime engine on a device with a real
+// Runs the on_device_tts flutter_onnx speech engine on a device with a real
 // Supertonic 3 model. It skips itself unless ON_DEVICE_TTS_MODEL_DIR is set,
 // so the regular integration run (which has no model) passes over it. See
 // packages/on_device_tts/README.md for how to push the model and run it:
@@ -168,10 +168,15 @@ void main() {
 
   testWidgets('matches the reference implementation', (_) async {
     final manifestFile = File('$referenceDir/manifest.json');
-    if (referenceDir.isEmpty || !manifestFile.existsSync()) {
+    if (referenceDir.isEmpty) {
       markTestSkipped('no SUPERTONIC_REFERENCE_DIR');
       return;
     }
+    expect(
+      manifestFile.existsSync(),
+      isTrue,
+      reason: 'Missing reference manifest',
+    );
     final manifest =
         jsonDecode(manifestFile.readAsStringSync()) as Map<String, dynamic>;
     for (final c in manifest['cases'] as List) {

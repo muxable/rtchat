@@ -40,7 +40,7 @@ class OnDeviceTtsPlugin : FlutterPlugin {
             acquire = { wakeLock.acquire(it) },
             release = { if (wakeLock.isHeld) wakeLock.release() },
         )
-        val handler = OnnxTtsChannelHandler(activity)
+        val handler = OnnxTtsChannelHandler(activity, FlutterGraphs(binding.binaryMessenger))
         val context = binding.applicationContext
         methods = MethodChannel(binding.binaryMessenger, OnnxTtsChannelHandler.METHOD_CHANNEL).also {
             it.setMethodCallHandler { call, result ->

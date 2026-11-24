@@ -1,15 +1,11 @@
 package com.muxable.ondevicetts
 
-import ai.onnxruntime.OrtEnvironment
-import ai.onnxruntime.OrtSession
 import android.os.Handler
 import android.os.Looper
 import android.os.Process
 import android.os.SystemClock
 import android.util.Log
-import com.muxable.ondevicetts.supertonic.ExecutionProviders
 import com.muxable.ondevicetts.supertonic.NoiseGenerator
-import com.muxable.ondevicetts.supertonic.SessionSettings
 import com.muxable.ondevicetts.supertonic.SupertonicLanguages
 import com.muxable.ondevicetts.supertonic.SupertonicLoadException
 import com.muxable.ondevicetts.supertonic.SupertonicModel
@@ -37,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 internal class OnnxTtsChannelHandler(
     private val activity: ActivityLock,
+    private val graphs: FlutterGraphs,
 ) : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
     companion object {
         const val METHOD_CHANNEL = "on_device_tts/onnx"
@@ -45,15 +42,10 @@ internal class OnnxTtsChannelHandler(
     }
 
     private val main = Handler(Looper.getMainLooper())
-    private val env: OrtEnvironment by lazy { OrtEnvironment.getEnvironment() }
     private val models = ConcurrentHashMap<String, SupertonicModel>()
     private val nextHandle = AtomicInteger(1)
     private val random = SecureRandom()
 
-    // ONNX Runtime starts a session's intra-op threads on the thread that
-    // creates it, and threads inherit its priority: loading at background
-    // priority would leave half of every inference at background priority,
-    // which a busy foreground app (e.g. the streaming app) starves.
     private val loader = executor("on_device_tts-load", Process.THREAD_PRIORITY_DEFAULT)
     private val synthesis = executor("on_device_tts-synth", Process.THREAD_PRIORITY_DEFAULT)
 
@@ -93,6 +85,7 @@ internal class OnnxTtsChannelHandler(
     }
 
     fun dispose() {
+        graphs.detach()
         stop()
         sink = null
         synthesis.execute {
@@ -108,7 +101,6 @@ internal class OnnxTtsChannelHandler(
         val modelType = call.string("modelType")
         val modelDir = call.string("modelDir")
         val numThreads = call.int("numThreads") ?: 2
-        val provider = call.argument<String>("provider") ?: ExecutionProviders.CPU
         if (modelType != "supertonic") {
             result.error("load_failed", "Unknown model type: $modelType", null)
             return
@@ -118,14 +110,12 @@ internal class OnnxTtsChannelHandler(
         loader.execute {
             try {
                 val started = SystemClock.elapsedRealtime()
-                val model = SupertonicModel.load(
-                    env, File(modelDir), SessionSettings(numThreads, provider),
-                ) { Log.w(TAG, it) }
+                val model = SupertonicModel.load(File(modelDir), graphs::open)
                 val handle = "supertonic-${nextHandle.getAndIncrement()}"
                 models[handle] = model
                 Log.i(
                     TAG,
-                    "Loaded $modelDir as $handle on ${model.provider} with $numThreads threads " +
+                    "Loaded $modelDir as $handle on ${model.provider} " +
                         "in ${SystemClock.elapsedRealtime() - started} ms",
                 )
                 main.post { result.success(handle) }
@@ -166,14 +156,12 @@ internal class OnnxTtsChannelHandler(
                     if (utterance.cancelled) break
                     model.synthesize(
                         segment, request.lang, request.voice, request.speed, request.steps,
-                        NoiseGenerator(random.nextLong()), utterance.runOptions,
+                        NoiseGenerator(random.nextLong()), { utterance.cancelled },
                     ) { utterance.queue.put(Chunk.Audio(it)) }
                 }
                 utterance.queue.put(Chunk.End)
             } catch (e: Throwable) {
                 utterance.queue.put(if (utterance.cancelled) Chunk.End else Chunk.Failed(e))
-            } finally {
-                utterance.closeRunOptions()
             }
         }
 
@@ -273,12 +261,10 @@ internal class OnnxTtsChannelHandler(
         synthesis.execute {
             try {
                 val pieces = ArrayList<FloatArray>()
-                OrtSession.RunOptions().use { runOptions ->
-                    model.synthesize(
-                        text, request.lang, request.voice, request.speed, request.steps,
-                        NoiseGenerator(seed ?: random.nextLong()), runOptions,
-                    ) { pieces.add(it) }
-                }
+                model.synthesize(
+                    text, request.lang, request.voice, request.speed, request.steps,
+                    NoiseGenerator(seed ?: random.nextLong()), { false },
+                ) { pieces.add(it) }
                 val pcm = FloatArray(pieces.sumOf { it.size })
                 var offset = 0
                 for (piece in pieces) {
@@ -360,7 +346,6 @@ internal class OnnxTtsChannelHandler(
         val hold: AutoCloseable,
     ) {
         val queue = LinkedBlockingQueue<Chunk>()
-        val runOptions = OrtSession.RunOptions()
 
         @Volatile
         var cancelled = false
@@ -368,23 +353,11 @@ internal class OnnxTtsChannelHandler(
         @Volatile
         var player: PcmPlayer? = null
 
-        private var runOptionsClosed = false
-
         fun cancel() {
             cancelled = true
-            synchronized(this) {
-                // Aborts the ONNX Runtime run in flight.
-                if (!runOptionsClosed) runOptions.setTerminate(true)
-            }
             player?.halt()
         }
 
-        fun closeRunOptions() {
-            synchronized(this) {
-                runOptionsClosed = true
-                runOptions.close()
-            }
-        }
     }
 
     private fun executor(name: String, priority: Int): ExecutorService =

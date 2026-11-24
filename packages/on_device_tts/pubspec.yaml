@@ -1,15 +1,24 @@
 name: on_device_tts
 description: >-
   Text-to-speech engines that run on the device behind one interface:
-  the platform's system voices, and neural voices on ONNX Runtime.
+  the platform's system voices, and neural voices on flutter_onnx.
 version: 0.1.0
 publish_to: "none"
 
 environment:
-  sdk: ">=3.7.0 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: ">=3.12.0 <4.0.0"
+  flutter: ">=3.44.0"
 
 dependencies:
+  flutter_onnx:
+    git:
+      url: https://github.com/kevmo314/flutter_onnx.git
+      ref: b14f47f84ee41a349232fe819c806de78709609a
+  flutter_onnx_cpu:
+    git:
+      url: https://github.com/kevmo314/flutter_onnx.git
+      path: cpu
+      ref: b14f47f84ee41a349232fe819c806de78709609a
   background_downloader: ^9.6.4
   crypto: ^3.0.7
   flutter:

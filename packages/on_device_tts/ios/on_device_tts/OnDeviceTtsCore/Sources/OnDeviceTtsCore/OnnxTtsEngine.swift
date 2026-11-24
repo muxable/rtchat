@@ -54,11 +54,10 @@ public final class OnnxTtsEngine {
   /// `busy` for good).
   var watchdogMargin: TimeInterval = 5
 
-  public convenience init() {
-    self.init(makeOutput: { AudioOutput() })
-  }
+  private let openGraph: OpenGraph
 
-  init(makeOutput: @escaping () -> PcmOutput) {
+  init(openGraph: @escaping OpenGraph, makeOutput: @escaping () -> PcmOutput = { AudioOutput() }) {
+    self.openGraph = openGraph
     self.makeOutput = makeOutput
   }
 
@@ -89,9 +88,7 @@ public final class OnnxTtsEngine {
       let result: Result<SupertonicModel, OnnxTtsError>
       do {
         result = .success(
-          try SupertonicModel(
-            modelDir: modelDir, numThreads: numThreads, provider: provider,
-            log: OnnxTtsEngine.log))
+          try SupertonicModel(modelDir: modelDir, openGraph: self.openGraph))
       } catch {
         result = .failure(OnnxTtsError("load_failed", error.localizedDescription))
       }
@@ -102,7 +99,7 @@ public final class OnnxTtsEngine {
             self.nextHandle += 1
             self.models[handle] = model
             OnnxTtsEngine.log(
-              "loaded \(modelDir) as \(handle) on \(model.provider) with \(numThreads) threads")
+              "loaded \(modelDir) as \(handle) on \(model.provider)")
             return handle
           })
       }

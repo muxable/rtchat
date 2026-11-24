@@ -1,4 +1,4 @@
-# The ONNX Runtime engine on iOS
+# The neural speech engine on iOS
 
 The Swift implementation of `native_contract.md`.
 
@@ -26,24 +26,9 @@ The app uses `ios/on_device_tts/Package.swift` to compile the system speech
 adapter, Flutter plugin and neural engine. The standalone `OnDeviceTtsCore`
 package continues to run the engine tests without Flutter.
 
-An earlier SPM build was rejected with ITMS-90208 because Xcode embedded an
-`onnxruntime.framework` wrapper whose binary required iOS 15.5 but whose
-copied `Info.plist` declared 15.1. The package's static product alone did not
-prevent this wrapper from being embedded.
-
-Runner's final build phase runs `ios/tool/repair_onnx_framework.py`.
-It reads the binary's deployment target with `vtool`, updates only ONNX
-Runtime's plist to match, and re-signs that framework before Runner is signed.
-The existing iOS build workflow runs this phase during archive creation.
-Other embedded frameworks are left to Xcode's validation.
-App Store acceptance still requires Apple's processing of a signed upload.
-
-The podspec remains available for other apps using CocoaPods.
-
-ONNX Runtime is the official build (MIT), pinned to **1.24.2** in both the
-podspec (`onnxruntime-objc`) and the `OnDeviceTtsCore` Swift package
-(Microsoft's `onnxruntime-swift-package-manager`, whose newest release is
-1.24.2), so the tests run the same ONNX Runtime version the app ships. It needs iOS 15.1; the app targets 15.5.
+Production uses flutter_onnx with Accelerate for dense matrix products.
+The standalone Swift test target uses Microsoft ONNX Runtime as an independent
+graph evaluator. CocoaPods and SwiftPM consumers compile the same Swift sources.
 
 ## Running the tests
 
@@ -58,30 +43,16 @@ TEST_RUNNER_SUPERTONIC_MODEL_DIR="$MODEL_DIR" xcodebuild test \
 ```
 
 Without `SUPERTONIC_MODEL_DIR` the tests that need the model are skipped.
-`TEST_RUNNER_SUPERTONIC_BENCHMARK=cpu` (or `coreml`, `xnnpack`) runs the
-timing benchmark instead. CI runs all of this in
+CI runs the Swift suite and real-model comparisons in
 `.github/workflows/on-device-tts-ios.yml`.
 
 ## Platform details
 
-- **Providers:** `cpu` (the default), `coreml` and `xnnpack`. `coreml` tries
-  the ML Program format with `MLComputeUnits=ALL`, then the NeuralNetwork
-  format, then `cpu`. On the simulator ML Program fails to compile these
-  models (error -7), and NeuralNetwork runs about 25 % of the nodes on CPU,
-  in 30 to 140 partitions per model; it was no faster than `cpu` there.
-  Simulator numbers say nothing about the Neural Engine, so `coreml` still
-  needs measuring on an iPhone.
-- **Threads:** every session sets `session.intra_op.allow_spinning=0`
-  (`SupertonicModel.sessionConfig`), for every provider, as on Android
-  (#1531): chat comes a message at a time, and spinning intra-op threads
-  burn the battery between runs. Sessions run sequentially, so there is no
-  inter-op pool. Inference runs at `.userInitiated` QoS.
+- **Graph execution:** one persistent isolate per graph. CPU matrix products use Accelerate.
 - **Audio:** `done` comes from the `dataPlayedBack` completion of the last
   buffer. Synthesis runs at most two buffers ahead of playback. The engine
   is paused between utterances.
-- **Stopping:** the Objective-C API has no `RunOptions` terminate, so
-  synthesis checks for cancellation before every model run; a vector
-  estimator step takes tens of milliseconds. Playback stops at once.
+- **Stopping:** playback stops immediately. Synthesis checks cancellation between graph calls.
 
 ## Audio robustness
 

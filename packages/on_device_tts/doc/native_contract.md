@@ -1,7 +1,7 @@
-# Native ONNX Runtime engine: platform contract
+# Neural speech engine: platform contract
 
 The Dart side (`OnnxTtsPlatform`, `OnnxTts`) talks to a native engine that
-runs neural TTS models on the official ONNX Runtime. Android implements it in
+runs neural TTS models with flutter_onnx. Android implements it in
 Kotlin (`android/`), iOS in Swift (`ios/`). Both must behave as described
 here; where this document and an implementation disagree, fix one of them.
 
@@ -33,21 +33,12 @@ Returns a `String` handle, e.g. `supertonic-1`. Handles are never reused
 within a process.
 
 Loads the sessions once; every later call with the handle reuses them.
-`numThreads` is ONNX Runtime's intra-op thread count. With `xnnpack` it is
-XNNPACK's thread pool instead, and the session's own pool gets 1 thread, as
-ONNX Runtime recommends. Every session sets
-`session.intra_op.allow_spinning=0`, whatever the provider, so idle intra-op
-threads block instead of busy-waiting between messages; see
-[Threads and power](#threads-and-power).
-
-A provider that is unknown, not available on the platform (`nnapi` on iOS,
-`coreml` on Android) or that fails to take a model **falls back to `cpu`**
-and logs it (Android: logcat tag `OnDeviceTts`); this is not an error. Once a
-provider has failed for one of the model's files, the rest of that model's
-files load on `cpu` too.
+The plugin accepts legacy provider and thread-count preferences. Each graph runs
+in its own Dart isolate using the CPU backend. `numThreads` is validated at load
+time. The backend controls its own threading.
 
 Errors: `load_failed` for an unknown `modelType`, a missing directory or
-file, unreadable JSON, or a model that ONNX Runtime can't load.
+file, unreadable JSON, or a model that flutter_onnx can't load.
 `bad_args` for `numThreads < 1`.
 
 #### Supertonic model directory
@@ -152,10 +143,8 @@ Errors: `bad_args`, `synthesis_failed`.
 ### `stop`
 
 No arguments; returns `null` at once. Stops the active utterance: playback
-stops and buffered audio is dropped immediately, and the ONNX Runtime run in
-flight is terminated (`RunOptions.setTerminate`; ONNX Runtime's
-Objective-C API on iOS has no equivalent, so there synthesis stops before
-its next model run instead, and nothing more is played). The pending `speak` call
+stops and buffered audio is dropped immediately. Synthesis checks cancellation
+before the next graph call. The pending `speak` call
 then completes normally (`null`), and a `stopped` event is sent. Without an
 active utterance it does nothing.
 
@@ -194,15 +183,9 @@ after it.
 
 ## Threads and power
 
-* **Spinning.** ONNX Runtime's intra-op threads busy-wait for work by
-  default. Chat arrives a message at a time, so every session sets
-  `session.intra_op.allow_spinning=0`.
-* **Priorities (Android).** Models load and synthesize at
-  `THREAD_PRIORITY_DEFAULT`. ONNX Runtime starts a session's intra-op
-  threads on the thread that creates the session, and they inherit its
-  priority, so loading at background priority would leave half of every
-  inference at background priority. The playback thread runs at
-  `THREAD_PRIORITY_AUDIO`.
+* **Inference.** Graph isolates wait for work over receive ports between calls.
+* **Priorities (Android).** The loader and synthesis threads use
+  `THREAD_PRIORITY_DEFAULT`. Playback uses `THREAD_PRIORITY_AUDIO`.
 * **Wake lock (Android).** A partial wake lock (`on_device_tts:speak`) is
   held while a model loads and from `speak` until its terminal event, with a
   10-minute timeout per hold; never between utterances. With the screen off

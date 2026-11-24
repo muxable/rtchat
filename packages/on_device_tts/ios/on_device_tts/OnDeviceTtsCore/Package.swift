@@ -1,7 +1,7 @@
 // swift-tools-version: 5.9
 
 // The plugin's Swift core: text processing, the noise generator, the
-// Supertonic 3 pipeline on ONNX Runtime, and audio playback. The Flutter
+// Supertonic pipeline, and audio playback. The Flutter
 // plugin (`../../on_device_tts.podspec`) compiles these same sources with
 // CocoaPods; this package exists so they can be tested on their own:
 //
@@ -20,20 +20,17 @@ let package = Package(
     .library(name: "OnDeviceTtsCore", targets: ["OnDeviceTtsCore"])
   ],
   dependencies: [
-    // ONNX Runtime (MIT). The same version as the podspec's
-    // onnxruntime-objc, so tests run the binary the app ships.
+    // Independent graph evaluator for standalone Swift tests.
     .package(url: "https://github.com/microsoft/onnxruntime-swift-package-manager", exact: "1.24.2")
   ],
   targets: [
     .target(
       name: "OnDeviceTtsCore",
-      dependencies: [
-        .product(name: "onnxruntime", package: "onnxruntime-swift-package-manager")
-      ]
+      dependencies: []
     ),
     .testTarget(
       name: "OnDeviceTtsCoreTests",
-      dependencies: ["OnDeviceTtsCore"],
+      dependencies: ["OnDeviceTtsCore", .product(name: "onnxruntime", package: "onnxruntime-swift-package-manager")],
       resources: [.copy("Fixtures")]
     ),
   ]
