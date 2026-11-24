@@ -464,7 +464,7 @@ class _ModerationActions extends StatelessWidget {
                             ),
                           ),
                           // muting & unmuting kick users needs provider-aware
-                          // persistence, see #1398
+                          // persistence, see #1398.
                           if (author is TwitchUserModel)
                             Consumer<TtsModel>(
                               builder: (context, ttsModel, child) {
