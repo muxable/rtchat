@@ -350,6 +350,24 @@ passed.
 
 [Native player measurements and raw profiles](https://github.com/kevmo314/flutter_onnx/actions/runs/45450023249)
 
+A second Android comparison installed each AOT build on the same emulator. Both
+runs waited for three successive five-second samples above 75% guest CPU idle.
+On this runner model load took 4.33 seconds for flutter_onnx and 4.09 seconds
+for the original engine. Of the two warm flutter_onnx runs, one exceeded the
+deadline by 0.60 seconds and the other passed by 0.25 seconds.
+
+| Android build | First audio after load | Done after load | Warm first audio | Warm done |
+| --- | ---: | ---: | ---: | ---: |
+| flutter_onnx | 5.20 s | 18.26 s | 3.85–3.95 s | 16.50–17.35 s |
+| Original | 0.60 s | 7.36 s | 0.50 s | 7.26–7.28 s |
+
+Across 12 synthesized segments the Dart workers spent 51.87 seconds in the
+60 denoising passes, 7.31 seconds in the vocoder, 0.89 seconds in text encoding,
+and 0.21 seconds in duration prediction. The denoiser used 86% of measured graph
+execution time.
+
+[Same-emulator comparison and per-graph trace](https://github.com/kevmo314/flutter_onnx/actions/runs/45452282279)
+
 On the original engine, a separate iOS simulator run gave 0.95–1.14 seconds
 to first audio and 8.09–9.90 seconds to completion after warm-up. The
 comparison used the original Swift wrapper and verified 1.24.2 binary checksums
