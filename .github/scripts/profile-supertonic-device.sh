@@ -45,6 +45,13 @@ for _ in range(36):
     quiet = quiet + 1 if idle >= 0.75 else 0
     if quiet == 3:
         break
+if platform == "ios" and quiet < 3:
+    processes = subprocess.check_output(
+        ["ps", "-A", "-o", "pcpu=,pid=,comm="], text=True
+    ).splitlines()
+    processes.sort(key=lambda row: float(row.split(None, 1)[0]), reverse=True)
+    print("Highest CPU usage before playback (%CPU, PID, command):", flush=True)
+    print("\n".join(processes[:12]), flush=True)
 PYTHON
 }
 
