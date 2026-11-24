@@ -9,12 +9,20 @@ on:
       - main
     paths:
       - "packages/on_device_tts/**"
+      - "android/**"
+      - "ios/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
       - ".github/workflows/on-device-tts-ios.yml"
       - ".github/scripts/*supertonic*.sh"
       - "integration_test/on_device_tts_test.dart"
   pull_request:
     paths:
       - "packages/on_device_tts/**"
+      - "android/**"
+      - "ios/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
       - ".github/workflows/on-device-tts-ios.yml"
       - ".github/scripts/*supertonic*.sh"
       - "integration_test/on_device_tts_test.dart"
@@ -123,6 +131,10 @@ jobs:
         run: |
           bash .github/scripts/download-supertonic.sh 3 "$MODEL_DIR"
           python -I packages/on_device_tts/tool/supertonic_reference.py "$MODEL_DIR" "$RUNNER_TEMP/reference"
+      - name: Run plugin tests with the default voice pack
+        if: runner.os == 'Linux'
+        working-directory: packages/on_device_tts
+        run: SUPERTONIC_PARITY_DIR="$RUNNER_TEMP/reference" flutter test
       - name: Compare the smaller voice pack through the Flutter worker
         if: runner.os == 'Linux'
         run: |
