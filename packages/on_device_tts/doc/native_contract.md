@@ -312,6 +312,9 @@ PRNG and writes every intermediate tensor (`text_ids`, `duration`,
 `text_emb`, `noise`, `latent_<step>`, `wav`) and the trimmed PCM, with a
 `manifest.json`. Platform tests compare against it:
 
+* From `packages/on_device_tts`, run
+  `SUPERTONIC_PARITY_DIR=<dir> flutter test test/graph_worker_test.dart` to
+  compare the complete PCM from the Dart graph workers with the reference.
 * Android JVM: `SUPERTONIC_PARITY_DIR=<dir> ./gradlew
   :on_device_tts:testDebugUnitTest` from the app's `android/`
   (`ReferenceParityTest`, desktop ONNX Runtime).
@@ -322,3 +325,10 @@ Expected: fp32 output within 1e-3 max abs difference of the reference (bit
 exact on the same ONNX Runtime CPU build). int8 models are only comparable
 on the same CPU and build: ONNX Runtime's quantized kernels differ between
 builds, and the differences grow through the flow-matching steps.
+
+
+The three-segment playback integration test allows the audio duration plus
+10 seconds for synthesis and playback. With Supertonic 3, the compiled graph
+runtime took 39.95 seconds of wall time for those three segments on a shared
+Linux x86-64 host. The resulting audio lasts 6.75 seconds. The device test
+measures this separately on Android and iOS.
