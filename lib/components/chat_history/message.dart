@@ -441,7 +441,7 @@ class _ModerationActions extends StatelessWidget {
                           if (kDebugMode) Text("DEBUG: id=${m.messageId}"),
                           ListTile(
                             leading: const Icon(
-                              Icons.comment,
+                              Icons.chat,
                               color: Colors.grey,
                             ),
                             title: Row(
