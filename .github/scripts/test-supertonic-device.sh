@@ -21,8 +21,18 @@ devices = json.load(sys.stdin)["devices"]
 print(next(d["udid"] for r in sorted(devices, reverse=True) if "iOS" in r for d in devices[r] if d["name"].startswith("iPhone")))')
   xcrun simctl boot "$device" || xcrun simctl bootstatus "$device" -b
   xcrun simctl bootstatus "$device" -b
+  flutter build ios --simulator --debug
+  xcrun simctl install "$device" build/ios/iphonesimulator/Runner.app
+  dir=$(xcrun simctl get_app_container "$device" com.rtirl.chat data)/Documents
+  mkdir -p "$dir/model" "$dir/reference"
+  cp -R "$model/." "$dir/model/"
+  cp -R "$reference/." "$dir/reference/"
+  model="$dir/model"
+  reference="$dir/reference"
 fi
+status=0
 flutter test integration_test/on_device_tts_test.dart -d "$device" --reporter expanded \
   --dart-define=ON_DEVICE_TTS_MODEL_DIR="$model" \
-  --dart-define=ON_DEVICE_TTS_REFERENCE_DIR="$reference"
+  --dart-define=ON_DEVICE_TTS_REFERENCE_DIR="$reference" || status=$?
 bash .github/scripts/profile-supertonic-device.sh "$1" "$device"
+exit "$status"
