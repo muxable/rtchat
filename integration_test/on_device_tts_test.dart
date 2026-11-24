@@ -20,10 +20,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:on_device_tts/on_device_tts.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// The model directory on the device; the tests skip themselves without it.
-const modelDir = String.fromEnvironment('ON_DEVICE_TTS_MODEL_DIR');
-const referenceDir = String.fromEnvironment('ON_DEVICE_TTS_REFERENCE_DIR');
+const configuredModelDir = String.fromEnvironment('ON_DEVICE_TTS_MODEL_DIR');
+const configuredReferenceDir = String.fromEnvironment(
+  'ON_DEVICE_TTS_REFERENCE_DIR',
+);
 
 /// Max abs diff allowed against the reference audio. The fp32 model stays
 /// within 1e-3 across ONNX Runtime builds; int8 kernels differ between builds
@@ -44,6 +47,8 @@ double rms(Float32List pcm) {
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  var modelDir = configuredModelDir;
+  var referenceDir = configuredReferenceDir;
   if (modelDir.isEmpty) {
     testWidgets(
       'on-device TTS (needs ON_DEVICE_TTS_MODEL_DIR)',
@@ -56,15 +61,34 @@ void main() {
   late OnnxTts tts;
 
   setUpAll(() async {
+    // flutter test can replace the simulator app and its data container.
+    // Request fixtures from the running test so CI stages them in this install.
+    const token = String.fromEnvironment('ON_DEVICE_TTS_FIXTURE_TOKEN');
+    if (token.isNotEmpty) {
+      final documents = await getApplicationDocumentsDirectory();
+      final marker = '${documents.path}/tts-fixtures-$token';
+      await File('$marker.request').writeAsString('');
+      final ready = File('$marker.ready');
+      final deadline = Stopwatch()..start();
+      while (!await ready.exists()) {
+        if (deadline.elapsed > const Duration(minutes: 3)) {
+          throw StateError(
+            'Timed out waiting for the speech model and reference PCM',
+          );
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+      }
+      modelDir = '${documents.path}/$modelDir';
+      referenceDir = '${documents.path}/$referenceDir';
+    }
     expect(
       Directory(modelDir).existsSync(),
       isTrue,
       reason: 'push the model to $modelDir first',
     );
     tts = await OnnxTts.load(modelDir: modelDir);
+    addTearDown(tts.unload);
   });
-
-  tearDownAll(() => tts.unload());
 
   testWidgets('load fails on a missing model', (_) async {
     await expectLater(
