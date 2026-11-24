@@ -25,3 +25,4 @@ fi
 flutter test integration_test/on_device_tts_test.dart -d "$device" --reporter expanded \
   --dart-define=ON_DEVICE_TTS_MODEL_DIR="$model" \
   --dart-define=ON_DEVICE_TTS_REFERENCE_DIR="$reference"
+bash .github/scripts/profile-supertonic-device.sh "$1" "$device"

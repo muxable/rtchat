@@ -1,5 +1,5 @@
 // Flutter entry point for a cold and two warm runs through the native player.
-// Stage supertonic-3 in the app's Documents (iOS) or external files (Android).
+// Stage supertonic-3 in the app's documents directory.
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,10 +9,7 @@ import 'package:path_provider/path_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final dir =
-      Platform.isAndroid
-          ? (await getExternalStorageDirectory())!
-          : await getApplicationDocumentsDirectory();
+  final dir = await getApplicationDocumentsDirectory();
   final report = File('${dir.path}/playback.jsonl');
   await report.writeAsString('');
   void record(Map<String, Object?> row) {

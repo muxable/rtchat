@@ -16,6 +16,7 @@ on:
       - ".github/workflows/on-device-tts-ios.yml"
       - ".github/scripts/*supertonic*.sh"
       - "integration_test/on_device_tts_test.dart"
+      - "integration_test/profile_playback.dart"
   pull_request:
     paths:
       - "packages/on_device_tts/**"
@@ -26,6 +27,7 @@ on:
       - ".github/workflows/on-device-tts-ios.yml"
       - ".github/scripts/*supertonic*.sh"
       - "integration_test/on_device_tts_test.dart"
+      - "integration_test/profile_playback.dart"
   workflow_dispatch:
 
 concurrency:
@@ -174,3 +176,9 @@ jobs:
       - name: Run real-model playback and PCM checks on iOS
         if: runner.os == 'macOS'
         run: bash .github/scripts/test-supertonic-device.sh ios
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playback-profile-${{ runner.os }}
+          path: ${{ runner.temp }}/playback-*.jsonl
+          if-no-files-found: ignore
