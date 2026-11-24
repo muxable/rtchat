@@ -13,12 +13,12 @@ dependencies:
   flutter_onnx:
     git:
       url: https://github.com/kevmo314/flutter_onnx.git
-      ref: d595f68b17e4baaf71992aae076748622d10378d
+      ref: 15940d38eaf429805a78455fa1d2d3ee9a1c734a
   flutter_onnx_cpu:
     git:
       url: https://github.com/kevmo314/flutter_onnx.git
       path: cpu
-      ref: d595f68b17e4baaf71992aae076748622d10378d
+      ref: 15940d38eaf429805a78455fa1d2d3ee9a1c734a
   background_downloader: ^9.6.4
   crypto: ^3.0.7
   flutter:
