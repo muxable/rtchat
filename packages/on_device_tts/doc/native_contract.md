@@ -326,9 +326,39 @@ exact on the same ONNX Runtime CPU build). int8 models are only comparable
 on the same CPU and build: ONNX Runtime's quantized kernels differ between
 builds, and the differences grow through the flow-matching steps.
 
-The three-segment playback integration test allows the audio duration plus
-10 seconds for synthesis and playback. With Supertonic 3, the compiled graph
-runtime took 32.4 and 39.9 seconds of wall time across two runs on a shared
-Linux x86-64 host. The single-threaded ONNX Runtime CPU reference took
-2.56 seconds on the same host. The resulting audio lasts 6.75 seconds.
-The device test measures this separately on Android and iOS.
+## Playback latency
+
+The integration test speaks three English segments with Supertonic 3, voice M2,
+five steps and speed 1. They produce 6.75 seconds of mono audio at 44.1 kHz.
+The deadline is the measured audio duration plus 10 seconds. The profiler starts
+the speech clock after loading the model, collects the native `firstAudio` and
+`done` events, and times the return of `speak`. It repeats the same workload twice
+with the loaded engine. Each run synthesizes fresh PCM.
+
+The following measurements use the app and player on GitHub-hosted devices.
+Android ran an AOT Flutter profile build on an API 35 x86-64 emulator. iOS ran
+a Flutter debug build on an Apple-silicon iPhone simulator. Model load took
+10.00 seconds on Android and 4.98 seconds on iOS. The clocks below start after
+load. The first Android warm run exceeded the deadline. Both iOS warm runs
+passed.
+
+| Run | Android first audio | Android done | iOS first audio | iOS done |
+| --- | ---: | ---: | ---: | ---: |
+| First after loading | 7.18 s | 33.07 s | 6.36 s | 17.61 s |
+| Warm 1 | 5.89 s | 20.21 s | 3.82 s | 16.16 s |
+| Warm 2 | 3.26 s | 13.75 s | 3.94 s | 15.46 s |
+
+[Native player measurements and raw profiles](https://github.com/kevmo314/flutter_onnx/actions/runs/45450023249)
+
+On the original engine, a separate iOS simulator run gave 0.95–1.14 seconds
+to first audio and 8.09–9.90 seconds to completion after warm-up. The
+comparison used the original Swift wrapper and verified 1.24.2 binary checksums
+from the archive mirror. The migrated engine trimmed the middle segment one
+sample shorter than the original, a difference of 23 microseconds.
+
+[Original iOS player measurements](https://github.com/kevmo314/flutter_onnx/actions/runs/45447762116/job/138636123365)
+
+The native CPU workflow also records duration-predictor, text-encoder, denoiser
+and vocoder times using deterministic inputs. Its queue-drain estimate excludes
+the Flutter bridge and OS audio buffering. The device profile uses the actual
+player. Both workflows retain the raw timings as artifacts.
