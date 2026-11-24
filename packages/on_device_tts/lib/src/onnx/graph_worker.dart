@@ -18,7 +18,10 @@ void installGraphHandler() {
   _channel.setMethodCallHandler((call) async {
     switch (call.method) {
       case 'open':
-        final graph = await _GraphWorker.open(call.arguments as String);
+        final args = call.arguments;
+        final path = args is String ? args : (args as Map)['path'] as String;
+        final threads = args is Map ? args['threads'] as int : 2;
+        final graph = await _GraphWorker.open(path, threads);
         final id = ++_nextGraph;
         _graphs[id] = graph;
         return id;
@@ -46,13 +49,13 @@ class _GraphWorker {
   int _sequence = 0;
   bool _closed = false;
 
-  static Future<_GraphWorker> open(String path) async {
+  static Future<_GraphWorker> open(String path, int threads) async {
     final worker = _GraphWorker();
     worker._replies.listen(worker._receive);
     try {
       worker._isolate = await Isolate.spawn(
         _serveGraph,
-        (path, worker._replies.sendPort),
+        (path, threads, worker._replies.sendPort),
         onExit: worker._replies.sendPort,
         onError: worker._replies.sendPort,
       );
@@ -103,13 +106,15 @@ class _GraphWorker {
   }
 }
 
-void _serveGraph((String, SendPort) request) async {
-  final (path, parent) = request;
+void _serveGraph((String, int, SendPort) request) async {
+  final (path, threads, parent) = request;
   final graph = OnnxSession.fromBytes(File(path).readAsBytesSync());
   // A tiny difference in predicted duration can change the integer PCM
   // length. Use the same Dart arithmetic for this graph on both platforms.
   final backend =
-      graph.outputs.containsKey('duration') ? null : const NativeCpuBackend();
+      graph.outputs.containsKey('duration')
+          ? null
+          : NativeCpuBackend(maxThreads: threads);
   final commands = ReceivePort();
   parent.send(commands.sendPort);
   await for (final dynamic message in commands) {

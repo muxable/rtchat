@@ -45,7 +45,7 @@ void main() {
           'CA46OgoOCgF4CgF4EgF5IgNBZGQSBmRvdWJsZVoPCgF4EgoKCAgBEgQKAggCYg8KAXkSCgoICAESBAoCCAJCBAoAEBI=',
         ),
       );
-      final id = await call('open', file.path) as int;
+      final id = await call('open', {'path': file.path, 'threads': 1}) as int;
       await expectLater(
         runGraph(id, {
           'x': tensor([2], Uint8List(8)),

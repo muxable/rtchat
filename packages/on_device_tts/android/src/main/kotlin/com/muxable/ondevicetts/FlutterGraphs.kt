@@ -43,8 +43,8 @@ internal class FlutterGraphs(messenger: BinaryMessenger) {
         return reply.get()
     }
 
-    fun open(file: File): GraphSession {
-        val id = call("open", file.absolutePath) as Number
+    fun open(file: File, threads: Int): GraphSession {
+        val id = call("open", mapOf("path" to file.absolutePath, "threads" to threads)) as Number
         return object : GraphSession {
             override fun run(inputs: Map<String, GraphTensor>): GraphTensor {
                 val tensors = inputs.mapValues { (_, t) -> mapOf("shape" to t.shape.toList(), "data" to t.data) }

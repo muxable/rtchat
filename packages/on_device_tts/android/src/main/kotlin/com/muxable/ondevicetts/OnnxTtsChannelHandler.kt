@@ -110,7 +110,7 @@ internal class OnnxTtsChannelHandler(
         loader.execute {
             try {
                 val started = SystemClock.elapsedRealtime()
-                val model = SupertonicModel.load(File(modelDir), graphs::open)
+                val model = SupertonicModel.load(File(modelDir)) { file -> graphs.open(file, numThreads) }
                 val handle = "supertonic-${nextHandle.getAndIncrement()}"
                 models[handle] = model
                 Log.i(

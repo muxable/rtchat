@@ -33,9 +33,9 @@ Returns a `String` handle, e.g. `supertonic-1`. Handles are never reused
 within a process.
 
 Loads the sessions once; every later call with the handle reuses them.
-The plugin accepts legacy provider and thread-count preferences. Each graph runs
-in its own Dart isolate using the CPU backend. `numThreads` is validated at load
-time. The backend controls its own threading.
+Each graph runs in its own Dart isolate using the CPU backend. On Android,
+`numThreads` limits workers for large matrix products. On iOS, Accelerate
+schedules those products. The plugin accepts legacy provider preferences.
 
 Errors: `load_failed` for an unknown `modelType`, a missing directory or
 file, unreadable JSON, or a model that flutter_onnx can't load.

@@ -20,8 +20,9 @@ let package = Package(
     .library(name: "OnDeviceTtsCore", targets: ["OnDeviceTtsCore"])
   ],
   dependencies: [
-    // Independent graph evaluator for standalone Swift tests.
-    .package(url: "https://github.com/microsoft/onnxruntime-swift-package-manager", exact: "1.24.2")
+    // Test-only mirror of 1.24.2. This revision updates archive URLs and retains
+    // the upstream SHA-256 checksums and Objective-C sources.
+    .package(url: "https://github.com/thesagezm/onnxruntime-swift-package-manager", revision: "7dbd851c52a6e3889077f69dda8c9f8f438b60ab")
   ],
   targets: [
     .target(
