@@ -80,8 +80,12 @@ if [[ "$platform" == android ]]; then
   adb -s "$device" shell am start -n "$app/.MainActivity"
   read_report() { adb -s "$device" shell "${owner[@]}" cat "$dir/playback.jsonl" 2>/dev/null | tr -d '\r'; }
 else
-  flutter build ios --simulator --debug -t "$target"
-  xcrun simctl install "$device" build/ios/iphonesimulator/Runner.app
+  ios_app=${3:-}
+  if [[ -z "$ios_app" ]]; then
+    flutter build ios --simulator --debug -t "$target"
+    ios_app=build/ios/iphonesimulator/Runner.app
+  fi
+  xcrun simctl install "$device" "$ios_app"
   dir=$(xcrun simctl get_app_container "$device" "$app" data)/Documents
   mkdir -p "$dir/supertonic-3"
   cp -R "$MODEL_DIR/." "$dir/supertonic-3/"
