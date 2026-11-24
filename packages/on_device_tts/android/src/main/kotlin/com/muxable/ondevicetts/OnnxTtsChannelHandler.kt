@@ -157,11 +157,11 @@ internal class OnnxTtsChannelHandler(
                     model.synthesize(
                         segment, request.lang, request.voice, request.speed, request.steps,
                         NoiseGenerator(random.nextLong()), { utterance.cancelled },
-                    ) { utterance.queue.put(Chunk.Audio(it)) }
+                    ) { pcm -> utterance.enqueue(Chunk.Audio(pcm, SystemClock.elapsedRealtimeNanos())) }
                 }
-                utterance.queue.put(Chunk.End)
+                utterance.enqueue(Chunk.End)
             } catch (e: Throwable) {
-                utterance.queue.put(if (utterance.cancelled) Chunk.End else Chunk.Failed(e))
+                utterance.enqueue(Chunk.Failed(e))
             }
         }
 
@@ -186,6 +186,7 @@ internal class OnnxTtsChannelHandler(
                 if (utterance.cancelled) break
                 when (val chunk = utterance.queue.poll(50, TimeUnit.MILLISECONDS) ?: continue) {
                     is Chunk.Audio -> {
+                        utterance.lastPcmReadyNanos = chunk.readyNanos
                         if (!player.write(chunk.pcm, announce)) break
                     }
                     is Chunk.End -> {
@@ -236,15 +237,24 @@ internal class OnnxTtsChannelHandler(
     }
 
     private fun emit(utterance: Utterance, type: String) {
-        main.post { sendEvent(utterance, type) }
+        val at = SystemClock.elapsedRealtimeNanos()
+        main.post { sendEvent(utterance, type, at = at) }
     }
 
-    private fun sendEvent(utterance: Utterance, type: String, message: String? = null) {
+    private fun sendEvent(
+        utterance: Utterance,
+        type: String,
+        message: String? = null,
+        at: Long = SystemClock.elapsedRealtimeNanos(),
+    ) {
         val event = mutableMapOf<String, Any>(
             "utteranceId" to utterance.id,
             "type" to type,
-            "elapsedMs" to (SystemClock.elapsedRealtimeNanos() - utterance.requestedNanos) / 1_000_000,
+            "elapsedMs" to (at - utterance.requestedNanos) / 1_000_000,
         )
+        if (type == "done") utterance.lastPcmReadyNanos?.let {
+            event["lastPcmReadyMs"] = (it - utterance.requestedNanos) / 1_000_000
+        }
         if (message != null) event["message"] = message
         sink?.success(event)
     }
@@ -327,7 +337,7 @@ internal class OnnxTtsChannelHandler(
     private fun MethodCall.int(name: String): Int? = argument<Number>(name)?.toInt()
 
     private sealed class Chunk {
-        class Audio(val pcm: FloatArray) : Chunk()
+        class Audio(val pcm: FloatArray, val readyNanos: Long) : Chunk()
         object End : Chunk()
         class Failed(val error: Throwable) : Chunk()
     }
@@ -345,7 +355,14 @@ internal class OnnxTtsChannelHandler(
         /** Keeps the CPU awake until the utterance has finished. */
         val hold: AutoCloseable,
     ) {
-        val queue = LinkedBlockingQueue<Chunk>()
+        val queue = LinkedBlockingQueue<Chunk>(2)
+        var lastPcmReadyNanos: Long? = null
+
+        fun enqueue(chunk: Chunk) {
+            while (!cancelled) {
+                if (queue.offer(chunk, 50, TimeUnit.MILLISECONDS)) return
+            }
+        }
 
         @Volatile
         var cancelled = false
@@ -355,6 +372,7 @@ internal class OnnxTtsChannelHandler(
 
         fun cancel() {
             cancelled = true
+            queue.clear()
             player?.halt()
         }
 

@@ -49,9 +49,13 @@ await engine.release(); // frees the model; the next speak loads it again
 await engine.dispose();
 ```
 
-`speak` passes the whole message to the native `speak` as one segment; the
-native engine splits text over 300 code units (120 for Japanese and Korean)
-itself and streams the audio out as it is synthesized.
+`speak` calls `OnnxTts.speakText` to play a message in phrases. The native
+player starts with the first phrase and buffers subsequent PCM as inference
+finishes. All phrases share the same utterance ID and stop together.
+`OnnxTts.speak` also accepts explicit segments for callers that choose their own
+boundaries. Phrasing can affect the model’s prosody and predicted duration.
+For a custom audio output, `OnnxTts.synthesizeStream` yields each phrase as
+mono float32 PCM with its sample rate. Enqueue each chunk as it arrives.
 
 `rate` (0..1, 0.5 normal) maps to the native speed as `2 × rate` clamped to
 0.7..2.0, the way `flutter_tts` maps it to Android's speech rate. `pitch` is

@@ -171,6 +171,7 @@ Each event is a map:
 |---|---|---|
 | `utteranceId` | `String` | from `speak` |
 | `type` | `String` | `firstAudio`, `done`, `stopped` or `error` |
+| `lastPcmReadyMs` | `int?` | time after the request when inference produced the final PCM chunk, included on `done` when audio was generated |
 | `elapsedMs` | `int` | milliseconds since the native side received the `speak` call |
 | `message` | `String?` | for `error`, and for `stopped` when the engine stopped the utterance itself |
 
@@ -328,55 +329,40 @@ builds, and the differences grow through the flow-matching steps.
 
 ## Playback latency
 
-The integration test speaks three English segments with Supertonic 3, voice M2,
-five steps and speed 1. They produce 6.75 seconds of mono audio at 44.1 kHz.
-The deadline is the measured audio duration plus 10 seconds. The profiler starts
-the speech clock after loading the model, collects the native `firstAudio` and
-`done` events, and times the return of `speak`. It repeats the same workload twice
-with the loaded engine. Each run synthesizes fresh PCM.
+The device test streams one English chat message in three phrases with Supertonic 3, voice M2,
+speed 1 and five denoising steps. They produce 297,611 mono samples at
+44.1 kHz, or 6.749 seconds of audio. The app records model load separately,
+then measures the native player's first-audio and completion events for the
+first utterance and two warm repetitions. Every run requires the first-audio
+event to precede the production of the final PCM chunk. A separate warm run
+keeps the same message in a single segment for a startup comparison.
+The completion time includes
+playback. Acoustic latency requires a physical device and an audio capture.
 
-The following measurements use the app and player on GitHub-hosted devices.
-Android ran an AOT Flutter profile build on an API 35 x86-64 emulator. iOS ran
-a Flutter debug build on an Apple-silicon iPhone simulator. Model load took
-10.00 seconds on Android and 4.98 seconds on iOS. The clocks below start after
-load. The first Android warm run exceeded the deadline. Both iOS warm runs
-passed.
+The profiler then calls the public synthesis API for each segment with fresh
+noise seeds. It divides the elapsed synthesis time in each round by the
+duration of the returned PCM. CI requires a real-time factor below 1 in all
+three rounds. The JSONL artifact contains the individual segment factors,
+the total for each round, and the player event times. On Android the app
+runs as an AOT profile build on an API 35 x86-64 emulator. On iOS it runs
+as a debug build on an Apple Silicon iPhone simulator.
 
-| Run | Android first audio | Android done | iOS first audio | iOS done |
-| --- | ---: | ---: | ---: | ---: |
-| First after loading | 7.18 s | 33.07 s | 6.36 s | 17.61 s |
-| Warm 1 | 5.89 s | 20.21 s | 3.82 s | 16.16 s |
-| Warm 2 | 3.26 s | 13.75 s | 3.94 s | 15.46 s |
+On the Android emulator the migrated app generated the full 6.749 seconds of
+speech in 3.40–3.63 seconds (real-time factor 0.50–0.54). Model load took
+2.52 seconds. After warm-up the first-audio event arrived in 0.83–0.88
+seconds and playback completed in 7.91–7.93 seconds. The debug integration test
+passed all five multilingual reference waveforms using the same runtime
+revision. The largest absolute sample error was 0.0006361.
 
-[Native player measurements and raw profiles](https://github.com/kevmo314/flutter_onnx/actions/runs/45450023249)
+[Android device tests and playback timings](https://github.com/kevmo314/flutter_onnx/actions/runs/45502140362/job/138827892137) · [Device test and profiling scripts](../../../.github/scripts/)
 
-A second Android comparison installed each AOT build on the same emulator. Both
-runs waited for three successive five-second samples above 75% guest CPU idle.
-On this runner model load took 4.33 seconds for flutter_onnx and 4.09 seconds
-for the original engine. Of the two warm flutter_onnx runs, one exceeded the
-deadline by 0.60 seconds and the other passed by 0.25 seconds.
+An early trace attributed 86% of graph execution time to the denoiser.
+That measurement guided the optimized convolution and activation kernels.
+With the original runtime, warm first audio took 0.50 seconds on Android
+and 0.95–1.14 seconds on iOS in separate CI runs. On the runtime's native
+CPU workflow, a standalone Dart AOT benchmark also reports time spent in the
+duration predictor, text encoder, denoiser and vocoder. That benchmark
+compares all three segments sample by sample with Supertone, including their
+exact trimmed lengths.
 
-| Android build | First audio after load | Done after load | Warm first audio | Warm done |
-| --- | ---: | ---: | ---: | ---: |
-| flutter_onnx | 5.20 s | 18.26 s | 3.85–3.95 s | 16.50–17.35 s |
-| Original | 0.60 s | 7.36 s | 0.50 s | 7.26–7.28 s |
-
-Across 12 synthesized segments the Dart workers spent 51.87 seconds in the
-60 denoising passes, 7.31 seconds in the vocoder, 0.89 seconds in text encoding,
-and 0.21 seconds in duration prediction. The denoiser used 86% of measured graph
-execution time.
-
-[Same-emulator comparison and per-graph trace](https://github.com/kevmo314/flutter_onnx/actions/runs/45452282279)
-
-On the original engine, a separate iOS simulator run gave 0.95–1.14 seconds
-to first audio and 8.09–9.90 seconds to completion after warm-up. The
-comparison used the original Swift wrapper and verified 1.24.2 binary checksums
-from the archive mirror. The migrated engine trimmed the middle segment one
-sample shorter than the original, a difference of 23 microseconds.
-
-[Original iOS player measurements](https://github.com/kevmo314/flutter_onnx/actions/runs/45447762116/job/138636123365)
-
-The native CPU workflow also records duration-predictor, text-encoder, denoiser
-and vocoder times using deterministic inputs. Its queue-drain estimate excludes
-the Flutter bridge and OS audio buffering. The device profile uses the actual
-player. Both workflows retain the raw timings as artifacts.
+[Initial Android comparison and graph trace](https://github.com/kevmo314/flutter_onnx/actions/runs/45452282279) · [Original iOS player measurements](https://github.com/kevmo314/flutter_onnx/actions/runs/45447762116/job/138636123365)

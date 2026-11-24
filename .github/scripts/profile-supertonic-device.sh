@@ -123,8 +123,11 @@ audio = generation[0]["audio_ms"]
 rounds = [r for r in results if "round" in r]
 if audio <= 0 or [r["round"] for r in rounds] != [1, 2, 3]:
     raise SystemExit(f"Incomplete profile: {results}")
+baseline = [r for r in results if r.get("unsplit")]
+if len(baseline) != 1 or not 0 < baseline[0]["last_pcm_ready_ms"] <= baseline[0]["first_audio_ms"] < baseline[0]["done_ms"]:
+    raise SystemExit(f"Invalid whole-message baseline: {baseline}")
 for row in rounds:
-    if not (0 < row["first_audio_ms"] < row["done_ms"]) or row["done_ms"] <= audio - 50:
+    if not (0 < row["first_audio_ms"] < row["last_pcm_ready_ms"] < row["done_ms"]) or row["done_ms"] <= audio - 50:
         raise SystemExit(f"Unexpected playback events: {row}")
     if row["round"] > 1 and not audio - 50 < row["speak_ms"] < audio + 10_000:
         raise SystemExit(f"Missed the playback deadline for {audio:.0f} ms of audio: {row}")

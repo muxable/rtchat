@@ -186,24 +186,57 @@ void main() {
     expect(native.argsOf('speak').single['handle'], 'h9');
   });
 
-  test('speaks the whole message with the language, voice and speed', () async {
-    await speakNow(
-      'Muxfd said: that was the cleanest clutch, GG everyone!',
-      rate: 0.8,
-    );
-    await speakNow(
-      'Hola a todos',
-      voice: const TtsVoice(id: 'M1', name: 'Marco', locale: 'es'),
-    );
-    final [first, second] = native.argsOf('speak');
-    expect(first['segments'], [
-      'Muxfd said: that was the cleanest clutch, GG everyone!',
-    ]);
-    expect(first['language'], 'en');
-    expect(first['voiceId'], 'F1', reason: "the pack's first speaker");
-    expect(first['speed'], 1.6);
-    expect((second['language'], second['voiceId']), ('es', 'M1'));
+  test(
+    'streams clauses in one utterance with the requested voice and speed',
+    () async {
+      await speakNow(
+        'Muxfd said: that was the cleanest clutch, GG everyone!',
+        rate: 0.8,
+      );
+      await speakNow(
+        'Hola a todos',
+        voice: const TtsVoice(id: 'M1', name: 'Marco', locale: 'es'),
+      );
+      final [first, second] = native.argsOf('speak');
+      expect(first['segments'], [
+        'Muxfd said:',
+        'that was the cleanest clutch,',
+        'GG everyone!',
+      ]);
+      expect(second['segments'], ['Hola a todos']);
+      expect(first['language'], 'en');
+      expect(first['voiceId'], 'F1', reason: "the pack's first speaker");
+      expect(first['speed'], 1.6);
+      expect((second['language'], second['voiceId']), ('es', 'M1'));
+    },
+  );
+
+  test('streams long unpunctuated messages at word boundaries', () async {
+    final text = List.filled(22, 'hello').join(' ');
+    await speakNow(text);
+    final chunks = native.argsOf('speak').single['segments'] as List;
+    expect(chunks.length, greaterThan(1));
+    expect((chunks.first as String).length, lessThanOrEqualTo(56));
+    expect(chunks.join(' '), text);
   });
+
+  test(
+    'keeps abbreviations together and splits Japanese at punctuation',
+    () async {
+      await speakNow('I met Dr. Smith at 10:30, then we walked home.');
+      await speakNow('こんばんは、みなさん今日はどうでしたか？また明日もよろしくお願いします。', language: 'ja');
+      final [english, japanese] = native.argsOf('speak');
+      expect(english['segments'], [
+        'I met Dr. Smith at 10:30,',
+        'then we walked home.',
+      ]);
+      expect(japanese['segments'], [
+        'こんばんは、',
+        'みなさん今日はどうでしたか？',
+        'また明日もよろしくお願いします。',
+      ]);
+    },
+  );
 
   test('maps the rate to the native speed', () {
     expect([0.0, 0.4, 0.5, 1.0, 5.0].map(NeuralTtsEngine.speedForRate), [

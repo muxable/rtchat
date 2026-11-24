@@ -231,7 +231,9 @@ void main() {
     }
   });
 
-  testWidgets('speaks segments and completes after playback', (_) async {
+  testWidgets('streams a single chat message before its final PCM is ready', (
+    _,
+  ) async {
     const segments = [
       'Daisy said,',
       'that was the cleanest clutch I have seen all week,',
@@ -248,8 +250,8 @@ void main() {
     final events = <OnnxTtsEvent>[];
     final sub = tts.events.listen(events.add);
     final stopwatch = Stopwatch()..start();
-    await tts.speak(
-      segments,
+    await tts.speakText(
+      segments.join(' '),
       language: 'en',
       voiceId: 'M2',
       utteranceId: 'three',
@@ -265,7 +267,9 @@ void main() {
     expect(events.every((e) => e.utteranceId == 'three'), isTrue);
     final firstAudio = events[0].elapsed;
     final done = events[1].elapsed;
-    expect(firstAudio, lessThan(done));
+    final lastPcmReady = events[1].lastPcmReady!;
+    expect(firstAudio, lessThan(lastPcmReady));
+    expect(lastPcmReady, lessThan(done));
     // Completion follows the playback head, so it can't come before the
     // audio has played.
     expect(done, greaterThan(audioLength - const Duration(milliseconds: 50)));

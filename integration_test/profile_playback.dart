@@ -30,17 +30,28 @@ Future<void> main() async {
     final tts = await OnnxTts.load(modelDir: '${dir.path}/supertonic-3');
     record({'load_ms': load.elapsedMilliseconds});
     try {
-      for (var round = 1; round <= 3; round++) {
-        final id = 'profile-$round';
+      final message = segments.join(' ');
+      // The last run presents exactly the same words as one model input.
+      for (final round in <int?>[1, 2, 3, null]) {
+        final id = round == null ? 'unsplit' : 'profile-$round';
         final events = tts.events.where((e) => e.utteranceId == id).take(2);
         final received = events.toList().timeout(const Duration(minutes: 10));
         final clock = Stopwatch()..start();
-        await tts.speak(
-          segments,
-          language: 'en',
-          voiceId: 'M2',
-          utteranceId: id,
-        );
+        if (round == null) {
+          await tts.speak(
+            [message],
+            language: 'en',
+            voiceId: 'M2',
+            utteranceId: id,
+          );
+        } else {
+          await tts.speakText(
+            message,
+            language: 'en',
+            voiceId: 'M2',
+            utteranceId: id,
+          );
+        }
         final wall = clock.elapsedMilliseconds;
         final playback = await received;
         final first = playback.singleWhere(
@@ -50,8 +61,9 @@ Future<void> main() async {
           (e) => e.type == OnnxTtsEventType.done,
         );
         record({
-          'round': round,
+          if (round == null) 'unsplit': true else 'round': round,
           'first_audio_ms': first.elapsed.inMilliseconds,
+          'last_pcm_ready_ms': done.lastPcmReady!.inMilliseconds,
           'done_ms': done.elapsed.inMilliseconds,
           'speak_ms': wall,
         });
@@ -63,14 +75,13 @@ Future<void> main() async {
         var audioSeconds = 0.0;
         final segmentMicros = <int>[];
         final segmentRtf = <double>[];
-        for (var i = 0; i < segments.length; i++) {
-          final clock = Stopwatch()..start();
-          final audio = await tts.synthesize(
-            segments[i],
-            language: 'en',
-            voiceId: 'M2',
-            noiseSeed: 3 * round + i,
-          );
+        final clock = Stopwatch()..start();
+        await for (final audio in tts.synthesizeStream(
+          message,
+          language: 'en',
+          voiceId: 'M2',
+          noiseSeed: 3 * round,
+        )) {
           clock.stop();
           final seconds = audio.pcm.length / audio.sampleRate;
           if (seconds <= 0) throw StateError('Empty audio for segment $i');
@@ -78,6 +89,13 @@ Future<void> main() async {
           audioSeconds += seconds;
           segmentMicros.add(clock.elapsedMicroseconds);
           segmentRtf.add(clock.elapsedMicroseconds / (1e6 * seconds));
+          clock.reset();
+          clock.start();
+        }
+        if (segmentMicros.length != segments.length || samples != 297611) {
+          throw StateError(
+            'Unexpected streaming output: ${segmentMicros.length} phrases, $samples samples',
+          );
         }
         final micros = segmentMicros.reduce((a, b) => a + b);
         record({

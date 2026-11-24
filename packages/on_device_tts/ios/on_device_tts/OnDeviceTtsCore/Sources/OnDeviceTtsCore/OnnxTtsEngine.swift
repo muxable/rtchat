@@ -235,9 +235,10 @@ public final class OnnxTtsEngine {
             segment, language: language, voice: voice, speed: speed, steps: steps,
             noise: &noise, isCancelled: { job.cancellation.isCancelled }
           ) { pcm in
-            // Keep at most two buffers queued ahead of synthesis.
+            let ready = DispatchTime.now()
+            // Keep at most two buffers scheduled ahead of playback.
             if !job.ahead.acquire() { throw SupertonicError.cancelled }
-            DispatchQueue.main.async { self.enqueue(pcm, for: job, on: output) }
+            DispatchQueue.main.async { self.enqueue(pcm, ready: ready, for: job, on: output) }
           }
         }
         DispatchQueue.main.async {
@@ -295,11 +296,12 @@ public final class OnnxTtsEngine {
     }
   }
 
-  private func enqueue(_ pcm: [Float], for job: SpeakJob, on output: PcmOutput) {
+  private func enqueue(_ pcm: [Float], ready: DispatchTime, for job: SpeakJob, on output: PcmOutput) {
     guard current === job, !job.cancellation.isCancelled else { return }
     // When this buffer should have finished playing: after what is still
     // queued, or from now if nothing is.
     let now = DispatchTime.now()
+    job.lastPcmReady = ready
     let startsAt = job.pendingBuffers > 0 ? max(job.playedBy, now) : now
     job.playedBy = startsAt + Double(pcm.count) / Double(job.sampleRate)
     job.pendingBuffers += 1
@@ -384,6 +386,9 @@ public final class OnnxTtsEngine {
       "type": type,
       "elapsedMs": Int((DispatchTime.now().uptimeNanoseconds - job.start.uptimeNanoseconds) / 1_000_000),
     ]
+    if type == "done", let ready = job.lastPcmReady {
+      event["lastPcmReadyMs"] = Int((ready.uptimeNanoseconds - job.start.uptimeNanoseconds) / 1_000_000)
+    }
     if let message = message { event["message"] = message }
     onEvent?(event)
   }
@@ -464,6 +469,7 @@ final class SpeakJob {
   let cancellation = Cancellation()
   let ahead = Gate(limit: 2)
   let sampleRate: Int
+  var lastPcmReady: DispatchTime?
   var pendingBuffers = 0
   /// When the audio scheduled so far should have finished playing.
   var playedBy = DispatchTime.now()
