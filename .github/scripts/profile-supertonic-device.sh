@@ -7,6 +7,47 @@ app=com.rtirl.chat
 report="$RUNNER_TEMP/playback-$platform.jsonl"
 target=integration_test/profile_playback.dart
 
+# Allow installation, simulator startup and indexing to settle before timing the
+# first model load. Keep all measurements even if the guest stays busy.
+wait_for_idle() {
+  python3 - "$platform" "$device" <<'PYTHON'
+import ctypes
+import subprocess
+import sys
+import time
+
+platform, device = sys.argv[1:]
+if platform == "ios":
+    libc = ctypes.CDLL("/usr/lib/libSystem.B.dylib")
+    host = libc.mach_host_self()
+    def sample():
+        ticks = (ctypes.c_uint32 * 4)()
+        count = ctypes.c_uint32(4)
+        if libc.host_statistics(host, 3, ticks, ctypes.byref(count)) or count.value != 4:
+            raise RuntimeError("Couldn't read host CPU counters")
+        return sum(ticks), ticks[2]  # CPU_STATE_IDLE
+else:
+    def sample():
+        row = subprocess.check_output(
+            ["adb", "-s", device, "shell", "head", "-1", "/proc/stat"], text=True
+        )
+        ticks = list(map(int, row.split()[1:9]))
+        return sum(ticks), ticks[3] + ticks[4]
+
+previous = sample()
+quiet = 0
+for _ in range(36):
+    time.sleep(5)
+    current = sample()
+    idle = (current[1] - previous[1]) / max(1, current[0] - previous[0])
+    previous = current
+    print(f"{platform} CPU idle {idle:.0%}", flush=True)
+    quiet = quiet + 1 if idle >= 0.75 else 0
+    if quiet == 3:
+        break
+PYTHON
+}
+
 if [[ "$platform" == android ]]; then
   flutter build apk --profile --target-platform android-x64 -t "$target"
   adb -s "$device" install -r build/app/outputs/flutter-apk/app-profile.apk
@@ -28,6 +69,7 @@ if [[ "$platform" == android ]]; then
     adb -s "$device" shell chown -R "$uid:$uid" "$dir"
     adb -s "$device" shell restorecon -RF "$dir"
   fi
+  wait_for_idle
   adb -s "$device" shell am start -n "$app/.MainActivity"
   read_report() { adb -s "$device" shell "${owner[@]}" cat "$dir/playback.jsonl" 2>/dev/null | tr -d '\r'; }
 else
@@ -37,6 +79,7 @@ else
   mkdir -p "$dir/supertonic-3"
   cp -R "$MODEL_DIR/." "$dir/supertonic-3/"
   rm -f "$dir/playback.jsonl"
+  wait_for_idle
   xcrun simctl launch --terminate-running-process "$device" "$app"
   read_report() { cat "$dir/playback.jsonl" 2>/dev/null; }
 fi
