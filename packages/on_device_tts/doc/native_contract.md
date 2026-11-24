@@ -326,9 +326,9 @@ exact on the same ONNX Runtime CPU build). int8 models are only comparable
 on the same CPU and build: ONNX Runtime's quantized kernels differ between
 builds, and the differences grow through the flow-matching steps.
 
-
 The three-segment playback integration test allows the audio duration plus
 10 seconds for synthesis and playback. With Supertonic 3, the compiled graph
-runtime took 39.95 seconds of wall time for those three segments on a shared
-Linux x86-64 host. The resulting audio lasts 6.75 seconds. The device test
-measures this separately on Android and iOS.
+runtime took 32.4 and 39.9 seconds of wall time across two runs on a shared
+Linux x86-64 host. The single-threaded ONNX Runtime CPU reference took
+2.56 seconds on the same host. The resulting audio lasts 6.75 seconds.
+The device test measures this separately on Android and iOS.
