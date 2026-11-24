@@ -84,10 +84,9 @@ Future<void> main() async {
         )) {
           clock.stop();
           final seconds = audio.pcm.length / audio.sampleRate;
-          if (seconds <= 0)
-            throw StateError(
-              'Empty audio for phrase ${segmentMicros.length + 1}',
-            );
+          if (seconds <= 0) {
+            throw StateError('Empty PCM phrase');
+          }
           samples += audio.pcm.length;
           audioSeconds += seconds;
           segmentMicros.add(clock.elapsedMicroseconds);
