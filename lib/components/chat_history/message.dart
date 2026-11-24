@@ -317,6 +317,7 @@ class _ModerationActions extends StatelessWidget {
           final action = await showModalBottomSheet<_ModerationAction>(
             context: context,
             isScrollControlled: true,
+            showDragHandle: true,
             builder: (context) {
               return SafeArea(
                 child: ListView(
