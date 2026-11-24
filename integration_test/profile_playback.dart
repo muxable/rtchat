@@ -56,23 +56,39 @@ Future<void> main() async {
           'speak_ms': wall,
         });
       }
-      var samples = 0;
-      var rate = 0;
-      for (final segment in segments) {
-        final audio = await tts.synthesize(
-          segment,
-          language: 'en',
-          voiceId: 'M2',
-          noiseSeed: 0,
-        );
-        samples += audio.pcm.length;
-        rate = audio.sampleRate;
+      // Measure generation independently of AudioTrack/AVAudioEngine, which
+      // deliberately block speak() until all queued samples have played.
+      for (var round = 1; round <= 3; round++) {
+        var samples = 0;
+        var audioSeconds = 0.0;
+        final segmentMicros = <int>[];
+        final segmentRtf = <double>[];
+        for (var i = 0; i < segments.length; i++) {
+          final clock = Stopwatch()..start();
+          final audio = await tts.synthesize(
+            segments[i],
+            language: 'en',
+            voiceId: 'M2',
+            noiseSeed: 3 * round + i,
+          );
+          clock.stop();
+          final seconds = audio.pcm.length / audio.sampleRate;
+          if (seconds <= 0) throw StateError('Empty audio for segment $i');
+          samples += audio.pcm.length;
+          audioSeconds += seconds;
+          segmentMicros.add(clock.elapsedMicroseconds);
+          segmentRtf.add(clock.elapsedMicroseconds / (1e6 * seconds));
+        }
+        final micros = segmentMicros.reduce((a, b) => a + b);
+        record({
+          'synthesis_round': round,
+          'samples': samples,
+          'audio_ms': audioSeconds * 1000,
+          'synthesis_ms': micros / 1000,
+          'rtf': micros / (1e6 * audioSeconds),
+          'segment_rtf': segmentRtf,
+        });
       }
-      record({
-        'samples': samples,
-        'sample_rate': rate,
-        'audio_ms': samples * 1000 / rate,
-      });
     } finally {
       await tts.unload();
     }

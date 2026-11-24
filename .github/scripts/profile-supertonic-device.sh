@@ -59,7 +59,13 @@ with open(sys.argv[1]) as f:
     results = [json.loads(line) for line in f]
 if not results or results[-1] != {"complete": True}:
     raise SystemExit("Playback did not finish")
-audio, = (r["audio_ms"] for r in results if "audio_ms" in r)
+generation = [r for r in results if "synthesis_round" in r]
+if [r["synthesis_round"] for r in generation] != [1, 2, 3]:
+    raise SystemExit(f"Incomplete synthesis measurements: {generation}")
+for r in generation:
+    if not 0 < r["synthesis_ms"] < r["audio_ms"]:
+        raise SystemExit(f"Synthesis exceeded the real-time budget: {r}")
+audio = generation[0]["audio_ms"]
 rounds = [r for r in results if "round" in r]
 if audio <= 0 or [r["round"] for r in rounds] != [1, 2, 3]:
     raise SystemExit(f"Incomplete profile: {results}")
