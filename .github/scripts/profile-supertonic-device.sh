@@ -131,4 +131,15 @@ for row in rounds:
         raise SystemExit(f"Unexpected playback events: {row}")
     if row["round"] > 1 and not audio - 50 < row["speak_ms"] < audio + 10_000:
         raise SystemExit(f"Missed the playback deadline for {audio:.0f} ms of audio: {row}")
+warm_first_ms = [row["first_audio_ms"] for row in rounds if row["round"] > 1]
+whole_first_ms = baseline[0]["first_audio_ms"]
+if sum(warm_first_ms) / len(warm_first_ms) >= whole_first_ms:
+    raise SystemExit(f"Streaming failed to reduce warm startup: {warm_first_ms}, whole message {whole_first_ms} ms")
+for row in rounds[1:]:
+    print(json.dumps({
+        "playback_round": row["round"],
+        "startup_saved_ms": whole_first_ms - row["first_audio_ms"],
+        "inference_after_first_audio_ms": row["last_pcm_ready_ms"] - row["first_audio_ms"],
+        "playback_elapsed_minus_pcm_ms": round(row["done_ms"] - row["first_audio_ms"] - audio, 1),
+    }))
 PY

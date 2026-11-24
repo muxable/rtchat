@@ -69,8 +69,7 @@ public final class SupertonicModel {
   public let sampleRate: Int
   /// The voices, sorted by id.
   public let voices: [SupertonicVoice]
-  /// The execution provider each of the four models runs on, after any
-  /// fallback, e.g. `["coreml", "coreml", "cpu", "cpu"]`.
+  /// The execution provider used by each graph, in model order.
   public let providers: [String]
   public let textProcessor: SupertonicTextProcessor
 

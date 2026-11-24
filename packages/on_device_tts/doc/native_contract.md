@@ -339,22 +339,42 @@ keeps the same message in a single segment for a startup comparison.
 The completion time includes
 playback. Acoustic latency requires a physical device and an audio capture.
 
-The profiler then calls the public synthesis API for each segment with fresh
-noise seeds. It divides the elapsed synthesis time in each round by the
+The profiler then consumes the public PCM stream with fresh noise seeds and
+records the arrival of each phrase. It divides each round’s synthesis time by the
 duration of the returned PCM. CI requires a real-time factor below 1 in all
 three rounds. The JSONL artifact contains the individual segment factors,
 the total for each round, and the player event times. On Android the app
 runs as an AOT profile build on an API 35 x86-64 emulator. On iOS it runs
 as a debug build on an Apple Silicon iPhone simulator.
 
-On the Android emulator the migrated app generated the full 6.749 seconds of
-speech in 3.40–3.63 seconds (real-time factor 0.50–0.54). Model load took
-2.52 seconds. After warm-up the first-audio event arrived in 0.83–0.88
-seconds and playback completed in 7.91–7.93 seconds. The debug integration test
-passed all five multilingual reference waveforms using the same runtime
-revision. The largest absolute sample error was 0.0006361.
+The Android API 35 emulator generated the 6.749 seconds of PCM in
+2.066–2.121 seconds (real-time factor 0.306–0.314). Model load took
+1.511 seconds. The following times start when the native player received
+the request, with the model already warm.
 
-[Android device tests and playback timings](https://github.com/kevmo314/flutter_onnx/actions/runs/45502140362/job/138827892137) · [Device test and profiling scripts](../../../.github/scripts/)
+| Android playback | First audio | Final PCM ready | Playback complete |
+| --- | ---: | ---: | ---: |
+| Streamed phrases, warm 1 | 0.490 s | 2.007 s | 7.281 s |
+| Streamed phrases, warm 2 | 0.463 s | 1.991 s | 7.264 s |
+| Same words in one segment | 1.565 s | 1.564 s | 6.981 s |
+
+Phrasing changes the duration predicted by Supertonic. CI compares mean warm
+startup against the whole-message run on the same player. In the streamed runs,
+inference continued for 1.517–1.528 seconds after playback started.
+The debug integration tests passed all five multilingual comparisons against
+Supertone with a largest absolute PCM error of 0.000809.
+
+[Android integration tests and raw timing records](https://github.com/kevmo314/flutter_onnx/actions/runs/45508004100/job/138848112543) · [Profiling script](../../../.github/scripts/profile-supertonic-device.sh)
+
+On an iPhone 17 Pro simulator, the initial streamed implementation started
+playing in 1.604–2.217 seconds warm, compared with 5.651 seconds for the same
+words as one segment. It produced 6.749 seconds of audio in 5.467–6.201
+seconds. Time from first audio through playback completion exceeded the PCM
+duration by 2.39–3.01 seconds. Phrase-level buffering allows gaps when the
+next phrase takes longer to generate than the audio already queued. This
+measurement used runtime revision 999405e before the frame-major BLAS change.
+
+[iOS streaming profile and raw timing records](https://github.com/kevmo314/flutter_onnx/actions/runs/45509065218/job/138858328831)
 
 An early trace attributed 86% of graph execution time to the denoiser.
 That measurement guided the optimized convolution and activation kernels.
