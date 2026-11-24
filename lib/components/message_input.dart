@@ -226,6 +226,15 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     _useEmotesOf(widget.channel);
   }
 
+  @override
+  void dispose() {
+    keyboardSubscription.cancel();
+    _chatInputFocusNode.dispose();
+    _textEditingController?.dispose();
+
+    super.dispose();
+  }
+
   /// Starts loading [channel]'s emotes if they aren't already the ones
   /// offered.
   void _useEmotesOf(Channel? channel) {
