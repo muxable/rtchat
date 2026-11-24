@@ -318,245 +318,290 @@ class _ModerationActions extends StatelessWidget {
             context: context,
             isScrollControlled: true,
             showDragHandle: true,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
+            ),
             builder: (context) {
               return SafeArea(
-                child: ListView(
-                  shrinkWrap: true,
-                  primary: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    // fixed profile header
                     SizedBox(
-                      height: 56,
+                      height: 64,
                       child: LayoutBuilder(
                         builder: (context, constraints) {
                           final badges =
                               m is TwitchMessageModel ? m.badges : [];
-                          return Row(
-                            children: [
-                              // Profile picture.
-                              SizedBox(
-                                width: 56,
-                                child: Center(
-                                  child: CircleAvatar(
-                                    radius: 20,
-                                    backgroundImage:
-                                        author is TwitchUserModel
-                                            ? NetworkImage(
-                                              author.profilePictureUrl
-                                                  .toString(),
-                                            )
-                                            : null,
-                                    onBackgroundImageError:
-                                        author is TwitchUserModel
-                                            ? (_, _) {}
-                                            : null,
-                                    child:
-                                        author is! TwitchUserModel
-                                            ? const Icon(Icons.person)
-                                            : null,
-                                  ),
-                                ),
-                              ),
-                              // Username: gives up space before badges do.
-                              Flexible(
-                                child: Text(
-                                  author.displayName ?? author.login,
-                                  maxLines: 1,
-                                  softWrap: false,
-                                  overflow: TextOverflow.ellipsis,
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
-                                ),
-                              ),
-                              if (m is TwitchMessageModel) ...[
-                                // Subscriber badge always gets priority.
-                                if (m.isSubscriber)
-                                  const Padding(
-                                    padding: EdgeInsets.only(left: 6),
-                                    child: Icon(
-                                      Icons.star,
-                                      size: 20,
-                                      color: Colors.purpleAccent,
+                          return InkWell(
+                            onTap: () => openUrl(profileUrl),
+                            child: Row(
+                              children: [
+                                // profile picture
+                                SizedBox(
+                                  width: 56,
+                                  child: Center(
+                                    child: CircleAvatar(
+                                      radius: 20,
+                                      backgroundImage:
+                                          author is TwitchUserModel
+                                              ? NetworkImage(
+                                                author.profilePictureUrl
+                                                    .toString(),
+                                              )
+                                              : null,
+                                      onBackgroundImageError:
+                                          author is TwitchUserModel
+                                              ? (_, _) {}
+                                              : null,
+                                      child:
+                                          author is! TwitchUserModel
+                                              ? const Icon(Icons.person)
+                                              : null,
                                     ),
                                   ),
-                                // Twitch badges scroll horizontally.
-                                if (badges.isNotEmpty)
-                                  Flexible(
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children:
-                                            badges.map((badge) {
-                                              return TwitchBadgeWidget(
-                                                badgeSetId: badge.key,
-                                                version: badge.version,
-                                                height: 20,
-                                                ignoreSettings: true,
-                                              );
-                                            }).toList(),
+                                ),
+                                // username and badges
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        author.displayName ?? author.login,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.titleMedium,
                                       ),
-                                    ),
+                                      if (m is TwitchMessageModel &&
+                                          (m.isSubscriber || badges.isNotEmpty))
+                                        Row(
+                                          children: [
+                                            if (m.isSubscriber)
+                                              const Padding(
+                                                padding: EdgeInsets.only(
+                                                  right: 6,
+                                                ),
+                                                child: Icon(
+                                                  Icons.star,
+                                                  size: 16,
+                                                  color: Colors.purpleAccent,
+                                                ),
+                                              ),
+                                            if (badges.isNotEmpty)
+                                              Flexible(
+                                                child: SingleChildScrollView(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children:
+                                                        badges.map((badge) {
+                                                          return Padding(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  right: 3,
+                                                                ),
+                                                            child: TwitchBadgeWidget(
+                                                              badgeSetId:
+                                                                  badge.key,
+                                                              version:
+                                                                  badge.version,
+                                                              height: 16,
+                                                              ignoreSettings:
+                                                                  true,
+                                                            ),
+                                                          );
+                                                        }).toList(),
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                    ],
                                   ),
-                              ],
-                              // Close button stays at the right.
-                              IconButton(
-                                icon: const Icon(Icons.close),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 36,
-                                  height: 36,
                                 ),
-                                onPressed: () => Navigator.pop(context),
-                              ),
-                            ],
+                              ],
+                            ),
                           );
                         },
                       ),
                     ),
-                    if (kDebugMode) Text("DEBUG: id=${m.messageId}"),
-                    ListTile(
-                      leading: const Icon(Icons.timer, color: Colors.grey),
-                      title: Text(formattedTimestamp),
-                    ),
-                    // muting kick users needs provider-aware
-                    // persistence, see #1398.
-                    if (author is TwitchUserModel)
-                      Consumer<TtsModel>(
-                        builder: (context, ttsModel, child) {
-                          if (ttsModel.isMuted(author)) {
-                            return ListTile(
-                              leading: const Icon(
-                                Icons.volume_up_rounded,
-                                color: Colors.deepPurpleAccent,
-                              ),
-                              title: Text(
-                                AppLocalizations.of(context)!.unmuteUser(
-                                  m.author.displayName ?? m.author.login,
-                                ),
-                              ),
-                              onTap: () {
-                                ttsModel.unmute(author);
-                                Navigator.pop(context);
-                              },
-                            );
-                          }
-
-                          return ListTile(
+                    // scrollable moderation actions
+                    Flexible(
+                      child: ListView(
+                        shrinkWrap: true,
+                        primary: false,
+                        children: [
+                          if (kDebugMode) Text("DEBUG: id=${m.messageId}"),
+                          ListTile(
                             leading: const Icon(
-                              Icons.volume_off_rounded,
+                              Icons.timer,
+                              color: Colors.grey,
+                            ),
+                            title: Text(formattedTimestamp),
+                          ),
+                          // muting & unmuting kick users needs provider-aware
+                          // persistence, see #1398.
+                          if (author is TwitchUserModel)
+                            Consumer<TtsModel>(
+                              builder: (context, ttsModel, child) {
+                                if (ttsModel.isMuted(author)) {
+                                  return ListTile(
+                                    leading: const Icon(
+                                      Icons.volume_up_rounded,
+                                      color: Colors.deepPurpleAccent,
+                                    ),
+                                    title: Text(
+                                      AppLocalizations.of(context)!.unmuteUser(
+                                        m.author.displayName ?? m.author.login,
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      ttsModel.unmute(author);
+                                      Navigator.pop(context);
+                                    },
+                                  );
+                                }
+                                return ListTile(
+                                  leading: const Icon(
+                                    Icons.volume_off_rounded,
+                                    color: Colors.redAccent,
+                                  ),
+                                  title: Text(
+                                    AppLocalizations.of(context)!.muteUser(
+                                      m.author.displayName ?? m.author.login,
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    ttsModel.mute(author);
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
+                            ),
+                          // delete message
+                          ListTile(
+                            leading: const Icon(
+                              Icons.delete,
                               color: Colors.redAccent,
                             ),
                             title: Text(
-                              AppLocalizations.of(context)!.muteUser(
+                              AppLocalizations.of(context)!.deleteMessage,
+                            ),
+                            onTap: () {
+                              Navigator.pop(context, _ModerationAction.delete);
+                            },
+                          ),
+                          // timeout
+                          ListTile(
+                            leading: const Icon(
+                              Icons.timer_outlined,
+                              color: Colors.orangeAccent,
+                            ),
+                            title: Text(
+                              AppLocalizations.of(context)!.timeoutUser(
                                 m.author.displayName ?? m.author.login,
                               ),
                             ),
                             onTap: () {
-                              ttsModel.mute(author);
-                              Navigator.pop(context);
+                              Navigator.pop(context, _ModerationAction.timeout);
                             },
-                          );
-                        },
-                      ),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.delete,
-                        color: Colors.redAccent,
-                      ),
-                      title: Text(AppLocalizations.of(context)!.deleteMessage),
-                      onTap: () {
-                        Navigator.pop(context, _ModerationAction.delete);
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.timer_outlined,
-                        color: Colors.orangeAccent,
-                      ),
-                      title: Text(
-                        AppLocalizations.of(
-                          context,
-                        )!.timeoutUser(m.author.displayName ?? m.author.login),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context, _ModerationAction.timeout);
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.dnd_forwardslash_outlined,
-                        color: Colors.redAccent,
-                      ),
-                      title: Text(
-                        AppLocalizations.of(
-                          context,
-                        )!.banUser(m.author.displayName ?? m.author.login),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context, _ModerationAction.ban);
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.circle_outlined,
-                        color: Colors.greenAccent,
-                      ),
-                      title: Text(
-                        AppLocalizations.of(
-                          context,
-                        )!.unbanUser(m.author.displayName ?? m.author.login),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context, _ModerationAction.unban);
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.copy_outlined,
-                        color: Colors.greenAccent,
-                      ),
-                      title: Text(AppLocalizations.of(context)!.copyMessage),
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: m.message));
-                        Navigator.pop(context);
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.share_outlined,
-                        color: Colors.blueAccent,
-                      ),
-                      title: Text(AppLocalizations.of(context)!.shareMessage),
-                      onTap: () async {
-                        Navigator.pop(context);
-                        try {
-                          await AppShare.shareText(m.message);
-                        } on PlatformException catch (_) {
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                AppLocalizations.of(context)!.shareMessageError,
+                          ),
+                          // ban
+                          ListTile(
+                            leading: const Icon(
+                              Icons.dnd_forwardslash_outlined,
+                              color: Colors.redAccent,
+                            ),
+                            title: Text(
+                              AppLocalizations.of(context)!.banUser(
+                                m.author.displayName ?? m.author.login,
                               ),
                             ),
-                          );
-                        }
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.link_outlined,
-                        color: Colors.blueAccent,
+                            onTap: () {
+                              Navigator.pop(context, _ModerationAction.ban);
+                            },
+                          ),
+                          // unban
+                          ListTile(
+                            leading: const Icon(
+                              Icons.circle_outlined,
+                              color: Colors.greenAccent,
+                            ),
+                            title: Text(
+                              AppLocalizations.of(context)!.unbanUser(
+                                m.author.displayName ?? m.author.login,
+                              ),
+                            ),
+                            onTap: () {
+                              Navigator.pop(context, _ModerationAction.unban);
+                            },
+                          ),
+                          // copy message
+                          ListTile(
+                            leading: const Icon(
+                              Icons.copy_outlined,
+                              color: Colors.greenAccent,
+                            ),
+                            title: Text(
+                              AppLocalizations.of(context)!.copyMessage,
+                            ),
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(text: m.message));
+                              Navigator.pop(context);
+                            },
+                          ),
+                          // share message
+                          ListTile(
+                            leading: const Icon(
+                              Icons.share_outlined,
+                              color: Colors.blueAccent,
+                            ),
+                            title: Text(
+                              AppLocalizations.of(context)!.shareMessage,
+                            ),
+                            onTap: () async {
+                              Navigator.pop(context);
+                              try {
+                                await AppShare.shareText(m.message);
+                              } on PlatformException catch (_) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.shareMessageError,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                          // view profile
+                          ListTile(
+                            leading: const Icon(
+                              Icons.link_outlined,
+                              color: Colors.blueAccent,
+                            ),
+                            title: Text(
+                              AppLocalizations.of(context)!.viewProfile(
+                                m.author.displayName ?? m.author.login,
+                              ),
+                            ),
+                            onTap: () {
+                              openUrl(profileUrl);
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
                       ),
-                      title: Text(
-                        AppLocalizations.of(
-                          context,
-                        )!.viewProfile(m.author.displayName ?? m.author.login),
-                      ),
-                      onTap: () {
-                        openUrl(profileUrl);
-                        Navigator.pop(context);
-                      },
                     ),
                   ],
                 ),
