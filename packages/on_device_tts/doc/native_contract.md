@@ -354,17 +354,19 @@ Phrasing can change Supertonic’s prosody and predicted duration.
 
 | Mobile CI target | Synthesis time, three seeds | Warm first audio, streamed | First audio, single segment | Final streamed PCM ready | Streamed playback complete |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Android API 35 x86-64 emulator | 3.651–3.712 s | 0.896–0.978 s | 2.675 s | 3.817–3.837 s | 8.096–8.192 s |
-| iPhone 17 Pro arm64 simulator | 3.695–4.166 s | 0.912–1.140 s | 3.431 s | 3.816–4.211 s | 8.273–8.639 s |
+| Android API 35 x86-64 emulator | 3.302–3.712 s | 0.772–0.858 s | 2.390 s | 3.294–3.339 s | 7.697–7.781 s |
+| iPhone 17 Pro arm64 simulator, integration run | 3.984–6.035 s | 1.614–1.724 s | 4.283 s | 5.266–6.284 s | 9.391–10.162 s |
+| iPhone 17 Pro arm64 simulator, second runner | 3.782–4.901 s | 0.761–1.480 s | 4.988 s | 4.228–6.155 s | 8.335–10.025 s |
 
-The final PCM arrived 2.84–3.07 seconds after playback started. Time from
-first audio to completion exceeded the PCM duration by 0.45–0.47 seconds on
-Android and 0.61–0.75 seconds on iOS. That interval includes player overhead
-and any waits between phrases. The integration suites also checked exact
-sample counts for five multilingual utterances against Supertone. The largest
-absolute sample errors were 0.000809 on Android and 0.000900 on iOS.
+Inference continued for 2.48–2.52 seconds after playback started on Android
+and 3.47–4.68 seconds on iOS. Time from first audio to completion exceeded
+the PCM duration by 0.17–0.18 seconds on Android and 0.83–1.80 seconds on
+iOS. That interval includes player overhead and waits between phrases.
+The integration suites also checked exact sample counts for five multilingual
+utterances against Supertone. The largest absolute sample errors were
+0.000809 on Android and 0.000900 on iOS. Device load affects these timings.
 
-[Android player and waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45512632137/job/138863954041) · [iOS player and waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45511382956/job/138859664657) · [Profiling script](../../../.github/scripts/profile-supertonic-device.sh)
+[Android playback](https://github.com/kevmo314/flutter_onnx/actions/runs/45522054055/job/138896099496) · [Android waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45512632137/job/138863954041) · [iOS player and waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45519231462/job/138886546550) · [Second iOS profile](https://github.com/kevmo314/flutter_onnx/actions/runs/45519744684/job/138888304617) · [Profiling script](../../../.github/scripts/profile-supertonic-device.sh)
 
 An early trace attributed 86% of graph execution time to the denoiser.
 That measurement guided the optimized convolution and activation kernels.
