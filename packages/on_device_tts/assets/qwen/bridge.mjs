@@ -10,15 +10,22 @@ const checkDevice = async () => {
   const codes = [];
   let offset = 0,
     peak = 0;
+  let scheduledUntil,
+    maxGapMs = 0;
   const start = performance.now();
   for await (const chunk of engine.synthesize(sample.text, {
     maxFrames: 64,
     onCodes: (row) => codes.push([...row]),
   })) {
+    const ready = performance.now();
+    if (scheduledUntil !== undefined)
+      maxGapMs = Math.max(maxGapMs, ready - scheduledUntil);
+    scheduledUntil = Math.max(ready, scheduledUntil ?? 0) + chunk.length / 24;
     for (let j = 0; j < chunk.length; j++, offset++) {
       if (offset % sample.stride === 0)
         peak = Math.max(
           peak,
+          maxGapMs,
           Math.abs(chunk[j] - sample.samples[offset / sample.stride]),
         );
     }
@@ -36,8 +43,9 @@ const checkDevice = async () => {
     audioMs: offset / 24,
     rtf: elapsed / (offset / 24),
     peak,
+    maxGapMs,
   };
-  if (elapsed >= offset / 24)
+  if (elapsed >= offset / 24 || maxGapMs > 0)
     throw new Error(
       "Qwen is slower than playback on this device (" +
         metrics.rtf.toFixed(2) +

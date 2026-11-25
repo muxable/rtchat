@@ -145,13 +145,41 @@ fn main(@builtin(workgroup_id) group:vec3u,@builtin(local_invocation_index) i:u3
   }
 }`;
 
-export const attention = (capacity) =>
-  buffer(0, "q", "f32") +
-  buffer(1, "keys", "f32") +
-  buffer(2, "vals", "f32") +
-  buffer(3, "step", "u32") +
-  buffer(4, "outv", "f32", true) +
-  `
+export function attention(capacity, subgroups = false) {
+  if (subgroups)
+    return `enable subgroups;
+@group(0) @binding(0) var<storage,read> q:array<vec4f>;
+@group(0) @binding(1) var<storage,read> keys:array<vec4f>;
+@group(0) @binding(2) var<storage,read> vals:array<vec4f>;
+@group(0) @binding(3) var<storage,read> step:array<u32>;
+@group(0) @binding(4) var<storage,read_write> outv:array<vec4f>;
+var<workgroup> last:u32;var<workgroup> partial:array<f32,32>;var<workgroup> total:f32;
+@compute @workgroup_size(32) fn main(@builtin(workgroup_id) group:vec3u,
+ @builtin(local_invocation_index) lane:u32,@builtin(subgroup_size) width:u32) {
+ if(lane==0u){last=step[0];}let end=workgroupUniformLoad(&last);
+ let query=q[group.x*32u+lane];let h=(group.x/2u)*32u+lane;
+ var accum=vec4f(0.0);var maxScore=-3.402823e38;var den=0.0;
+ for(var t=0u;t<=end;t++){
+   let address=t*256u+h;var score=subgroupAdd(dot(query,keys[address]));
+   if(width<32u){
+     partial[lane]=select(0.0,score,subgroupElect());workgroupBarrier();
+     if(lane==0u){total=0.0;for(var j=0u;j<32u;j++){total+=partial[j];}}
+     score=workgroupUniformLoad(&total);
+   }
+   score*=inverseSqrt(128.0);
+   let next=max(maxScore,score);let oldWeight=exp(maxScore-next);let newWeight=exp(score-next);
+   accum=accum*oldWeight+vals[address]*newWeight;
+   den=den*oldWeight+newWeight;maxScore=next;
+ }
+ outv[group.x*32u+lane]=accum/den;
+}`;
+  return (
+    buffer(0, "q", "f32") +
+    buffer(1, "keys", "f32") +
+    buffer(2, "vals", "f32") +
+    buffer(3, "step", "u32") +
+    buffer(4, "outv", "f32", true) +
+    `
 var<workgroup> scores:array<f32,${capacity}>;
 @compute @workgroup_size(128)
 fn main(@builtin(workgroup_id) group:vec3u,@builtin(local_invocation_index) lane:u32) {
@@ -169,7 +197,9 @@ fn main(@builtin(workgroup_id) group:vec3u,@builtin(local_invocation_index) lane
   workgroupBarrier();
   var v=0.0;for(var i=0u;i<=pos;i++){v+=scores[i]*vals[i*1024u+offset+lane];}
   outv[h*128u+lane]=v;
-}`;
+}`
+  );
+}
 
 export const add =
   buffer(0, "x", "f32", true) +

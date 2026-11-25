@@ -19,7 +19,7 @@ export async function createPredictor(device, w) {
   const pipelines = {};
   const shaders = {
     ...k,
-    attend: k.attention(16),
+    attend: k.attention(16, device.features.has("subgroups")),
     product1024: k.q4Product(1024, device.features.has("subgroups")),
     product2048: k.q4Product(2048, device.features.has("subgroups")),
     product3072: k.q4Product(3072, device.features.has("subgroups")),

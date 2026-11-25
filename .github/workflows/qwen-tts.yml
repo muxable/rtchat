@@ -8,6 +8,9 @@ on:
       - "integration_test/qwen_webgpu_test.dart"
       - ".github/workflows/qwen-tts.yml"
   workflow_dispatch:
+concurrency:
+  group: qwen-speech-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -68,11 +71,13 @@ jobs:
           PYTHON
           cp "$model/config.json" "$model/vocab.json" "$model/merges.txt" data/
           python pack_predictor.py "$model/code_predictor.onnx" data
+          python pack_talker.py "$model" data
           ln -s "$model/"*.onnx data/
           python pack_decoder.py "$model/tok_decoder.onnx" data
           cmp data/decoder.json ../../assets/qwen/decoder.plan
           python source_index.py "$model" data/decoder.json data/weights.index
           cmp data/weights.index ../../assets/qwen/weights.index
+          node check_weights.mjs "$model" data
           if [[ "${{ steps.oracle.outputs.cache-hit }}" != true ]]; then
             mkdir -p data/reference
             python reference.py "$model/code_predictor.onnx" data/reference

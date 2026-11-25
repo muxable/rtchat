@@ -373,6 +373,7 @@ class TtsModel extends ChangeNotifier {
       return;
     }
     _mode = mode;
+    _prepareQwen();
     localizations = _announcementLocalizations(localizations);
     switch (mode) {
       case TtsMode.alertsOnly:
@@ -812,6 +813,7 @@ class TtsModel extends ChangeNotifier {
       _neuralFallback = null;
       _isNeuralFallbackNoticePending = false;
     }
+    _prepareQwen();
     // the voices and languages on offer changed.
     notifyListeners();
     if (previous == null) {
@@ -820,6 +822,16 @@ class TtsModel extends ChangeNotifier {
     _retiredEngines.add(previous);
     // in case nothing else is queued.
     _afterQueue(_disposeRetiredEngines);
+  }
+
+  void _prepareQwen() {
+    final engine = _neuralEngine;
+    if (engine is QwenTtsEngine &&
+        _mode != TtsMode.disabled &&
+        _neuralFallback == null &&
+        engine.unavailable.value == null) {
+      unawaited(engine.prepare().catchError(_reportError));
+    }
   }
 
   /// Runs [action] once everything queued so far has been read, holding

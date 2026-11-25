@@ -90,7 +90,7 @@ export async function createTalker(device, w, capacity = 512) {
     lookupText: gather(2048),
     bias: withBias(false),
     biasSilu: withBias(true),
-    attend: k.attention(capacity),
+    attend: k.attention(capacity, device.features.has("subgroups")),
   };
   const pipes = {};
   for (const [name, code] of Object.entries(shaders)) {

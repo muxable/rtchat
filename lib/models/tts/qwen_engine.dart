@@ -204,6 +204,27 @@ class QwenTtsEngine implements TtsEngine {
     }
   }
 
+  /// Opens and qualifies the accelerator as soon as chat speech is enabled.
+  Future<void> prepare() {
+    if (_disposed) return Future.error(StateError('Qwen has been disposed'));
+    final reason = unavailable.value;
+    if (reason != null) return Future.error(StateError(reason));
+    return _loading ??= _prepare();
+  }
+
+  Future<void> _prepare() async {
+    final epoch = _epoch;
+    try {
+      await _open();
+    } catch (error) {
+      if (epoch == _epoch) {
+        unavailable.value = error.toString();
+        await release();
+      }
+      rethrow;
+    }
+  }
+
   @override
   Future<void> speak(
     String text, {
@@ -212,19 +233,8 @@ class QwenTtsEngine implements TtsEngine {
     double pitch = TtsEngine.normalPitch,
     String? language,
   }) async {
-    if (_disposed) throw StateError('Qwen has been disposed');
-    final reason = unavailable.value;
-    if (reason != null) throw StateError(reason);
     final epoch = _epoch, stops = _stops;
-    try {
-      await (_loading ??= _open());
-    } catch (error) {
-      if (epoch == _epoch) {
-        unavailable.value = error.toString();
-        await release();
-      }
-      rethrow;
-    }
+    await prepare();
     if (_disposed || _epoch != epoch || stops != _stops) return;
     final tag =
         (language ?? voice?.locale ?? 'en').split('-').first.toLowerCase();

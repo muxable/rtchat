@@ -64,9 +64,23 @@ export function readRanges(root) {
 
 export async function uploadSource(device, index, read) {
   const weights = {};
+  let batch = [],
+    reservedBytes = 0;
+  async function flush() {
+    await Promise.all(
+      batch.map(async ({ part, buffer, offset, size, name }) => {
+        const data = await readTensor(part, read);
+        if (data.byteLength !== size)
+          throw new Error("Unexpected tensor length for " + name);
+        device.queue.writeBuffer(buffer, offset, data);
+      }),
+    );
+    batch = [];
+    reservedBytes = 0;
+  }
   for (const [name, parts] of Object.entries(index)) {
-    const sizes = parts.map(([kind, , a, b]) =>
-      kind === "q4" ? a * 24 : kind === "i64" ? b / 2 : b,
+    const sizes = parts.map(([kind, , blocks, bytes]) =>
+      kind === "q4" ? blocks * 24 : kind === "i64" ? bytes / 2 : bytes,
     );
     const size = sizes.reduce((sum, n) => sum + n, 0);
     if (size > device.limits.maxStorageBufferBindingSize)
@@ -79,12 +93,17 @@ export async function uploadSource(device, index, read) {
     weights[name] = buffer;
     let offset = 0;
     for (const [i, part] of parts.entries()) {
-      const data = await readTensor(part, read);
-      if (data.byteLength !== sizes[i])
-        throw new Error("Unexpected tensor length for " + name);
-      device.queue.writeBuffer(buffer, offset, data);
-      offset += data.byteLength;
+      // Amortize request overhead while bounding the host-side staging memory.
+      if (
+        batch.length &&
+        (batch.length >= 8 || reservedBytes + sizes[i] > 32 * 1024 * 1024)
+      )
+        await flush();
+      batch.push({ part, buffer, offset, size: sizes[i], name });
+      reservedBytes += sizes[i];
+      offset += sizes[i];
     }
   }
+  await flush();
   return weights;
 }
