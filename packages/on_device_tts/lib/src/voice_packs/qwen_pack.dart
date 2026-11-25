@@ -1,17 +1,13 @@
 import 'voice_pack.dart';
 
-/// HTTPS directory containing the GPU pack produced by the Qwen packers.
-const qwenPackBase = String.fromEnvironment('QWEN_TTS_PACK_URL');
-
+/// Public weights are fetched once and verified by the existing pack installer.
 VoicePack qwenVoicePack() {
-  final base = Uri.parse(qwenPackBase);
-  if (base.scheme != 'https' ||
-      !base.hasAuthority ||
-      !base.path.endsWith('/')) {
-    throw FormatException('QWEN_TTS_PACK_URL must be an HTTPS directory URL');
-  }
+  const original =
+      'https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice/resolve/85e237c12c027371202489a0ec509ded67b5e4b5';
+  const quantized =
+      'https://huggingface.co/onnx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice/resolve/18b0bf898d211718bc33082fadc36a448e0cbc0c/cpu_int4';
   VoicePackFile file(String name, int size, String hash) => VoicePackFile(
-    url: base.resolve(name),
+    url: Uri.parse('${name.endsWith(".onnx") ? quantized : original}/$name'),
     path: name,
     size: size,
     sha256: hash,
@@ -67,34 +63,29 @@ VoicePack qwenVoicePack() {
         '599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3',
       ),
       file(
-        'talker.bin',
-        596979712,
-        '66766178405ed97d0176b4a6a07440d10e0a101a60f12336cd1ce15d3712202f',
+        'talker_cache.onnx',
+        288573853,
+        '910e1d556cd74f11bbb55fff9d509a962bfc43f23608b62fb0a8215c7acc882f',
       ),
       file(
-        'talker.json',
-        8915,
-        '63cf8d2cffc764ecbe946dd4f5161a58e90e352c85010f361ab8fd08ceafc364',
+        'text_embed.onnx',
+        203384915,
+        'b2923edfce01344dea9bd719e2daf94bda0b45bfd05a307514e9dd5f793dcd09',
       ),
       file(
-        'decoder.bin',
-        456217916,
-        '4163aa147ff7df3797eeebd3f6be9af9c39ad5181016465a2b382e1088c90ac1',
+        'code_predictor.onnx',
+        91668866,
+        'f0b3a431b90a56d2784599948bcff678d5188e38481d3a991d80c550d0d0bfa2',
       ),
       file(
-        'decoder.json',
-        139859,
-        '5f45fb57dd12479409c519ec2b9c2a29a23d61b6045bc6517b9b03699cdd1628',
+        'residual_embed.onnx',
+        22179258,
+        'eec76513b562f558e76eeeb9b0bfa982de512104cddac372ec368ab504b080a0',
       ),
       file(
-        'layout.json',
-        2380,
-        '81f45adcc8d10a7f45a453ca2e8838d48c8e6dcec3dc2ca39620a7fc52aba115',
-      ),
-      file(
-        'predictor.bin',
-        107004928,
-        '0e6588265c989906ecc05f13f1851a9154c10d470d39b1c93355a2de94cdc829',
+        'tok_decoder.onnx',
+        458268831,
+        '8ec10051735029f6e08b04834128c9108428885c39384f443e49a6790ccb129f',
       ),
     ],
   );

@@ -6,11 +6,6 @@ on:
       - "packages/on_device_tts/assets/qwen/**"
       - ".github/workflows/qwen-tts.yml"
   workflow_dispatch:
-    inputs:
-      export_pack:
-        description: Upload the installable Qwen voice pack
-        type: boolean
-        default: false
 permissions:
   contents: read
 jobs:
@@ -66,8 +61,11 @@ jobs:
           PYTHON
           cp "$model/config.json" "$model/vocab.json" "$model/merges.txt" data/
           python pack_predictor.py "$model/code_predictor.onnx" data
-          python pack_talker.py "$model" data
+          ln -s "$model/"*.onnx data/
           python pack_decoder.py "$model/tok_decoder.onnx" data
+          cmp data/decoder.json ../../assets/qwen/decoder.plan
+          python source_index.py "$model" data/decoder.json data/weights.index
+          cmp data/weights.index ../../assets/qwen/weights.index
           if [[ "${{ steps.oracle.outputs.cache-hit }}" != true ]]; then
             mkdir -p data/reference
             python reference.py "$model/code_predictor.onnx" data/reference
@@ -79,29 +77,15 @@ jobs:
         with:
           path: packages/on_device_tts/tool/qwen_webgpu/data/reference
           key: ${{ steps.oracle.outputs.cache-primary-key }}
-      - uses: actions/upload-artifact@v4
-        if: github.event_name == 'workflow_dispatch' && inputs.export_pack
-        with:
-          name: qwen3-tts-0.6b-customvoice
-          compression-level: 0
-          retention-days: 3
-          path: |
-            packages/on_device_tts/tool/qwen_webgpu/data/config.json
-            packages/on_device_tts/tool/qwen_webgpu/data/vocab.json
-            packages/on_device_tts/tool/qwen_webgpu/data/merges.txt
-            packages/on_device_tts/tool/qwen_webgpu/data/talker.*
-            packages/on_device_tts/tool/qwen_webgpu/data/predictor.bin
-            packages/on_device_tts/tool/qwen_webgpu/data/layout.json
-            packages/on_device_tts/tool/qwen_webgpu/data/decoder.*
       - name: Verify codebooks, streamed waveforms and real-time throughput on hardware
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: |
-          npm install --prefix "$RUNNER_TEMP/browser" playwright@1.56.1
-          cp ../../assets/qwen/*.mjs .
+          npm install --prefix "$RUNNER_TEMP/browser" playwright@1.56.1 send@1.2.0
+          cp ../../assets/qwen/* .
           echo '<!doctype html><title>Qwen WebGPU qualification</title>' > index.html
-          python3 -m http.server 18749 --bind 127.0.0.1 > "$RUNNER_TEMP/http.log" 2>&1 &
-          curl -f --retry 8 --retry-connrefused http://127.0.0.1:18749/index.html
           export NODE_PATH="$RUNNER_TEMP/browser/node_modules"
+          node -e 'const send=require("send");require("node:http").createServer((req,res)=>send(req,req.url,{root:process.cwd()}).pipe(res)).listen(18749,"127.0.0.1")' > "$RUNNER_TEMP/http.log" 2>&1 &
+          curl -f --retry 8 --retry-connrefused http://127.0.0.1:18749/index.html
           node <<'JS'
           const {chromium} = require('playwright');
           (async () => {

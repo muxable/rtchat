@@ -383,5 +383,5 @@ final bundledVoicePacks = List<VoicePack>.unmodifiable([
       ],
     },
   ),
-  if (qwenPackBase.isNotEmpty) qwenVoicePack(),
+  qwenVoicePack(),
 ]);

@@ -3,7 +3,7 @@ import { createTalker } from "./talker.mjs";
 import { createPredictor } from "./predictor.mjs";
 import { createDecoder } from "./decoder.mjs";
 import { makeTokenizer } from "./tokenizer.mjs";
-import { uploadWeights } from "./buffers.mjs";
+import { readRanges, uploadSource } from "./source.mjs";
 
 // All neural operations dispatch WebGPU kernels. The host handles tokenization,
 // submits work and forwards completed mono Float32 PCM chunks to the audio sink.
@@ -27,27 +27,28 @@ export async function loadSpeech(root) {
       await json("vocab.json"),
       await (await get("merges.txt")).text(),
     );
+    async function resource(name) {
+      const response = await fetch(new URL(name, import.meta.url));
+      if (!response.ok) throw new Error("Missing bundled Qwen asset " + name);
+      return response.json();
+    }
+    const [index, plan] = await Promise.all([
+      resource("weights.index"),
+      resource("decoder.plan"),
+    ]);
+    const read = readRanges(root);
     const talker = await createTalker(
       device,
-      await uploadWeights(
-        device,
-        await json("talker.json"),
-        await get("talker.bin"),
-      ),
+      await uploadSource(device, index.talker, read),
     );
     const predictor = await createPredictor(
       device,
-      await uploadWeights(
-        device,
-        await json("layout.json"),
-        await get("predictor.bin"),
-      ),
+      await uploadSource(device, index.predictor, read),
     );
-    const plan = await json("decoder.json");
     const decoder = await createDecoder(
       device,
       plan,
-      await uploadWeights(device, plan.layout, await get("decoder.bin")),
+      await uploadSource(device, index.decoder, read),
     );
     const special = [
       cfg.tts_bos_token_id,

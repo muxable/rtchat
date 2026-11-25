@@ -1,11 +1,9 @@
 # Qwen3-TTS for RTChat
 
-This path runs the pinned 0.6B CustomVoice model on a hardware WebGPU device. The talker, residual predictor and waveform decoder execute in the mobile WebView. Tokenization and audio scheduling run on the host. A missing accelerator, a software adapter, a waveform mismatch or a device slower than playback makes the voice unavailable.
+Open **Text to Speech → Voice packs**, download **Qwen3-TTS 0.6B CustomVoice**, then select it. The installer fetches the pinned public ONNX files directly from Hugging Face and verifies their sizes and SHA-256 digests. After installation, text, audio and inference stay on the device.
 
-## Install a test pack
+RTChat loads the talker, residual predictor and waveform decoder on a hardware WebGPU adapter in the mobile WebView. The first session synthesizes a known sample to check codec IDs, waveform error and playback speed. An unsupported adapter or failed device check prevents Qwen playback. Audio is mono at 24 kHz. RTChat plays the first decoded chunk while synthesizing the next. Stop cancels pending synthesis and scheduled playback.
 
-The **Qwen speech on WebGPU** workflow verifies the upstream ONNX files, packs the weights and runs a separate Python ONNX reference. A manual run with `export_pack` produces the installable pack as an Actions artifact. To reproduce the pack locally, run the download and packing commands in the workflow.
+The **Qwen speech on WebGPU** workflow compares deterministic speech against the model exporter's Python ONNX implementation. It records load time, first PCM, playback completion, scheduling gaps, stage timings and synthesis time divided by audio duration. The test requires a ratio below one and continuous playback. The macOS runner uses Chrome on an Apple GPU. Mobile WebViews qualify separately on the device.
 
-Serve the nine files in the pack from one HTTPS directory. Build RTChat with `--dart-define=QWEN_TTS_PACK_URL=https://your-host.example/qwen/`. In **Text to Speech → Voice packs**, download and select **Qwen3-TTS 0.6B CustomVoice**. The installer checks each file's size and SHA-256. Speech runs offline after installation. This build option lets testers use their own static model storage.
-
-The first utterance loads the weights and synthesizes a known sample to check codec IDs, waveform error and playback speed on that device. PCM runs at 24 kHz. Playback starts as soon as a decoded chunk is available and the next chunk can be synthesized concurrently. Stop cancels pending synthesis and scheduled audio. A hardware test in desktop Chrome exercises the same kernels. Mobile WebViews must qualify independently.
+The committed `weights.index` locates quantized weight blocks in the verified ONNX files. `decoder.plan` contains the fixed-shape waveform kernels. CI regenerates both files from the pinned models using `source_index.py` and `pack_decoder.py`.

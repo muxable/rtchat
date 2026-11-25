@@ -21,7 +21,9 @@ class QwenTtsEngine implements TtsEngine {
     'speech.mjs',
     'player.mjs',
     'device.mjs',
-    'buffers.mjs',
+    'source.mjs',
+    'weights.index',
+    'decoder.plan',
     'kernels.mjs',
     'talker.mjs',
     'predictor.mjs',
@@ -81,8 +83,27 @@ class QwenTtsEngine implements TtsEngine {
           path[1] == 'model' &&
           pack.pack.files.any((f) => f.path == path.last)) {
         final file = File('${pack.directory}/${path.last}');
-        res.contentLength = await file.length();
-        await res.addStream(file.openRead());
+        final length = await file.length();
+        final range = request.headers.value(HttpHeaders.rangeHeader);
+        if (range == null) {
+          res.contentLength = length;
+          await res.addStream(file.openRead());
+        } else {
+          final match = RegExp(r'^bytes=(\d+)-(\d+)$').firstMatch(range);
+          final start = int.tryParse(match?.group(1) ?? '');
+          final end = int.tryParse(match?.group(2) ?? '');
+          if (start == null || end == null || start > end || end >= length) {
+            res.statusCode = HttpStatus.requestedRangeNotSatisfiable;
+          } else {
+            res.statusCode = HttpStatus.partialContent;
+            res.headers.set(
+              HttpHeaders.contentRangeHeader,
+              'bytes $start-$end/$length',
+            );
+            res.contentLength = end - start + 1;
+            await res.addStream(file.openRead(start, end + 1));
+          }
+        }
       } else {
         res.statusCode = HttpStatus.notFound;
       }
