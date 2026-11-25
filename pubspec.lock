@@ -564,8 +564,8 @@ packages:
     dependency: transitive
     description:
       path: "."
-      ref: "67c2a2b812e45f58e55075ee4a04898359d55505"
-      resolved-ref: "67c2a2b812e45f58e55075ee4a04898359d55505"
+      ref: "7abf879c04277c75dce3b55a303f8cd2756669b1"
+      resolved-ref: "7abf879c04277c75dce3b55a303f8cd2756669b1"
       url: "https://github.com/kevmo314/flutter_onnx.git"
     source: git
     version: "0.1.0"
@@ -573,8 +573,8 @@ packages:
     dependency: transitive
     description:
       path: cpu
-      ref: "67c2a2b812e45f58e55075ee4a04898359d55505"
-      resolved-ref: "67c2a2b812e45f58e55075ee4a04898359d55505"
+      ref: "7abf879c04277c75dce3b55a303f8cd2756669b1"
+      resolved-ref: "7abf879c04277c75dce3b55a303f8cd2756669b1"
       url: "https://github.com/kevmo314/flutter_onnx.git"
     source: git
     version: "0.1.0"
