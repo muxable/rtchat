@@ -125,7 +125,10 @@ export async function createTalker(device, w, capacity = 512) {
     }
     pass.setPipeline(pipes[op]);
     pass.setBindGroup(0, group);
-    pass.dispatchWorkgroups(n);
+    const tiled =
+      device.features.has("subgroups") &&
+      (op === "qkv" || op === "out" || op === "down");
+    pass.dispatchWorkgroups(tiled ? n / 4 : n);
   }
   const [
     x,

@@ -6,6 +6,8 @@ import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:on_device_tts/on_device_tts.dart';
+import 'package:rtchat/models/tts/qwen_engine.dart';
 import 'package:rtchat/models/tts/language.dart';
 
 import '../fakes/fake_chat.dart';
@@ -58,6 +60,32 @@ void main() {
     }
   }
 
+  test('Qwen rejection never sends the message to the system voice', () async {
+    await drain();
+    final count = system.spoken.length;
+    final pack = bundledVoicePacks.singleWhere(
+      (p) => p.modelType == VoicePackModelType.qwen3Tts,
+    );
+    final engine = QwenTtsEngine(
+      InstalledVoicePack(
+        pack: pack,
+        directory: '',
+        sizeOnDisk: 0,
+        installedAt: DateTime(2024),
+      ),
+    );
+    engine.unavailable.value = 'WebGPU unavailable';
+    model.neuralEngine = engine;
+    model.say(l10n, chat('hola', 31));
+    await drain();
+    await model.previewVoice('el', null, 'unsupported language');
+    expect(system.spoken, hasLength(count));
+    expect(
+      errors.map((e) => e.toString()),
+      contains(contains('WebGPU unavailable')),
+    );
+    model.dispose();
+  });
   test("speaks with the neural engine in the message's language", () async {
     final japanese = Channel(Providers.kick, '9', 'jp');
     model.setChannelLanguage(japanese, Language('ja'));

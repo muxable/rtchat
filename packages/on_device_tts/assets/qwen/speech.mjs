@@ -50,6 +50,10 @@ export async function loadSpeech(root) {
       plan,
       await uploadSource(device, index.decoder, read),
     );
+    // Metal drivers can defer pipeline specialization until the first dispatch.
+    // Finish codec initialization before reporting that the session is ready.
+    await decoder.decode([new Uint32Array(16)]);
+    if (failed.length) throw new Error(failed.join("\n"));
     const special = [
       cfg.tts_bos_token_id,
       cfg.tts_eos_token_id,

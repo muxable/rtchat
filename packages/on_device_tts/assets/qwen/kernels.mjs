@@ -25,24 +25,28 @@ export function q4Product(columns, subgroups = false) {
 @group(0) @binding(0) var<storage,read> x:array<vec4f>;
 @group(0) @binding(1) var<storage,read> w:array<u32>;
 @group(0) @binding(2) var<storage,read_write> y:array<f32>;
-var<workgroup> partial:array<f32,32>;
+var<workgroup> partial:array<vec4f,32>;
+fn product(base:u32,j:u32,x0:vec4f,x1:vec4f) -> f32 {
+ let word=w[base+j%4u];let scale=bitcast<f32>(w[base+4u]);let zero=vec4f(f32(w[base+5u]));
+ let shift=vec4u(0u,4u,8u,12u);
+ let lo=(vec4f((vec4u(word)>>shift)&vec4u(15u))-zero)*scale;
+ let hi=(vec4f((vec4u(word>>16u)>>shift)&vec4u(15u))-zero)*scale;
+ return dot(x0,lo)+dot(x1,hi);
+}
 @compute @workgroup_size(32) fn main(@builtin(workgroup_id) group:vec3u,
  @builtin(local_invocation_index) lane:u32,@builtin(subgroup_size) width:u32){
- var acc=0.0;let row=group.x*${(columns / 32) * 6}u;
+ var acc=vec4f(0.0);let stride=${(columns / 32) * 6}u;let row=group.x*4u*stride;
  for(var j=lane;j<${columns / 8}u;j+=32u){
-   let base=row+(j/4u)*6u;
-   let word=w[base+j%4u];let scale=bitcast<f32>(w[base+4u]);let zero=vec4f(f32(w[base+5u]));
-   let shift=vec4u(0u,4u,8u,12u);
-   let lo=(vec4f((vec4u(word)>>shift)&vec4u(15u))-zero)*scale;
-   let hi=(vec4f((vec4u(word>>16u)>>shift)&vec4u(15u))-zero)*scale;
-   acc+=dot(x[j*2u],lo)+dot(x[j*2u+1u],hi);
+   let base=row+(j/4u)*6u;let x0=x[j*2u];let x1=x[j*2u+1u];
+   acc+=vec4f(product(base,j,x0,x1),product(base+stride,j,x0,x1),
+              product(base+2u*stride,j,x0,x1),product(base+3u*stride,j,x0,x1));
  }
- let sum=subgroupAdd(acc);
- if(width>=32u){if(lane==0u){y[group.x]=sum;}}
- else {
-   partial[lane]=select(0.0,sum,subgroupElect());workgroupBarrier();
-   if(lane==0u){var total=0.0;for(var i=0u;i<32u;i++){total+=partial[i];}y[group.x]=total;}
+ var sum=subgroupAdd(acc);
+ if(width<32u){
+   partial[lane]=select(vec4f(0.0),sum,subgroupElect());workgroupBarrier();
+   if(lane==0u){sum=vec4f(0);for(var i=0u;i<32u;i++){sum+=partial[i];}}
  }
+ if(lane==0u){let r=group.x*4u;y[r]=sum.x;y[r+1u]=sum.y;y[r+2u]=sum.z;y[r+3u]=sum.w;}
 }`;
   }
   return (

@@ -1,6 +1,7 @@
 """Lower the fixed-shape 25-frame Qwen ONNX waveform decoder to WebGPU."""
 
 import json
+from collections import Counter
 import math
 import sys
 from pathlib import Path
@@ -64,6 +65,8 @@ let i=id.x+id.y*{stride * 128}u;if(i>={count}u){{return;}}
             [stride, (groups + stride - 1) // stride, 1],
         )
 
+    if op == "Snake":
+        return simple(f"let x={get(0)};let v=sin(x*{get(1)});y[i]=x+{get(2)}*(v*v);")
     if op in (
         "Add",
         "Mul",
@@ -276,6 +279,42 @@ for(var c=0u;c<{per}u;c++){{let ic=f/{filters // groups}u*{per}u+c;acc+=a0[ic*{w
     raise ValueError(f"Unsupported decoder operation {op}")
 
 
+def fuse_snake(ops, kinds, dims, constants, shaders):
+    # The codec's 29 Snake activations would each round-trip five full PCM
+    # feature maps through memory. Only fuse private, connected intermediates.
+    uses = Counter(name for _, _, inputs, _, _ in ops for name in inputs)
+    result = []
+    i = 0
+    while i < len(ops):
+        if kinds[i : i + 5] == ["Mul", "Sin", "Pow", "Mul", "Add"]:
+            mul, sin, power, scale, add = ops[i : i + 5]
+            data, alpha = mul[2]
+            beta = scale[2][0]
+            exponent = constants.get(power[2][1])
+            if (
+                sin[2] == [mul[3]]
+                and power[2][0] == sin[3]
+                and exponent is not None
+                and exponent.size == 1
+                and exponent.item() == 2
+                and scale[2][1] == power[3]
+                and add[2] == [data, scale[3]]
+                and all(uses[op[3]] == 1 for op in (mul, sin, power, scale))
+            ):
+                inputs = [data, alpha, beta]
+                code, groups = lower(
+                    "Snake", [dims[k] for k in inputs], dims[add[3]], {}, []
+                )
+                if code not in shaders:
+                    shaders.append(code)
+                result.append([shaders.index(code), groups, inputs, add[3], add[4]])
+                i += 5
+                continue
+        result.append(ops[i])
+        i += 1
+    return result
+
+
 def pack(source, target):
     model = onnx.load(source)
     graph = model.graph
@@ -288,6 +327,7 @@ def pack(source, target):
     layout = {}
     shaders = []
     ops = []
+    kinds = []
     aliases = {}
 
     def real(name):
@@ -316,7 +356,14 @@ def pack(source, target):
                     data = const[name].astype("<f4")
                     layout[name] = [blob.tell(), data.nbytes]
                     blob.write(data.tobytes())
+            kinds.append(typ)
             ops.append([shaders.index(code), dispatch, inp, out, math.prod(dims[out])])
+    ops = fuse_snake(ops, kinds, dims, const, shaders)
+    used = sorted({op[0] for op in ops})
+    renumber = {original: i for i, original in enumerate(used)}
+    for op in ops:
+        op[0] = renumber[op[0]]
+    shaders = [shaders[i] for i in used]
     plan = dict(
         layout=layout,
         ops=ops,

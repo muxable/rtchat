@@ -52,7 +52,9 @@ export async function createPredictor(device, w) {
         resource: { buffer: b },
       })),
     });
-    commands.push([pipeline, bind, n]);
+    const tiled =
+      device.features.has("subgroups") && name.startsWith("product");
+    commands.push([pipeline, bind, tiled ? n / 4 : n]);
   }
   // Stash every head's logits for parity checks without synchronizing the CPU
   // between codebooks. The regular path only transfers the 16 output IDs.
@@ -122,16 +124,16 @@ export async function createPredictor(device, w) {
           4096,
         );
         let cursor = 0;
+        let pass = enc.beginComputePass();
         for (let pos = 0; pos < 16; pos++) {
-          const pass = enc.beginComputePass();
           while (cursor < boundaries[pos]) {
             const [p, b, n] = commands[cursor++];
             pass.setPipeline(p);
             pass.setBindGroup(0, b);
             pass.dispatchWorkgroups(n);
           }
-          pass.end();
-          if (pos && captureLogits)
+          if (captureLogits && pos) {
+            pass.end();
             enc.copyBufferToBuffer(
               logits,
               0,
@@ -139,7 +141,10 @@ export async function createPredictor(device, w) {
               64 + (pos - 1) * 8192,
               8192,
             );
+            if (pos < 15) pass = enc.beginComputePass();
+          }
         }
+        if (!captureLogits) pass.end();
         enc.copyBufferToBuffer(codes, 0, read, 0, 64);
         device.queue.submit([enc.finish()]);
         await read.mapAsync(GPUMapMode.READ);

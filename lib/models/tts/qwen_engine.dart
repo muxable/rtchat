@@ -15,6 +15,7 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 class QwenTtsEngine implements TtsEngine {
   QwenTtsEngine(this.pack);
   final InstalledVoicePack pack;
+  final unavailable = ValueNotifier<String?>(null);
   static final view = ValueNotifier<WebViewController?>(null);
   static const _modules = {
     'bridge.mjs',
@@ -208,11 +209,16 @@ class QwenTtsEngine implements TtsEngine {
     String? language,
   }) async {
     if (_disposed) throw StateError('Qwen has been disposed');
+    final reason = unavailable.value;
+    if (reason != null) throw StateError(reason);
     final epoch = _epoch, stops = _stops;
     try {
       await (_loading ??= _open());
-    } catch (_) {
-      if (epoch == _epoch) await release();
+    } catch (error) {
+      if (epoch == _epoch) {
+        unavailable.value = error.toString();
+        await release();
+      }
       rethrow;
     }
     if (_disposed || _epoch != epoch || stops != _stops) return;
@@ -280,7 +286,9 @@ class QwenTtsEngine implements TtsEngine {
 
   @override
   Future<void> dispose() async {
+    if (_disposed) return;
     _disposed = true;
     await release();
+    unavailable.dispose();
   }
 }

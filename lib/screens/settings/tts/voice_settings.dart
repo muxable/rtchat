@@ -3,6 +3,7 @@ import 'package:on_device_tts/on_device_tts.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/qwen_engine.dart';
 import 'package:rtchat/screens/settings/tts/labels.dart';
 import 'package:rtchat/screens/settings/tts/voice_packs.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
@@ -25,6 +26,18 @@ class VoiceSettings extends StatelessWidget {
           leading: Icon(isNeural ? Icons.graphic_eq : Icons.record_voice_over),
           title: Text(isNeural ? l10n.ttsEngineNeural : l10n.ttsEngineSystem),
         ),
+        if (tts.neuralEngine case final QwenTtsEngine engine)
+          ValueListenableBuilder<String?>(
+            valueListenable: engine.unavailable,
+            builder:
+                (context, reason, _) =>
+                    reason == null
+                        ? const SizedBox.shrink()
+                        : ListTile(
+                          leading: const Icon(Icons.info_outline),
+                          title: Text(reason),
+                        ),
+          ),
         if (fallback != null && tts.isNeuralFallbackNoticePending)
           _Notice(
             text: switch (fallback) {
