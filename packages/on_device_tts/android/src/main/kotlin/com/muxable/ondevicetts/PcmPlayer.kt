@@ -70,7 +70,7 @@ internal class PcmPlayer(val sampleRate: Int) {
             if (written < 0) throw IllegalStateException("AudioTrack.write failed: $written")
             offset += written
             framesWritten += written
-            onWritten()
+            if (written > 0) onWritten()
         }
         return !halted
     }

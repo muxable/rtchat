@@ -1,7 +1,7 @@
-# Native ONNX Runtime engine: platform contract
+# Neural speech engine: platform contract
 
 The Dart side (`OnnxTtsPlatform`, `OnnxTts`) talks to a native engine that
-runs neural TTS models on the official ONNX Runtime. Android implements it in
+runs neural TTS models with flutter_onnx. Android implements it in
 Kotlin (`android/`), iOS in Swift (`ios/`). Both must behave as described
 here; where this document and an implementation disagree, fix one of them.
 
@@ -33,21 +33,12 @@ Returns a `String` handle, e.g. `supertonic-1`. Handles are never reused
 within a process.
 
 Loads the sessions once; every later call with the handle reuses them.
-`numThreads` is ONNX Runtime's intra-op thread count. With `xnnpack` it is
-XNNPACK's thread pool instead, and the session's own pool gets 1 thread, as
-ONNX Runtime recommends. Every session sets
-`session.intra_op.allow_spinning=0`, whatever the provider, so idle intra-op
-threads block instead of busy-waiting between messages; see
-[Threads and power](#threads-and-power).
-
-A provider that is unknown, not available on the platform (`nnapi` on iOS,
-`coreml` on Android) or that fails to take a model **falls back to `cpu`**
-and logs it (Android: logcat tag `OnDeviceTts`); this is not an error. Once a
-provider has failed for one of the model's files, the rest of that model's
-files load on `cpu` too.
+Each graph runs in its own Dart isolate using the CPU backend. On Android,
+`numThreads` limits workers for large matrix products. On iOS, Accelerate
+schedules those products. The plugin accepts legacy provider preferences.
 
 Errors: `load_failed` for an unknown `modelType`, a missing directory or
-file, unreadable JSON, or a model that ONNX Runtime can't load.
+file, unreadable JSON, or a model that flutter_onnx can't load.
 `bad_args` for `numThreads < 1`.
 
 #### Supertonic model directory
@@ -152,10 +143,8 @@ Errors: `bad_args`, `synthesis_failed`.
 ### `stop`
 
 No arguments; returns `null` at once. Stops the active utterance: playback
-stops and buffered audio is dropped immediately, and the ONNX Runtime run in
-flight is terminated (`RunOptions.setTerminate`; ONNX Runtime's
-Objective-C API on iOS has no equivalent, so there synthesis stops before
-its next model run instead, and nothing more is played). The pending `speak` call
+stops and buffered audio is dropped immediately. Synthesis checks cancellation
+before the next graph call. The pending `speak` call
 then completes normally (`null`), and a `stopped` event is sent. Without an
 active utterance it does nothing.
 
@@ -182,6 +171,7 @@ Each event is a map:
 |---|---|---|
 | `utteranceId` | `String` | from `speak` |
 | `type` | `String` | `firstAudio`, `done`, `stopped` or `error` |
+| `lastPcmReadyMs` | `int?` | time after the request when inference produced the final PCM chunk, included on `done` when audio was generated |
 | `elapsedMs` | `int` | milliseconds since the native side received the `speak` call |
 | `message` | `String?` | for `error`, and for `stopped` when the engine stopped the utterance itself |
 
@@ -194,15 +184,9 @@ after it.
 
 ## Threads and power
 
-* **Spinning.** ONNX Runtime's intra-op threads busy-wait for work by
-  default. Chat arrives a message at a time, so every session sets
-  `session.intra_op.allow_spinning=0`.
-* **Priorities (Android).** Models load and synthesize at
-  `THREAD_PRIORITY_DEFAULT`. ONNX Runtime starts a session's intra-op
-  threads on the thread that creates the session, and they inherit its
-  priority, so loading at background priority would leave half of every
-  inference at background priority. The playback thread runs at
-  `THREAD_PRIORITY_AUDIO`.
+* **Inference.** Graph isolates wait for work over receive ports between calls.
+* **Priorities (Android).** The loader and synthesis threads use
+  `THREAD_PRIORITY_DEFAULT`. Playback uses `THREAD_PRIORITY_AUDIO`.
 * **Wake lock (Android).** A partial wake lock (`on_device_tts:speak`) is
   held while a model loads and from `speak` until its terminal event, with a
   10-minute timeout per hold; never between utterances. With the screen off
@@ -329,6 +313,9 @@ PRNG and writes every intermediate tensor (`text_ids`, `duration`,
 `text_emb`, `noise`, `latent_<step>`, `wav`) and the trimmed PCM, with a
 `manifest.json`. Platform tests compare against it:
 
+* From `packages/on_device_tts`, run
+  `SUPERTONIC_PARITY_DIR=<dir> flutter test test/graph_worker_test.dart` to
+  compare the complete PCM from the Dart graph workers with the reference.
 * Android JVM: `SUPERTONIC_PARITY_DIR=<dir> ./gradlew
   :on_device_tts:testDebugUnitTest` from the app's `android/`
   (`ReferenceParityTest`, desktop ONNX Runtime).
@@ -339,3 +326,55 @@ Expected: fp32 output within 1e-3 max abs difference of the reference (bit
 exact on the same ONNX Runtime CPU build). int8 models are only comparable
 on the same CPU and build: ONNX Runtime's quantized kernels differ between
 builds, and the differences grow through the flow-matching steps.
+
+## Playback latency
+
+The device test streams one English chat message in three phrases with Supertonic 3, voice M2,
+speed 1 and five denoising steps. They produce 297,611 mono samples at
+44.1 kHz, or 6.749 seconds of audio. The app records model load separately,
+then measures the native player's first-audio and completion events for the
+first utterance and two warm repetitions. Every run requires the first-audio
+event to precede the production of the final PCM chunk. A separate warm run
+keeps the same message in a single segment for a startup comparison.
+The completion time includes
+playback. Acoustic latency requires a physical device and an audio capture.
+
+The profiler then consumes the public PCM stream with fresh noise seeds and
+records the arrival of each phrase. It divides each round’s synthesis time by the
+duration of the returned PCM. CI requires a real-time factor below 1 in all
+three rounds. The JSONL artifact contains the individual segment factors,
+the total for each round, and the player event times. On Android the app
+runs as an AOT profile build on an API 35 x86-64 emulator. On iOS it runs
+as a debug build on an Apple Silicon iPhone simulator.
+
+The mobile integration runs produced 6.749 seconds of PCM with voice M2,
+speed 1 and five denoising steps. The times below start when a warm native
+player receives the request. Each single-segment run used the same words.
+Phrasing can change Supertonic’s prosody and predicted duration.
+
+| Mobile CI target | Synthesis time, three seeds | Warm first audio, streamed | First audio, single segment | Final streamed PCM ready | Streamed playback complete |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Android API 35 x86-64 emulator | 3.302–3.712 s | 0.772–0.858 s | 2.390 s | 3.294–3.339 s | 7.697–7.781 s |
+| iPhone 17 Pro arm64 simulator, integration run | 3.984–6.035 s | 1.614–1.724 s | 4.283 s | 5.266–6.284 s | 9.391–10.162 s |
+| iPhone 17 Pro arm64 simulator, second runner | 3.782–4.901 s | 0.761–1.480 s | 4.988 s | 4.228–6.155 s | 8.335–10.025 s |
+
+Inference continued for 2.48–2.52 seconds after playback started on Android
+and 3.47–4.68 seconds on iOS. Time from first audio to completion exceeded
+the PCM duration by 0.17–0.18 seconds on Android and 0.83–1.80 seconds on
+iOS. That interval includes player overhead and waits between phrases.
+The integration suites also checked exact sample counts for five multilingual
+utterances against Supertone. The largest absolute sample errors were
+0.000809 on Android and 0.000900 on iOS. Device load affects these timings.
+
+[Android playback](https://github.com/kevmo314/flutter_onnx/actions/runs/45522054055/job/138896099496) · [Android waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45512632137/job/138863954041) · [iOS player and waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45519231462/job/138886546550) · [Second iOS profile](https://github.com/kevmo314/flutter_onnx/actions/runs/45519744684/job/138888304617) · [Profiling workflow](../../../.github/workflows/on-device-tts-ios.yml)
+
+An early trace attributed 86% of graph execution time to the denoiser.
+That measurement guided the optimized convolution and activation kernels.
+With the original runtime, warm first audio took 0.50 seconds on Android
+and 0.95–1.14 seconds on iOS in separate CI runs. On the runtime's native
+CPU workflow, a standalone Dart AOT benchmark also reports time spent in the
+duration predictor, text encoder, denoiser and vocoder. That benchmark
+compares all three segments sample by sample with Supertone, including their
+exact trimmed lengths.
+
+[Initial Android comparison and graph trace](https://github.com/kevmo314/flutter_onnx/actions/runs/45452282279) · [Original iOS player measurements](https://github.com/kevmo314/flutter_onnx/actions/runs/45447762116/job/138636123365)

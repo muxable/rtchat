@@ -1,7 +1,7 @@
-name: on_device_tts iOS
+name: Supertonic speech
 
-# Runs the plugin's Swift tests (the OnDeviceTtsCore Swift package) on the
-# iOS simulator, with real Supertonic 3 synthesis through ONNX Runtime.
+# The Swift unit suite uses a reference evaluator. The Flutter device suite
+# exercises the production graph worker and the native speech pipeline.
 
 on:
   push:
@@ -9,11 +9,23 @@ on:
       - main
     paths:
       - "packages/on_device_tts/**"
+      - "android/**"
+      - "ios/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
       - ".github/workflows/on-device-tts-ios.yml"
+      - "integration_test/on_device_tts_test.dart"
+      - "integration_test/profile_playback.dart"
   pull_request:
     paths:
       - "packages/on_device_tts/**"
+      - "android/**"
+      - "ios/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
       - ".github/workflows/on-device-tts-ios.yml"
+      - "integration_test/on_device_tts_test.dart"
+      - "integration_test/profile_playback.dart"
   workflow_dispatch:
 
 concurrency:
@@ -27,45 +39,73 @@ env:
 
 jobs:
   xctest:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
 
-      - name: Cache the Supertonic 3 model
-        id: model-cache
-        uses: actions/cache@v6
+      - uses: actions/cache@v6
         with:
           path: ${{ env.MODEL_DIR }}
           key: supertonic-3-${{ env.SUPERTONIC_REVISION }}
-
-      - name: Download the Supertonic 3 model
-        if: steps.model-cache.outputs.cache-hit != 'true'
-        run: |
+      - name: Download the default voice pack
+        run: &download_pack |
+          # Fetch the original files pinned by the bundled voice-pack catalog.
           set -euo pipefail
-          mkdir -p "$MODEL_DIR/onnx" "$MODEL_DIR/voice_styles"
-          base="https://huggingface.co/Supertone/supertonic-3/resolve/$SUPERTONIC_REVISION"
-          while read -r sha file; do
-            curl -fsSL --retry 3 "$base/$file" -o "$MODEL_DIR/$file"
-            echo "$sha  $MODEL_DIR/$file" | shasum -a 256 -c -
-          done <<'EOF'
-          c3eb91414d5ff8a7a239b7fe9e34e7e2bf8a8140d8375ffb14718b1c639325db onnx/duration_predictor.onnx
-          c7befd5ea8c3119769e8a6c1486c4edc6a3bc8365c67621c881bbb774b9902ff onnx/text_encoder.onnx
-          42078d3aef1cd43ab43021f3c54f47d2d75ceb4e75f627f118890128b06a0d09 onnx/tts.json
-          9bf7346e43883a81f8645c81224f786d43c5b57f3641f6e7671a7d6c493cb24f onnx/unicode_indexer.json
-          883ac868ea0275ef0e991524dc64f16b3c0376efd7c320af6b53f5b780d7c61c onnx/vector_estimator.onnx
-          085de76dd8e8d5836d6ca66826601f615939218f90e519f70ee8a36ed2a4c4ba onnx/vocoder.onnx
-          bbdec6ee00231c2c742ad05483df5334cab3b52fda3ba38e6a07059c4563dbc2 voice_styles/F1.json
-          7c722c6a72707b1a77f035d67f0d1351ba187738e06f7683e8c72b1df3477fc6 voice_styles/F2.json
-          12f6ef2573baa2defa1128069cb59f203e3ab67c92af77b42df8a0e3a2f7c6ab voice_styles/F3.json
-          c2fa764c1225a76dfc3e2c73e8aa4f70d9ee48793860eb34c295fff01c2e032b voice_styles/F4.json
-          45966e73316415626cf41a7d1c6f3b4c70dbc1ba2bee5c1978ef0ce33244fc8d voice_styles/F5.json
-          e35604687f5d23694b8e91593a93eec0e4eca6c0b02bb8ed69139ab2ea6b0a5b voice_styles/M1.json
-          b76cbf62bac707c710cf0ae5aba5e31eea1a6339a9734bfae33ab98499534a50 voice_styles/M2.json
-          ea1ac35ccb91b0d7ecad533a2fbd0eec10c91513d8951e3b25fbba99954e159b voice_styles/M3.json
-          ca8eefad4fcd989c9379032ff3e50738adc547eeb5e221b82593a6d7b3bac303 voice_styles/M4.json
-          dd22b92740314321f8ae11c5e87f8dd60d060f15dd3a632b5adf77f471f77af2 voice_styles/M5.json
+          version=${PACK_VERSION:-3}
+          dir=${PACK_DIR:-$MODEL_DIR}
+          case "$version" in
+            2) revision=75e6727618a02f323c720cba9478152d4bc16ca4 ;;
+            3) revision=3cadd1ee6394adea1bd021217a0e650ede09a323 ;;
+            *) exit 2 ;;
+          esac
+          mkdir -p "$dir/onnx" "$dir/voice_styles"
+          manifest() {
+            if [[ "$version" == 2 ]]; then
+              cat <<'EOF'
+          6d556b3691165c364be91dc0bd894656b5949f5acd2750d8ec2f954010845011  onnx/duration_predictor.onnx
+          dd5f535ed629f7df86071043e15f541ce1b2ab7f1bdbce4c7892b307bca79fa3  onnx/text_encoder.onnx
+          ee531d9af9b80438a2ed703e22155ee6c83b12595ab22fd3bb6de94c7502fe96  onnx/tts.json
+          b7662a73a0703f43b97c0f2e089f8e8325e26f5d841aca393b5a54c509c92df1  onnx/unicode_indexer.json
+          105e9d66fd8756876b210a6b4aa03fc393b1eaca3a8dadcc8d9a3bc785c86a35  onnx/vector_estimator.onnx
+          19bd51f47a186069c752403518a40f7ea4c647455056d2511f7249691ecddf7c  onnx/vocoder.onnx
+          6106950ebeb8a5da29ea22075f605db659cd07dbc288a68292543d9129aa250f  voice_styles/F1.json
+          8b97feb16d79ac0447136796708feac5f83dbabe92a5be1168212653c38729ae  voice_styles/F2.json
+          7eda5bccb4e6eb7f228fa182462d5fcf982d77628234603599027f0734d70c29  voice_styles/F3.json
+          e056fc2bee393edc8bff761eb28f33fb461e8dad828c3b05348a010ac1b7bb79  voice_styles/F4.json
+          ce7645ad7e3c13cca04e0d62bf890ef9ac401988005ba8f5e9c9b59257bc6931  voice_styles/F5.json
+          a04c823cbda6dd1c7de131ec68fea83bbb70d7f29d61623304eb871e3b83b5a1  voice_styles/M1.json
+          7ddd07bf873a3fd67d09ef4e8293b486beb658158b47e371166198e4c6926072  voice_styles/M2.json
+          e8e77a56459e4dc8cdfeb88e6f778dc9a0adf22e1184414f4b0e82a5d1edbe72  voice_styles/M3.json
+          95322725e4d25d9ed4e7dcccbf0f3726b0e9a2471d876b7942373218dbd30174  voice_styles/M4.json
+          be52f82327da63ff18481ce2dd8060c7df432e0168d748745ef3e21b92d706a5  voice_styles/M5.json
           EOF
+            else
+              cat <<'EOF'
+          c3eb91414d5ff8a7a239b7fe9e34e7e2bf8a8140d8375ffb14718b1c639325db  onnx/duration_predictor.onnx
+          c7befd5ea8c3119769e8a6c1486c4edc6a3bc8365c67621c881bbb774b9902ff  onnx/text_encoder.onnx
+          42078d3aef1cd43ab43021f3c54f47d2d75ceb4e75f627f118890128b06a0d09  onnx/tts.json
+          9bf7346e43883a81f8645c81224f786d43c5b57f3641f6e7671a7d6c493cb24f  onnx/unicode_indexer.json
+          883ac868ea0275ef0e991524dc64f16b3c0376efd7c320af6b53f5b780d7c61c  onnx/vector_estimator.onnx
+          085de76dd8e8d5836d6ca66826601f615939218f90e519f70ee8a36ed2a4c4ba  onnx/vocoder.onnx
+          bbdec6ee00231c2c742ad05483df5334cab3b52fda3ba38e6a07059c4563dbc2  voice_styles/F1.json
+          7c722c6a72707b1a77f035d67f0d1351ba187738e06f7683e8c72b1df3477fc6  voice_styles/F2.json
+          12f6ef2573baa2defa1128069cb59f203e3ab67c92af77b42df8a0e3a2f7c6ab  voice_styles/F3.json
+          c2fa764c1225a76dfc3e2c73e8aa4f70d9ee48793860eb34c295fff01c2e032b  voice_styles/F4.json
+          45966e73316415626cf41a7d1c6f3b4c70dbc1ba2bee5c1978ef0ce33244fc8d  voice_styles/F5.json
+          e35604687f5d23694b8e91593a93eec0e4eca6c0b02bb8ed69139ab2ea6b0a5b  voice_styles/M1.json
+          b76cbf62bac707c710cf0ae5aba5e31eea1a6339a9734bfae33ab98499534a50  voice_styles/M2.json
+          ea1ac35ccb91b0d7ecad533a2fbd0eec10c91513d8951e3b25fbba99954e159b  voice_styles/M3.json
+          ca8eefad4fcd989c9379032ff3e50738adc547eeb5e221b82593a6d7b3bac303  voice_styles/M4.json
+          dd22b92740314321f8ae11c5e87f8dd60d060f15dd3a632b5adf77f471f77af2  voice_styles/M5.json
+          EOF
+            fi
+          }
+          while read -r sha file; do
+            if [[ -f "$dir/$file" ]] && echo "$sha  $dir/$file" | shasum -a 256 -c - >/dev/null; then continue; fi
+            curl -fsSL --retry 3 "https://huggingface.co/Supertone/supertonic-$version/resolve/$revision/$file" -o "$dir/$file"
+            echo "$sha  $dir/$file" | shasum -a 256 -c -
+          done < <(manifest)
 
       - name: Resolve the Swift package
         working-directory: packages/on_device_tts/ios/on_device_tts/OnDeviceTtsCore
@@ -97,14 +137,12 @@ jobs:
           TEST_RUNNER_SUPERTONIC_MODEL_DIR="$MODEL_DIR" xcodebuild test \
             -scheme OnDeviceTtsCore -configuration Debug \
             -destination "id=$SIMULATOR" -parallel-testing-enabled NO \
-            -skip-testing:OnDeviceTtsCoreTests/BenchmarkTests \
             > "$RUNNER_TEMP/xctest.log" 2>&1 || status=$?
           grep -E "^(Test (Case|Suite)|PARITY|SYNTH|SPEAK|STOP|on_device_tts:)|error:|\*\* " "$RUNNER_TEMP/xctest.log" || true
           if [ "$status" != 0 ]; then
             tail -n 200 "$RUNNER_TEMP/xctest.log"
             exit "$status"
           fi
-          # Only the benchmark may be skipped: everything else needs the model.
           if grep -E "Test Case .* skipped" "$RUNNER_TEMP/xctest.log"; then
             echo "::error::tests were skipped"
             exit 1
@@ -116,24 +154,324 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Benchmark the execution providers
-        continue-on-error: true
-        working-directory: packages/on_device_tts/ios/on_device_tts/OnDeviceTtsCore
-        run: |
-          echo '### Execution providers (iOS simulator on a macOS runner, not a device)' >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          for provider in cpu coreml xnnpack; do
-            TEST_RUNNER_SUPERTONIC_MODEL_DIR="$MODEL_DIR" TEST_RUNNER_SUPERTONIC_BENCHMARK="$provider" \
-              xcodebuild test -scheme OnDeviceTtsCore -configuration Debug \
-              -destination "id=$SIMULATOR" -parallel-testing-enabled NO \
-              -only-testing:OnDeviceTtsCoreTests/BenchmarkTests > "$RUNNER_TEMP/bench-$provider.log" 2>&1 \
-              || echo "BENCH provider=$provider failed (exit $?)"
-            grep -E "^BENCH|on_device_tts:" "$RUNNER_TEMP/bench-$provider.log" || true
-          done | tee -a "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: xctest-logs
           path: ${{ runner.temp }}/*.log
+
+  speech:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-26]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: python -m pip install supertonic==1.3.1
+      - run: flutter pub get
+      - run: flutter analyze --no-pub integration_test/profile_playback.dart integration_test/on_device_tts_test.dart
+      - run: flutter pub get
+        working-directory: packages/on_device_tts
+      - uses: actions/cache@v6
+        with:
+          path: ${{ env.MODEL_DIR }}
+          key: supertonic-3-${{ env.SUPERTONIC_REVISION }}
+      - name: Download the default voice pack
+        run: *download_pack
+      - name: Prepare reference PCM for the default pack
+        run: |
+          python -I packages/on_device_tts/tool/supertonic_reference.py "$MODEL_DIR" "$RUNNER_TEMP/reference"
+      - name: Run plugin tests with the default voice pack
+        if: runner.os == 'Linux'
+        working-directory: packages/on_device_tts
+        run: SUPERTONIC_PARITY_DIR="$RUNNER_TEMP/reference" flutter test
+      - name: Download the smaller voice pack
+        if: runner.os == 'Linux'
+        env:
+          PACK_VERSION: "2"
+          PACK_DIR: ${{ runner.temp }}/supertonic-2
+        run: *download_pack
+      - name: Compare the smaller voice pack through the Flutter worker
+        if: runner.os == 'Linux'
+        run: |
+          python -I packages/on_device_tts/tool/supertonic_reference.py "$RUNNER_TEMP/supertonic-2" "$RUNNER_TEMP/reference2"
+          cd packages/on_device_tts
+          SUPERTONIC_PARITY_DIR="$RUNNER_TEMP/reference2" flutter test test/graph_worker_test.dart
+      - uses: actions/setup-java@v6
+        if: runner.os == 'Linux'
+        with:
+          distribution: zulu
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v6
+        if: runner.os == 'Linux'
+      - name: Install the Android NDK and emulator image
+        if: runner.os == 'Linux'
+        run: |
+          # Install the Android artifacts used by the playback CI before Gradle and the emulator start.
+          set -euo pipefail
+
+          sdk=${ANDROID_HOME:?Android SDK path is required}
+          flutter_root=${FLUTTER_ROOT:-$(dirname "$(dirname "$(readlink -f "$(command -v flutter)")")")}
+          extension="$flutter_root/packages/flutter_tools/gradle/src/main/kotlin/FlutterExtension.kt"
+          ndk=$(sed -nE 's/^[[:space:]]*val ndkVersion: String = "([^"]+)".*/\1/p' "$extension")
+          test -n "$ndk" || { echo "Cannot determine the Flutter NDK version from $extension" >&2; exit 1; }
+
+          install_package() {
+            local package=$1 required=$2
+            for attempt in 1 2 3; do
+              if [[ -s "$required" ]]; then return 0; fi
+              echo "Installing $package (attempt $attempt)"
+              if "$sdk/cmdline-tools/latest/bin/sdkmanager" --install "$package" && [[ -s "$required" ]]; then
+                return 0
+              fi
+              df -h "$sdk"
+              if [[ "$attempt" != 3 ]]; then sleep 10; fi
+            done
+            echo "Missing $required after installing $package" >&2
+            return 1
+          }
+
+          install_package "ndk;$ndk" "$sdk/ndk/$ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/clang"
+          install_package 'system-images;android-35;google_apis;x86_64' "$sdk/system-images/android-35/google_apis/x86_64/system.img"
+      - name: Run Kotlin parity tests against the Python tensors
+        if: runner.os == 'Linux'
+        run: |
+          flutter build apk --config-only
+          cd android
+          SUPERTONIC_PARITY_DIR="$RUNNER_TEMP/reference" ./gradlew :on_device_tts:testDebugUnitTest --console=plain
+      - name: Enable KVM
+        if: runner.os == 'Linux'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run real-model playback and PCM checks on Android
+        if: runner.os == 'Linux'
+        env:
+          DEVICE_TESTS: &device_tests |
+            set -euo pipefail
+            model="$MODEL_DIR"
+            reference="$RUNNER_TEMP/reference"
+            target=integration_test/on_device_tts_test.dart
+            if [[ "$1" == android ]]; then
+              device=$(adb get-serialno)
+              flutter build apk --debug
+              adb install -r build/app/outputs/flutter-apk/app-debug.apk
+              for pair in "$model|model" "$reference|reference"; do
+                src=${pair%|*}
+                dest=${pair##*|}
+                adb shell run-as com.rtirl.chat mkdir -p "files/$dest"
+                tar -C "$src" -cf - . | adb shell -T run-as com.rtirl.chat tar -xf - -C "files/$dest"
+              done
+              model=/data/user/0/com.rtirl.chat/files/model
+              reference=/data/user/0/com.rtirl.chat/files/reference
+              flutter test "$target" -d "$device" --reporter expanded \
+                --dart-define=ON_DEVICE_TTS_MODEL_DIR="$model" \
+                --dart-define=ON_DEVICE_TTS_REFERENCE_DIR="$reference"
+            else
+              device=$(xcrun simctl list devices available -j | python3 -c '
+            import json, sys
+            devices = json.load(sys.stdin)["devices"]
+            print(next(d["udid"] for r in sorted(devices, reverse=True) if "iOS" in r for d in devices[r] if d["name"].startswith("iPhone")))')
+              xcrun simctl boot "$device" || xcrun simctl bootstatus "$device" -b
+              xcrun simctl bootstatus "$device" -b
+              # Stage the fixtures in the installed app, then run the Flutter integration
+              # suite without a VM-service connection to the host.
+              report="tts-tests-$(uuidgen).json"
+              flutter build ios --simulator --debug -t "$target" \
+                --dart-define=ON_DEVICE_TTS_MODEL_DIR=model \
+                --dart-define=ON_DEVICE_TTS_REFERENCE_DIR=reference \
+                --dart-define=ON_DEVICE_TTS_REPORT="$report"
+              app=com.rtirl.chat
+              xcrun simctl install "$device" build/ios/iphonesimulator/Runner.app
+              dir="$(xcrun simctl get_app_container "$device" "$app" data)/Documents"
+              mkdir -p "$dir/model" "$dir/reference"
+              cp -R "$model/." "$dir/model/"
+              cp -R "$reference/." "$dir/reference/"
+              xcrun simctl launch --terminate-running-process "$device" "$app"
+              for ((attempt=0; attempt<180; ++attempt)); do
+                if [[ -f "$dir/$report" ]]; then break; fi
+                sleep 5
+              done
+              if [[ ! -f "$dir/$report" ]]; then
+                echo "::error::The simulator app did not report its integration test results"
+                exit 1
+              fi
+              cp "$dir/$report" "$RUNNER_TEMP/ios-speech-tests.json"
+              cat "$dir/$report"
+              jq -e '.passed and (.failures | length == 0) and (.tests | length >= 9)
+                     and (.waveform_max_abs_errors | has("en_chat") and has("en_short") and has("es") and has("ru") and has("ko"))
+                     and (.tests | index("matches the reference implementation") != null)
+                     and (.tests | index("streams a single chat message before its final PCM is ready") != null)' "$dir/$report"
+            fi
+
+            # Run from the RTChat app root with the model staged on the runner.
+            set -euo pipefail
+            platform=$1
+            app=com.rtirl.chat
+            report="$RUNNER_TEMP/playback-$platform.jsonl"
+            target=integration_test/profile_playback.dart
+
+            # Allow installation, simulator startup and indexing to settle before timing the
+            # first model load. Keep all measurements even if the guest stays busy.
+            wait_for_idle() {
+              python3 - "$platform" "$device" <<'PYTHON'
+            import ctypes
+            import subprocess
+            import sys
+            import time
+
+            platform, device = sys.argv[1:]
+            if platform == "ios":
+                libc = ctypes.CDLL("/usr/lib/libSystem.B.dylib")
+                host = libc.mach_host_self()
+                def sample():
+                    ticks = (ctypes.c_uint32 * 4)()
+                    count = ctypes.c_uint32(4)
+                    if libc.host_statistics(host, 3, ticks, ctypes.byref(count)) or count.value != 4:
+                        raise RuntimeError("Couldn't read host CPU counters")
+                    return sum(ticks), ticks[2]  # CPU_STATE_IDLE
+            else:
+                def sample():
+                    row = subprocess.check_output(
+                        ["adb", "-s", device, "shell", "head", "-1", "/proc/stat"], text=True
+                    )
+                    ticks = list(map(int, row.split()[1:9]))
+                    return sum(ticks), ticks[3] + ticks[4]
+
+            previous = sample()
+            quiet = 0
+            for _ in range(36):
+                time.sleep(5)
+                current = sample()
+                idle = (current[1] - previous[1]) / max(1, current[0] - previous[0])
+                previous = current
+                print(f"{platform} CPU idle {idle:.0%}", flush=True)
+                quiet = quiet + 1 if idle >= 0.75 else 0
+                if quiet == 3:
+                    break
+            if platform == "ios" and quiet < 3:
+                processes = subprocess.check_output(
+                    ["ps", "-A", "-o", "pcpu=,pid=,comm="], text=True
+                ).splitlines()
+                processes.sort(key=lambda row: float(row.split(None, 1)[0]), reverse=True)
+                print("Highest CPU usage before playback (%CPU, PID, command):", flush=True)
+                print("\n".join(processes[:12]), flush=True)
+            PYTHON
+            }
+
+            if [[ "$platform" == android ]]; then
+              flutter build apk --profile --target-platform android-x64 -t "$target"
+              adb -s "$device" install -r build/app/outputs/flutter-apk/app-profile.apk
+              dir="/data/user/0/$app/app_flutter"
+              if adb -s "$device" shell run-as "$app" id >/dev/null 2>&1; then
+                owner=(run-as "$app")
+              else
+                # Profile APKs can disable run-as. The Google APIs CI emulator is userdebug.
+                adb -s "$device" root
+                adb -s "$device" wait-for-device
+                test "$(adb -s "$device" shell id -u | tr -d '\r')" = 0
+                owner=()
+              fi
+              adb -s "$device" shell "${owner[@]}" mkdir -p "$dir/supertonic-3"
+              tar -C "$MODEL_DIR" -cf - . | adb -s "$device" shell -T "${owner[@]}" tar -xf - -C "$dir/supertonic-3"
+              adb -s "$device" shell "${owner[@]}" rm -f "$dir/playback.jsonl"
+              if (( ${#owner[@]} == 0 )); then
+                uid=$(adb -s "$device" shell stat -c %u "/data/user/0/$app" | tr -d '\r')
+                adb -s "$device" shell chown -R "$uid:$uid" "$dir"
+                adb -s "$device" shell restorecon -RF "$dir"
+              fi
+              wait_for_idle
+              adb -s "$device" shell am start -n "$app/.MainActivity"
+              read_report() { adb -s "$device" shell "${owner[@]}" cat "$dir/playback.jsonl" 2>/dev/null | tr -d '\r'; }
+            else
+              flutter build ios --simulator --debug -t "$target"
+              ios_app=build/ios/iphonesimulator/Runner.app
+              xcrun simctl install "$device" "$ios_app"
+              dir=$(xcrun simctl get_app_container "$device" "$app" data)/Documents
+              mkdir -p "$dir/supertonic-3"
+              cp -R "$MODEL_DIR/." "$dir/supertonic-3/"
+              rm -f "$dir/playback.jsonl"
+              wait_for_idle
+              xcrun simctl launch --terminate-running-process "$device" "$app"
+              read_report() { cat "$dir/playback.jsonl" 2>/dev/null; }
+            fi
+
+            for (( attempt=0; attempt<120; ++attempt )); do
+              read_report > "$report" || true
+              if grep -q '"error":' "$report"; then cat "$report"; exit 1; fi
+              if grep -q '"complete":true' "$report"; then
+                cat "$report"
+                break
+              fi
+              sleep 5
+            done
+
+            python3 - "$report" <<'PY'
+            import json
+            import sys
+
+            with open(sys.argv[1]) as f:
+                results = [json.loads(line) for line in f]
+            if not results or results[-1] != {"complete": True}:
+                raise SystemExit("Playback did not finish")
+            generation = [r for r in results if "synthesis_round" in r]
+            if [r["synthesis_round"] for r in generation] != [1, 2, 3]:
+                raise SystemExit(f"Incomplete synthesis measurements: {generation}")
+            for r in generation:
+                if not 0 < r["synthesis_ms"] < r["audio_ms"]:
+                    raise SystemExit(f"Synthesis exceeded the real-time budget: {r}")
+            audio = generation[0]["audio_ms"]
+            rounds = [r for r in results if "round" in r]
+            if audio <= 0 or [r["round"] for r in rounds] != [1, 2, 3]:
+                raise SystemExit(f"Incomplete profile: {results}")
+            baseline = [r for r in results if r.get("unsplit")]
+            if len(baseline) != 1 or not 0 < baseline[0]["last_pcm_ready_ms"] <= baseline[0]["first_audio_ms"] < baseline[0]["done_ms"]:
+                raise SystemExit(f"Invalid whole-message baseline: {baseline}")
+            for row in rounds:
+                if not (0 < row["first_audio_ms"] < row["last_pcm_ready_ms"] < row["done_ms"]) or row["done_ms"] <= audio - 50:
+                    raise SystemExit(f"Unexpected playback events: {row}")
+                if row["round"] > 1 and not audio - 50 < row["speak_ms"] < audio + 10_000:
+                    raise SystemExit(f"Missed the playback deadline for {audio:.0f} ms of audio: {row}")
+            warm_first_ms = [row["first_audio_ms"] for row in rounds if row["round"] > 1]
+            whole_first_ms = baseline[0]["first_audio_ms"]
+            if sum(warm_first_ms) / len(warm_first_ms) >= whole_first_ms:
+                raise SystemExit(f"Streaming failed to reduce warm startup: {warm_first_ms}, whole message {whole_first_ms} ms")
+            for row in rounds[1:]:
+                print(json.dumps({
+                    "playback_round": row["round"],
+                    "startup_saved_ms": whole_first_ms - row["first_audio_ms"],
+                    "inference_after_first_audio_ms": row["last_pcm_ready_ms"] - row["first_audio_ms"],
+                    "playback_elapsed_minus_pcm_ms": round(row["done_ms"] - row["first_audio_ms"] - audio, 1),
+                }))
+            PY
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          disk-size: 8192M
+          script: bash -c "$DEVICE_TESTS" -- android
+      - name: Run real-model playback and PCM checks on iOS
+        if: runner.os == 'macOS'
+        env:
+          DEVICE_TESTS: *device_tests
+        run: bash -c "$DEVICE_TESTS" -- ios
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playback-profile-${{ runner.os }}
+          path: |
+            ${{ runner.temp }}/playback-*.jsonl
+            ${{ runner.temp }}/ios-speech-tests.json
+          if-no-files-found: ignore

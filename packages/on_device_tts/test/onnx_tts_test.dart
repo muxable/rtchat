@@ -171,6 +171,18 @@ void main() {
     );
   });
 
+  test(
+    'completed events carry the native final-PCM timestamp when available',
+    () {
+      final event = {'utteranceId': 'u', 'type': 'done', 'elapsedMs': 7800};
+      expect(OnnxTtsEvent.fromMap(event)!.lastPcmReady, isNull);
+      expect(
+        OnnxTtsEvent.fromMap({...event, 'lastPcmReadyMs': 3400})!.lastPcmReady,
+        const Duration(milliseconds: 3400),
+      );
+    },
+  );
+
   test('events come from the event channel', () async {
     messenger.setMockStreamHandler(
       const EventChannel(OnnxTtsPlatform.eventChannelName),
@@ -186,6 +198,45 @@ void main() {
     expect(events.map((e) => e.type), [OnnxTtsEventType.done]);
     expect(events.single.elapsed, const Duration(milliseconds: 900));
   });
+
+  test(
+    'PCM stream yields an ordered phrase on demand and respects cancellation',
+    () async {
+      handler =
+          (call) async =>
+              call.method == 'load'
+                  ? 'speech'
+                  : {
+                    'sampleRate': 44100,
+                    'pcm': Float32List.fromList([0.25]),
+                  };
+      final tts = await OnnxTts.load(modelDir: '/m', platform: platform);
+      final chunks = StreamIterator(
+        tts.synthesizeStream(
+          'Daisy said, that was the cleanest clutch I have seen all week, GG everyone!',
+          language: 'en',
+          voiceId: 'M2',
+          noiseSeed: 9,
+        ),
+      );
+      expect(await chunks.moveNext(), isTrue);
+      expect(chunks.current.pcm, [0.25]);
+      expect(chunks.current.sampleRate, 44100);
+      await pumpEventQueue();
+      expect(calls.where((call) => call.method == 'synthesize'), hasLength(1));
+      expect(await chunks.moveNext(), isTrue);
+      await chunks.cancel();
+      await pumpEventQueue();
+      final args = calls
+          .where((call) => call.method == 'synthesize')
+          .map((call) => call.arguments);
+      expect(args.map((a) => a['text']), [
+        'Daisy said,',
+        'that was the cleanest clutch I have seen all week,',
+      ]);
+      expect(args.map((a) => a['noiseSeed']), [9, 10]);
+    },
+  );
 
   test('OnnxTts wraps a handle', () async {
     handler = (call) async => call.method == 'load' ? 'supertonic-3' : null;

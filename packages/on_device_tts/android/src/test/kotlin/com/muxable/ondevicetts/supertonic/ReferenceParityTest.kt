@@ -2,6 +2,9 @@ package com.muxable.ondevicetts.supertonic
 
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
+import ai.onnxruntime.OnnxTensor
+import java.nio.FloatBuffer
+import java.nio.LongBuffer
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -21,8 +24,8 @@ import kotlin.test.assertTrue
  * reference tensors as little-endian binaries; the manifest names the model
  * directory. Run it with
  * `SUPERTONIC_PARITY_DIR=... ./gradlew :on_device_tts:testDebugUnitTest`
- * from the app's `android/` (the variable also puts the desktop ONNX Runtime
- * on the test classpath).
+ * from the app's `android/`. The standalone JVM suite uses ONNX Runtime as
+ * its graph evaluator.
  */
 class ReferenceParityTest {
     private class Trace : SynthesisTrace {
@@ -50,9 +53,32 @@ class ReferenceParityTest {
         val tolerances = (manifest["tolerances"] as Map<*, *>).mapValues { (it.value as Number).toDouble() }
 
         val env = OrtEnvironment.getEnvironment()
-        val model = SupertonicModel.load(
-            env, File(manifest["model_dir"] as String), SessionSettings(numThreads = 2, provider = "cpu"),
-        ) { println(it) }
+        val model = SupertonicModel.load(File(manifest["model_dir"] as String)) { file ->
+            val session = OrtSession.SessionOptions().use { opts ->
+                opts.setIntraOpNumThreads(2)
+                env.createSession(file.absolutePath, opts)
+            }
+            object : GraphSession {
+                override fun close() = session.close()
+                override fun run(inputs: Map<String, GraphTensor>): GraphTensor {
+                    val tensors = inputs.mapValues { (_, t) ->
+                        when (val data = t.data) {
+                            is LongArray -> OnnxTensor.createTensor(env, LongBuffer.wrap(data), t.shape)
+                            else -> OnnxTensor.createTensor(env, FloatBuffer.wrap(t.floats), t.shape)
+                        }
+                    }
+                    try {
+                        return session.run(tensors).use {
+                            val output = it[0] as OnnxTensor
+                            val values = output.floatBuffer
+                            GraphTensor(FloatArray(values.remaining()).also { buf -> values.get(buf) }, output.info.shape)
+                        }
+                    } finally {
+                        tensors.values.forEach { it.close() }
+                    }
+                }
+            }
+        }
 
         val report = StringBuilder()
         var worstWav = 0.0
@@ -61,18 +87,16 @@ class ReferenceParityTest {
                 case as Map<*, *>
                 val name = case["name"] as String
                 val trace = Trace()
-                val pcm = OrtSession.RunOptions().use { runOptions ->
-                    model.infer(
+                val pcm = model.infer(
                         case["text"] as String,
                         case["lang"] as String,
                         model.voices.getValue(case["voice"] as String),
                         (case["speed"] as Number).toFloat(),
                         (case["steps"] as Number).toInt(),
                         NoiseGenerator((case["seed"] as Number).toLong()),
-                        runOptions,
+                        { false },
                         trace,
                     )
-                }
 
                 for ((tensorName, spec) in case["tensors"] as Map<*, *>) {
                     tensorName as String

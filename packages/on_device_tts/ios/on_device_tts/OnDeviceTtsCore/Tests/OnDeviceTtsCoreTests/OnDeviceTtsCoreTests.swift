@@ -753,18 +753,7 @@ class AudioOutputTests: XCTestCase {
     XCTAssertThrowsError(try output.start(sampleRate: 44100))
   }
 
-  func testSessionOptionsDisableSpinningForEveryProvider() throws {
-    for provider in ["cpu", "xnnpack", "coreml"] {
-      var entries = [String: String]()
-      do {
-        _ = try SupertonicModel.sessionOptions(
-          numThreads: 2, provider: provider, variant: nil, configEntry: { entries[$0] = $1 })
-      } catch where provider == "coreml" {
-        // Only if CoreML isn't built in; the entries are set before that.
-      }
-      XCTAssertEqual(entries["session.intra_op.allow_spinning"], "0", provider)
-    }
-  }
+
 }
 
 /// How `speak` recovers when the audio output fails under it.
@@ -881,48 +870,5 @@ class AudioRecoveryTests: XCTestCase {
     // Once the call is over, speaking works again.
     (engine.output as! AudioOutput).configureSession = AudioOutput.configureSharedSession
     harness.speaksToTheEnd("after", handle)
-  }
-}
-
-/// Timing per execution provider, printed as `BENCH` lines. Only runs when
-/// `SUPERTONIC_BENCHMARK` is set, since it takes a while. These are
-/// simulator numbers: they say nothing about the Neural Engine.
-class BenchmarkTests: XCTestCase {
-  func testProviders() throws {
-    guard let providers = ProcessInfo.processInfo.environment["SUPERTONIC_BENCHMARK"],
-      !providers.isEmpty
-    else {
-      throw XCTSkip("SUPERTONIC_BENCHMARK isn't set")
-    }
-    let sentences = [
-      "xXslayerXx said POGGERS that clutch was insane.",
-      "Thanks for the raid, welcome everyone to the stream!",
-      "Does anyone know when the next tournament starts? I want to watch it live.",
-    ]
-    for provider in providers.split(separator: ",").map(String.init) {
-      let harness = ChannelHarness(self)
-      let loadStart = Date()
-      let handle = try harness.load(provider: provider)
-      let loadSeconds = Date().timeIntervalSince(loadStart)
-      let actual = harness.engine.model(handle)?.provider ?? "?"
-      // Warm up: the first run includes graph setup (and CoreML compilation).
-      let warmStart = Date()
-      _ = try harness.synthesize(handle, "Warm up.", language: "en", voice: "F1", seed: 1)
-      let warmSeconds = Date().timeIntervalSince(warmStart)
-      var synthSeconds = 0.0
-      var audioSeconds = 0.0
-      for (i, sentence) in sentences.enumerated() {
-        let start = Date()
-        let audio = try harness.synthesize(handle, sentence, language: "en", voice: "M1", seed: Int64(i))
-        synthSeconds += Date().timeIntervalSince(start)
-        audioSeconds += Double(audio.pcm.count) / Double(audio.sampleRate)
-      }
-      print(
-        String(
-          format: "BENCH provider=%@ actual=%@ load=%.2fs first=%.2fs synth=%.2fs audio=%.2fs rtf=%.3f",
-          provider, actual, loadSeconds, warmSeconds, synthSeconds, audioSeconds,
-          synthSeconds / audioSeconds))
-      _ = harness.call("unload", ["handle": handle])
-    }
   }
 }

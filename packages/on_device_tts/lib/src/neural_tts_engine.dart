@@ -31,16 +31,14 @@ class NeuralTtsLoadException extends NeuralTtsException {
 }
 
 /// Speaks with an installed neural voice pack, synthesized on the device by
-/// the native ONNX Runtime engine ([OnnxTts]).
+/// the flutter_onnx graph workers and native player ([OnnxTts]).
 ///
 /// The model loads on the first [speak] (or [load]) and stays loaded, so
 /// later utterances start quickly. [release] unloads it to free memory, and
 /// the next [speak] loads it again; [dispose] unloads it for good.
 ///
-/// [speak] hands the whole text to the native engine as one segment. The
-/// native side synthesizes it, splitting text longer than 300 UTF-16 code
-/// units (120 for Japanese and Korean) itself, and streams the audio out as
-/// it is made.
+/// [speak] starts playing the first phrase while subsequent phrases are
+/// synthesized. One utterance ID covers the whole message.
 ///
 /// The native side plays one utterance at a time for every engine, so don't
 /// [speak] on two engines at once.
@@ -168,8 +166,8 @@ class NeuralTtsEngine implements TtsEngine {
     final id = '$_utterancePrefix${_nextUtterance++}';
     _activeUtterance = id;
     try {
-      await model.speak(
-        [message],
+      await model.speakText(
+        message,
         language: lang,
         voiceId: voiceId,
         speed: speedForRate(rate),

@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../device_memory.dart';
+import 'graph_worker_stub.dart' if (dart.library.io) 'graph_worker.dart';
 
-/// The ONNX Runtime execution provider a model runs on.
+/// A preferred execution provider for the speech graph.
 ///
-/// Providers the platform doesn't have (e.g. [coreml] on Android) fall back
-/// to [cpu].
+/// The flutter_onnx speech engine currently uses [cpu] for every preference.
 enum OnnxProvider {
   cpu,
 
@@ -87,12 +87,17 @@ class OnnxTtsEvent {
 
   /// Time since the `speak` call.
   final Duration elapsed;
+
+  /// Time since the request when inference produced the final PCM chunk.
+  /// Present on completed utterances from players that report it.
+  final Duration? lastPcmReady;
   final String? message;
 
   const OnnxTtsEvent({
     required this.utteranceId,
     required this.type,
     required this.elapsed,
+    this.lastPcmReady,
     this.message,
   });
 
@@ -107,6 +112,10 @@ class OnnxTtsEvent {
       utteranceId: map['utteranceId'] as String,
       type: type,
       elapsed: Duration(milliseconds: (map['elapsedMs'] as num).toInt()),
+      lastPcmReady: switch (map['lastPcmReadyMs']) {
+        num ms => Duration(milliseconds: ms.toInt()),
+        _ => null,
+      },
       message: map['message'] as String?,
     );
   }
@@ -117,10 +126,12 @@ class OnnxTtsEvent {
       other.utteranceId == utteranceId &&
       other.type == type &&
       other.elapsed == elapsed &&
+      other.lastPcmReady == lastPcmReady &&
       other.message == message;
 
   @override
-  int get hashCode => Object.hash(utteranceId, type, elapsed, message);
+  int get hashCode =>
+      Object.hash(utteranceId, type, elapsed, lastPcmReady, message);
 
   @override
   String toString() =>
@@ -164,6 +175,7 @@ class OnnxTtsPlatform {
     int numThreads = 2,
     OnnxProvider provider = OnnxProvider.cpu,
   }) async {
+    installGraphHandler();
     final handle = await _methods.invokeMethod<String>('load', {
       'modelType': modelType,
       'modelDir': modelDir,
