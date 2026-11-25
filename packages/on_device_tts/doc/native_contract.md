@@ -366,7 +366,7 @@ The integration suites also checked exact sample counts for five multilingual
 utterances against Supertone. The largest absolute sample errors were
 0.000809 on Android and 0.000900 on iOS. Device load affects these timings.
 
-[Android playback](https://github.com/kevmo314/flutter_onnx/actions/runs/45522054055/job/138896099496) · [Android waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45512632137/job/138863954041) · [iOS player and waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45519231462/job/138886546550) · [Second iOS profile](https://github.com/kevmo314/flutter_onnx/actions/runs/45519744684/job/138888304617) · [Profiling script](../../../.github/scripts/profile-supertonic-device.sh)
+[Android playback](https://github.com/kevmo314/flutter_onnx/actions/runs/45522054055/job/138896099496) · [Android waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45512632137/job/138863954041) · [iOS player and waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45519231462/job/138886546550) · [Second iOS profile](https://github.com/kevmo314/flutter_onnx/actions/runs/45519744684/job/138888304617) · [Profiling workflow](../../../.github/workflows/on-device-tts-ios.yml)
 
 An early trace attributed 86% of graph execution time to the denoiser.
 That measurement guided the optimized convolution and activation kernels.
