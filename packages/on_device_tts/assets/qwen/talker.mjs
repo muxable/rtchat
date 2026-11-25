@@ -244,36 +244,51 @@ export async function createTalker(device, w, capacity = 512) {
       staging.unmap();
     }
   }
+  let prefixKey,
+    prefixLength = 0;
   return {
     async prefill(ids, role, tc, speaker, lang, specials) {
       pos = 0;
       const enc = device.createCommandEncoder();
       enc.clearBuffer(history);
       device.queue.submit([enc.finish()]);
-      text(specials[0], bos);
-      text(specials[1], eos);
-      text(specials[2], pad);
-      for (const id of role) {
-        text(id, textOut);
-        run(textOut);
-      }
-      const tags =
-        lang == null
-          ? [tc.codec_nothink_id, tc.codec_think_bos_id, tc.codec_think_eos_id]
-          : [
-              tc.codec_think_id,
-              tc.codec_think_bos_id,
-              lang,
-              tc.codec_think_eos_id,
-            ];
-      for (const id of [...tags, speaker]) {
-        code(id, codec);
-        sum(codec, pad);
+      // The role, language, speaker and BOS occupy the same causal prefix on
+      // every chat message using this voice. Later tokens never change its KV.
+      const key = JSON.stringify([role, speaker, lang, specials]);
+      if (key === prefixKey) {
+        pos = prefixLength;
+      } else {
+        text(specials[0], bos);
+        text(specials[1], eos);
+        text(specials[2], pad);
+        for (const id of role) {
+          text(id, textOut);
+          run(textOut);
+        }
+        const tags =
+          lang == null
+            ? [
+                tc.codec_nothink_id,
+                tc.codec_think_bos_id,
+                tc.codec_think_eos_id,
+              ]
+            : [
+                tc.codec_think_id,
+                tc.codec_think_bos_id,
+                lang,
+                tc.codec_think_eos_id,
+              ];
+        for (const id of [...tags, speaker]) {
+          code(id, codec);
+          sum(codec, pad);
+          run(codec);
+        }
+        code(tc.codec_pad_id, codec);
+        sum(codec, bos);
         run(codec);
+        prefixLength = pos;
+        prefixKey = key;
       }
-      code(tc.codec_pad_id, codec);
-      sum(codec, bos);
-      run(codec);
       code(tc.codec_pad_id, codec);
       for (const id of ids) {
         text(id, textOut);

@@ -69,6 +69,8 @@ export async function qualifyPredictor() {
 }
 
 export async function qualifySpeech() {
+  const { playSpeech } = await import("./player.mjs");
+  const audio = new AudioContext();
   const { loadSpeech } = await import("./speech.mjs");
   const root = new URL("./data/", import.meta.url);
   const cases = await (await file("utterances.json")).json();
@@ -104,19 +106,26 @@ export async function qualifySpeech() {
       );
       const generated = [];
       const chunks = [];
-      let firstMs, stages;
+      let firstMs, stages, elapsed;
+      const gaps = [];
       const start = performance.now();
-      for await (const pcm of engine.synthesize(text, {
+      await playSpeech(engine, audio, text, {
+        signal: new AbortController().signal,
         maxFrames: 128,
         onProfile: (report) => {
           stages = report;
         },
         onCodes: (frame) => generated.push([...frame]),
-      })) {
-        firstMs ??= performance.now() - start;
-        chunks.push(pcm);
-      }
-      const elapsed = performance.now() - start;
+        onChunk: (pcm, { underrunMs }) => {
+          firstMs ??= performance.now() - start;
+          gaps.push(underrunMs);
+          chunks.push(pcm);
+        },
+        onSynthesized: () => {
+          elapsed = performance.now() - start;
+        },
+      });
+      const playbackDoneMs = performance.now() - start;
       if (JSON.stringify(generated) !== JSON.stringify(codes)) {
         const mismatch = generated.findIndex(
           (frame, j) => JSON.stringify(frame) !== JSON.stringify(codes[j]),
@@ -146,6 +155,8 @@ export async function qualifySpeech() {
       const row = {
         text,
         firstMs,
+        playbackDoneMs,
+        gaps,
         elapsed,
         stages,
         audioMs,
@@ -159,5 +170,6 @@ export async function qualifySpeech() {
     return { adapter: engine.adapter, loadMs, rows };
   } finally {
     engine.destroy();
+    await audio.close();
   }
 }

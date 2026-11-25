@@ -230,6 +230,11 @@ workgroupBarrier();for(var j=0u;j<16u;j++){{acc+=aa[t.y*16u+j]*bb[j*16u+t.x];}}w
         if groups == 1 and per % 8 == 0 and filters >= 32:
             # 64 lanes share a tile of eight input channels. Each lane keeps
             # 4 × 4 output samples in registers and reuses both input tiles.
+            # Output samples in a transposed-convolution workgroup share their
+            # stride phase. Only the matching kernel taps can contribute.
+            phases = stride if op == "ConvTranspose" and dilation == 1 else 1
+            first = f"(group.z+{pad}u)%{phases}u" if phases > 1 else "0u"
+            time = f"(x0+j*8u)*{phases}u+group.z"
             tile = f"""
 var<workgroup> activations:array<f32,256>;
 var<workgroup> weights:array<f32,256>;
@@ -238,10 +243,10 @@ var<workgroup> weights:array<f32,256>;
  let x0=group.x*32u+lane.x; let f0=group.y*32u+lane.y;
  var sums:array<vec4f,4>;
  for(var r=0u;r<4u;r++){{let f=f0+8u*r;if(f<{filters}u){{sums[r]=vec4f({init});}}}}
- for(var k=0u;k<{kernel}u;k++){{
+ for(var k={first};k<{kernel}u;k+={phases}u){{
   for(var base=0u;base<{per}u;base+=8u){{
    for(var j=0u;j<4u;j++){{
-    let t=x0+j*8u;let p={pos};let src=lane.y*32u+lane.x+8u*j;
+    let t={time};let p={pos};let src=lane.y*32u+lane.x+8u*j;
     activations[src]=0.0;
     if(p>=0 && {ix}<{width}u{extra}){{activations[src]=a0[(base+lane.y)*{width}u+{ix}];}}
     let f=f0+j*8u;let c=base+lane.x;let ic=c;
@@ -256,10 +261,14 @@ var<workgroup> weights:array<f32,256>;
   }}
  }}
  for(var r=0u;r<4u;r++){{let f=f0+r*8u;if(f<{filters}u){{
-  for(var j=0u;j<4u;j++){{let t=x0+j*8u;if(t<{length}u){{y[f*{length}u+t]=sums[r][j];}}}}
+  for(var j=0u;j<4u;j++){{let t={time};if(t<{length}u){{y[f*{length}u+t]=sums[r][j];}}}}
  }}}}
 }}"""
-            return fields + tile, [(length + 31) // 32, (filters + 31) // 32, 1]
+            return fields + tile, [
+                (length + phases * 32 - 1) // (phases * 32),
+                (filters + 31) // 32,
+                phases,
+            ]
         return simple(f"""let t=i%{length}u;let f=i/{length}u;var acc={init};
 for(var k=0u;k<{kernel}u;k++){{let p={pos};if(p>=0 && {ix}<{width}u{extra}){{
 for(var c=0u;c<{per}u;c++){{let ic=f/{filters // groups}u*{per}u+c;acc+=a0[ic*{width}u+{ix}]*a1[{wi}];}}

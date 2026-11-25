@@ -1,10 +1,9 @@
 // Schedule each decoded buffer as it arrives so generation overlaps playback.
 export async function playSpeech(engine, context, text, options) {
-  const { signal, onFirstAudio, ...voice } = options;
+  const { signal, onChunk, onSynthesized, ...voice } = options;
   const sources = new Set();
   let until = 0,
-    drained = Promise.resolve(),
-    first = true;
+    drained = Promise.resolve();
   const interrupt = () => {
     for (const node of sources) node.stop();
   };
@@ -29,12 +28,13 @@ export async function playSpeech(engine, context, text, options) {
       });
       const start = Math.max(context.currentTime, until);
       node.start(start);
-      if (first) {
-        first = false;
-        onFirstAudio?.(start - context.currentTime);
-      }
+      onChunk?.(chunk, {
+        scheduled: start,
+        underrunMs: until ? Math.max(0, start - until) * 1000 : 0,
+      });
       until = start + buffer.duration;
     }
+    onSynthesized?.();
     await drained;
   } finally {
     signal.removeEventListener("abort", interrupt);

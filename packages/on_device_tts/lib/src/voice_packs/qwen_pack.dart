@@ -83,8 +83,8 @@ VoicePack qwenVoicePack() {
       ),
       file(
         'decoder.json',
-        139084,
-        '4a29b46a79de0dc8e262ee91d72548719b0271482327ef7075fc9d26df4f10ac',
+        139859,
+        '5f45fb57dd12479409c519ec2b9c2a29a23d61b6045bc6517b9b03699cdd1628',
       ),
       file(
         'layout.json',
