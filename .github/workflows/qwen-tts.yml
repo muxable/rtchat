@@ -1,0 +1,42 @@
+name: Qwen speech on WebGPU
+on:
+  pull_request:
+    paths:
+      - "packages/on_device_tts/tool/qwen_webgpu/**"
+      - ".github/workflows/qwen-tts.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hardware:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check the accelerator used by Chromium
+        working-directory: packages/on_device_tts/tool/qwen_webgpu
+        run: |
+          npm install --prefix "$RUNNER_TEMP/browser" playwright@1.56.1
+          python3 -m http.server 8000 --bind 127.0.0.1 > "$RUNNER_TEMP/http.log" 2>&1 &
+          export NODE_PATH="$RUNNER_TEMP/browser/node_modules"
+          node <<'JS'
+          const {chromium} = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({channel: 'chrome'});
+            try {
+              const page = await browser.newPage();
+              await page.goto('http://127.0.0.1:8000');
+              console.log(await page.evaluate(async () => {
+                const {requestSpeechDevice} = await import('/device.mjs');
+                const {device, info} = await requestSpeechDevice();
+                device.destroy();
+                return info;
+              }));
+            } finally {
+              await browser.close();
+            }
+          })().catch(e => { console.error(e); process.exitCode = 1; });
+          JS
