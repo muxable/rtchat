@@ -4,6 +4,8 @@ on:
     paths:
       - "packages/on_device_tts/tool/qwen_webgpu/**"
       - "packages/on_device_tts/assets/qwen/**"
+      - "lib/models/tts/qwen_engine.dart"
+      - "integration_test/qwen_webgpu_test.dart"
       - ".github/workflows/qwen-tts.yml"
   workflow_dispatch:
 permissions:
@@ -26,12 +28,10 @@ jobs:
         with:
           path: packages/on_device_tts/tool/qwen_webgpu/data/reference
           key: qwen-18b0bf8-ort1.32.0-${{ runner.arch }}-${{ hashFiles('packages/on_device_tts/tool/qwen_webgpu/*reference.py') }}
-      - name: Prepare the pinned Qwen model and independent ONNX reference
-        working-directory: packages/on_device_tts/tool/qwen_webgpu
-        run: |
-          python -m pip install onnx==1.23.2 onnxruntime==1.32.0 numpy transformers==4.57.3
+      - name: Download and verify the pinned Qwen3-TTS export
+        run: &fetch_qwen |
           model="$RUNNER_TEMP/qwen"
-          mkdir -p "$model" data
+          mkdir -p "$model"
           exports=https://huggingface.co/onnx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice/resolve/18b0bf898d211718bc33082fadc36a448e0cbc0c
           original=https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice/resolve/85e237c12c027371202489a0ec509ded67b5e4b5
           while read -r digest name; do
@@ -54,6 +54,12 @@ jobs:
           ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910 vocab.json
           599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3 merges.txt
           FILES
+      - name: Prepare the model kernels and independent ONNX reference
+        working-directory: packages/on_device_tts/tool/qwen_webgpu
+        run: |
+          python -m pip install onnx==1.23.2 onnxruntime==1.32.0 numpy transformers==4.57.3
+          model="$RUNNER_TEMP/qwen"
+          mkdir -p data
           python - "$model" <<'PYTHON'
           import json, sys
           from pathlib import Path
@@ -111,3 +117,35 @@ jobs:
             }
           })().catch(e => { console.error(e); process.exitCode = 1; });
           JS
+  ios:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Download and verify the pinned Qwen3-TTS export
+        run: *fetch_qwen
+      - name: Exercise RTChat speech in WKWebView
+        run: |
+          set -euo pipefail
+          device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; devices=json.load(sys.stdin)["devices"]; print(next(d["udid"] for r in sorted(devices,reverse=True) if "iOS" in r for d in devices[r] if d["name"].startswith("iPhone")))')
+          xcrun simctl boot "$device" || true
+          xcrun simctl bootstatus "$device" -b
+          report="qwen-$(uuidgen).json"
+          flutter pub get
+          flutter build ios --simulator --debug -t integration_test/qwen_webgpu_test.dart --dart-define=QWEN_DEVICE_REPORT="$report"
+          app=com.rtirl.chat
+          xcrun simctl install "$device" build/ios/iphonesimulator/Runner.app
+          dir="$(xcrun simctl get_app_container "$device" "$app" data)/Documents"
+          mkdir -p "$dir/qwen-models"
+          cp -c "$RUNNER_TEMP/qwen/"* "$dir/qwen-models/"
+          xcrun simctl launch --terminate-running-process "$device" "$app"
+          for ((i=0;i<90;i++)); do
+            [[ -f "$dir/$report" ]] && break
+            sleep 5
+          done
+          cat "$dir/$report" | tee -a "$GITHUB_STEP_SUMMARY"
+          jq -e '.passed and (.failures|length==0) and (.outcome=="played" or .outcome=="no_hardware_adapter" or .outcome=="below_realtime")' "$dir/$report"

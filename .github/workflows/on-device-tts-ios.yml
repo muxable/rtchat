@@ -272,6 +272,8 @@ jobs:
                 adb shell run-as com.rtirl.chat mkdir -p "files/$dest"
                 tar -C "$src" -cf - . | adb shell -T run-as com.rtirl.chat tar -xf - -C "files/$dest"
               done
+              # The CI Android emulator uses a software GPU; Qwen must reject it.
+              flutter test integration_test/qwen_webgpu_test.dart -d "$device" --reporter expanded
               model=/data/user/0/com.rtirl.chat/files/model
               reference=/data/user/0/com.rtirl.chat/files/reference
               flutter test "$target" -d "$device" --reporter expanded \

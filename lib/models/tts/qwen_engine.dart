@@ -15,6 +15,7 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 class QwenTtsEngine implements TtsEngine {
   QwenTtsEngine(this.pack);
   final InstalledVoicePack pack;
+  Map<String, dynamic>? qualification;
   final unavailable = ValueNotifier<String?>(null);
   static final view = ValueNotifier<WebViewController?>(null);
   static const _modules = {
@@ -151,6 +152,9 @@ class QwenTtsEngine implements TtsEngine {
         if (data['ready'] == true) {
           if (!ready.isCompleted) ready.complete();
         } else {
+          if (data['metrics'] case final Map<String, dynamic> metrics) {
+            qualification = metrics;
+          }
           final result = _pending.remove(data['id']);
           if (data['error'] != null) {
             result?.completeError(StateError(data['error'].toString()));

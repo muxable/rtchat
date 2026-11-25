@@ -30,15 +30,28 @@ const checkDevice = async () => {
     !(peak < 0.003)
   )
     throw new Error("Qwen failed the on-device speech reference check");
+  const metrics = {
+    adapter: engine.adapter,
+    elapsedMs: elapsed,
+    audioMs: offset / 24,
+    rtf: elapsed / (offset / 24),
+    peak,
+  };
   if (elapsed >= offset / 24)
-    throw new Error("Qwen is slower than playback on this device");
+    throw new Error(
+      "Qwen is slower than playback on this device (" +
+        metrics.rtf.toFixed(2) +
+        " RTF)",
+    );
+  return metrics;
 };
 window.qwen = async ({ id, method, text, options }) => {
+  let metrics;
   try {
     if (method === "load") {
       engine = await loadSpeech(new URL("./model/", location.href));
       try {
-        await checkDevice();
+        metrics = await checkDevice();
       } catch (e) {
         engine.destroy();
         engine = undefined;
@@ -64,7 +77,7 @@ window.qwen = async ({ id, method, text, options }) => {
     } else {
       throw new Error("Unknown speech request");
     }
-    send({ id });
+    send({ id, metrics });
   } catch (e) {
     send({ id, error: String(e) });
   }
