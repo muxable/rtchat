@@ -16,7 +16,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Check the accelerator used by Chromium
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Prepare the pinned predictor and independent ONNX reference
+        working-directory: packages/on_device_tts/tool/qwen_webgpu
+        run: |
+          python -m pip install onnx==1.23.2 onnxruntime==1.32.0 numpy
+          curl --fail --location --retry 3 https://huggingface.co/onnx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice/resolve/18b0bf898d211718bc33082fadc36a448e0cbc0c/cpu_int4/code_predictor.onnx -o "$RUNNER_TEMP/predictor.onnx"
+          echo "f0b3a431b90a56d2784599948bcff678d5188e38481d3a991d80c550d0d0bfa2  $RUNNER_TEMP/predictor.onnx" | shasum -a 256 -c -
+          python pack_predictor.py "$RUNNER_TEMP/predictor.onnx" data
+          python reference.py "$RUNNER_TEMP/predictor.onnx" data
+      - name: Check all 15 residual codebooks on the GPU
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: |
           npm install --prefix "$RUNNER_TEMP/browser" playwright@1.56.1
@@ -29,12 +40,14 @@ jobs:
             try {
               const page = await browser.newPage();
               await page.goto('http://127.0.0.1:8000');
-              console.log(await page.evaluate(async () => {
-                const {requestSpeechDevice} = await import('/device.mjs');
-                const {device, info} = await requestSpeechDevice();
-                device.destroy();
-                return info;
-              }));
+              const report = await page.evaluate(async () => {
+                const {qualifyPredictor} = await import('/bench.mjs');
+                return qualifyPredictor();
+              });
+              console.log(JSON.stringify(report));
+              if (report.predictor.some(row => row.ms >= report.audioFrameMs)) {
+                throw Error("Residual prediction alone exceeds the 80 ms audio frame");
+              }
             } finally {
               await browser.close();
             }
