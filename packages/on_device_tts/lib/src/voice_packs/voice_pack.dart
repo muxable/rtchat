@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
 /// The kind of model in a voice pack, which tells the engine how to load it.
-enum VoicePackModelType { supertonic }
+enum VoicePackModelType { supertonic, qwen3Tts }
 
 /// One speaker of a voice pack. Multi-speaker models pick the speaker by
 /// [index].

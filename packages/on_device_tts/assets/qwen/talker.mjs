@@ -77,9 +77,9 @@ export async function createTalker(device, w, capacity = 512) {
   }
   const shaders = {
     norm: k.norm,
-    qkv: k.q4Product(1024),
-    out: k.q4Product(2048),
-    down: k.q4Product(3072),
+    qkv: k.q4Product(1024, device.features.has("subgroups")),
+    out: k.q4Product(2048, device.features.has("subgroups")),
+    down: k.q4Product(3072, device.features.has("subgroups")),
     cache: k.cache,
     add: k.add,
     silu: k.silu,

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/models/tts.dart';
+import 'qwen_engine.dart';
 
 /// Makes a neural engine for an installed voice pack.
 typedef NeuralEngineFactory = TtsEngine Function(InstalledVoicePack pack);
@@ -34,9 +35,16 @@ class NeuralEngineSelector {
     required TtsErrorReporter reportError,
     NeuralEngineFactory? createEngine,
     Future<DeviceMemory?> Function()? deviceMemory,
-  }) : _createEngine = createEngine ?? NeuralTtsEngine.new,
+  }) : _createEngine = createEngine ?? _engineFor,
        _reportError = reportError,
        _deviceMemory = deviceMemory ?? OnnxTtsPlatform.instance.deviceMemory;
+
+  static TtsEngine _engineFor(InstalledVoicePack pack) => switch (pack
+      .pack
+      .modelType) {
+    VoicePackModelType.qwen3Tts => QwenTtsEngine(pack),
+    VoicePackModelType.supertonic => NeuralTtsEngine(pack),
+  };
 
   /// Checks the device's memory, then picks the engine now and again
   /// whenever the installed packs change.
@@ -67,8 +75,7 @@ class NeuralEngineSelector {
     Iterable<InstalledVoicePack> installed, {
     String? preferredId,
   }) {
-    final available =
-        installed.where((pack) => NeuralTtsEngine.canSpeak(pack.pack)).toList();
+    final available = installed.toList();
     for (final pack in available) {
       if (pack.id == preferredId) return pack;
     }

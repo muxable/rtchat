@@ -6,6 +6,11 @@ on:
       - "packages/on_device_tts/assets/qwen/**"
       - ".github/workflows/qwen-tts.yml"
   workflow_dispatch:
+    inputs:
+      export_pack:
+        description: Upload the installable Qwen voice pack
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -69,6 +74,20 @@ jobs:
             python speech_reference.py "$model" data/reference
           fi
           cp data/reference/* data/
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.export_pack
+        with:
+          name: qwen3-tts-0.6b-customvoice
+          compression-level: 0
+          retention-days: 3
+          path: |
+            packages/on_device_tts/tool/qwen_webgpu/data/config.json
+            packages/on_device_tts/tool/qwen_webgpu/data/vocab.json
+            packages/on_device_tts/tool/qwen_webgpu/data/merges.txt
+            packages/on_device_tts/tool/qwen_webgpu/data/talker.*
+            packages/on_device_tts/tool/qwen_webgpu/data/predictor.bin
+            packages/on_device_tts/tool/qwen_webgpu/data/layout.json
+            packages/on_device_tts/tool/qwen_webgpu/data/decoder.*
       - name: Verify codebooks, streamed waveforms and real-time throughput on hardware
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: |

@@ -20,9 +20,12 @@ export async function requestSpeechDevice(gpu = navigator.gpu) {
     );
   }
   return {
-    device: await adapter.requestDevice(),
+    device: await adapter.requestDevice({
+      requiredFeatures: adapter.features.has("subgroups") ? ["subgroups"] : [],
+    }),
     info: {
       vendor: info.vendor,
+      features: [...adapter.features],
       architecture: info.architecture,
       device: info.device,
       description: info.description,

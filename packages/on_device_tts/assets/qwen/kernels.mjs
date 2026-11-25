@@ -19,7 +19,32 @@ fn sum64(value:f32,lane:u32) -> f32 {
   return sums[0];
 }`;
 
-export function q4Product(columns) {
+export function q4Product(columns, subgroups = false) {
+  if (subgroups) {
+    return `enable subgroups;
+@group(0) @binding(0) var<storage,read> x:array<vec4f>;
+@group(0) @binding(1) var<storage,read> w:array<u32>;
+@group(0) @binding(2) var<storage,read_write> y:array<f32>;
+var<workgroup> partial:array<f32,32>;
+@compute @workgroup_size(32) fn main(@builtin(workgroup_id) group:vec3u,
+ @builtin(local_invocation_index) lane:u32,@builtin(subgroup_size) width:u32){
+ var acc=0.0;let row=group.x*${(columns / 32) * 6}u;
+ for(var j=lane;j<${columns / 8}u;j+=32u){
+   let base=row+(j/4u)*6u;
+   let word=w[base+j%4u];let scale=bitcast<f32>(w[base+4u]);let zero=vec4f(f32(w[base+5u]));
+   let shift=vec4u(0u,4u,8u,12u);
+   let lo=(vec4f((vec4u(word)>>shift)&vec4u(15u))-zero)*scale;
+   let hi=(vec4f((vec4u(word>>16u)>>shift)&vec4u(15u))-zero)*scale;
+   acc+=dot(x[j*2u],lo)+dot(x[j*2u+1u],hi);
+ }
+ let sum=subgroupAdd(acc);
+ if(width>=32u){if(lane==0u){y[group.x]=sum;}}
+ else {
+   partial[lane]=select(0.0,sum,subgroupElect());workgroupBarrier();
+   if(lane==0u){var total=0.0;for(var i=0u;i<32u;i++){total+=partial[i];}y[group.x]=total;}
+ }
+}`;
+  }
   return (
     buffer(0, "x", "f32") +
     buffer(1, "w", "u32") +

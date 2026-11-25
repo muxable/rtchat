@@ -31,6 +31,8 @@ import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/neural_engine_selector.dart';
+import 'package:rtchat/models/tts/qwen_engine.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:rtchat/models/tts/voice_packs.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/views.dart';
@@ -426,6 +428,30 @@ class _AppState extends State<App> {
           return MaterialApp(
             navigatorKey: navigatorKey,
             title: 'RealtimeChat',
+            builder:
+                (context, child) => ValueListenableBuilder<WebViewController?>(
+                  valueListenable: QwenTtsEngine.view,
+                  child: child,
+                  builder:
+                      (context, controller, content) => Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (controller != null)
+                            Positioned(
+                              width: 1,
+                              height: 1,
+                              left: 0,
+                              top: 0,
+                              child: ExcludeSemantics(
+                                child: IgnorePointer(
+                                  child: WebViewWidget(controller: controller),
+                                ),
+                              ),
+                            ),
+                          if (content != null) content,
+                        ],
+                      ),
+                ),
             theme: Themes.lightTheme,
             darkTheme: Themes.darkTheme,
             themeMode: layoutModel.themeMode,

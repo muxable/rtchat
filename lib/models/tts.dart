@@ -5,6 +5,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/tts/qwen_engine.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
@@ -586,7 +587,7 @@ class TtsModel extends ChangeNotifier {
             pitch: _pitch,
             language: route.language,
           );
-        } else {
+        } else if (_neuralEngine is! QwenTtsEngine) {
           await _systemEngine.speak(
             text,
             rate: _speed,
@@ -760,6 +761,7 @@ class TtsModel extends ChangeNotifier {
         return;
       }
     }
+    if (_neuralEngine is QwenTtsEngine) return;
     try {
       // the system voices read chat in its channel's language, when known;
       // otherwise, and for alerts, they keep their default.
