@@ -347,34 +347,24 @@ the total for each round, and the player event times. On Android the app
 runs as an AOT profile build on an API 35 x86-64 emulator. On iOS it runs
 as a debug build on an Apple Silicon iPhone simulator.
 
-The Android API 35 emulator generated the 6.749 seconds of PCM in
-2.066–2.121 seconds (real-time factor 0.306–0.314). Model load took
-1.511 seconds. The following times start when the native player received
-the request, with the model already warm.
+The mobile integration runs produced 6.749 seconds of PCM with voice M2,
+speed 1 and five denoising steps. The times below start when a warm native
+player receives the request. Each single-segment run used the same words.
+Phrasing can change Supertonic’s prosody and predicted duration.
 
-| Android playback | First audio | Final PCM ready | Playback complete |
-| --- | ---: | ---: | ---: |
-| Streamed phrases, warm 1 | 0.490 s | 2.007 s | 7.281 s |
-| Streamed phrases, warm 2 | 0.463 s | 1.991 s | 7.264 s |
-| Same words in one segment | 1.565 s | 1.564 s | 6.981 s |
+| Mobile CI target | Synthesis time, three seeds | Warm first audio, streamed | First audio, single segment | Final streamed PCM ready | Streamed playback complete |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Android API 35 x86-64 emulator | 3.651–3.712 s | 0.896–0.978 s | 2.675 s | 3.817–3.837 s | 8.096–8.192 s |
+| iPhone 17 Pro arm64 simulator | 3.695–4.166 s | 0.912–1.140 s | 3.431 s | 3.816–4.211 s | 8.273–8.639 s |
 
-Phrasing changes the duration predicted by Supertonic. CI compares mean warm
-startup against the whole-message run on the same player. In the streamed runs,
-inference continued for 1.517–1.528 seconds after playback started.
-The debug integration tests passed all five multilingual comparisons against
-Supertone with a largest absolute PCM error of 0.000809.
+The final PCM arrived 2.84–3.07 seconds after playback started. Time from
+first audio to completion exceeded the PCM duration by 0.45–0.47 seconds on
+Android and 0.61–0.75 seconds on iOS. That interval includes player overhead
+and any waits between phrases. The integration suites also checked exact
+sample counts for five multilingual utterances against Supertone. The largest
+absolute sample errors were 0.000809 on Android and 0.000900 on iOS.
 
-[Android integration tests and raw timing records](https://github.com/kevmo314/flutter_onnx/actions/runs/45508004100/job/138848112543) · [Profiling script](../../../.github/scripts/profile-supertonic-device.sh)
-
-On an iPhone 17 Pro simulator, the initial streamed implementation started
-playing in 1.604–2.217 seconds warm, compared with 5.651 seconds for the same
-words as one segment. It produced 6.749 seconds of audio in 5.467–6.201
-seconds. Time from first audio through playback completion exceeded the PCM
-duration by 2.39–3.01 seconds. Phrase-level buffering allows gaps when the
-next phrase takes longer to generate than the audio already queued. This
-measurement used runtime revision 999405e before the frame-major BLAS change.
-
-[iOS streaming profile and raw timing records](https://github.com/kevmo314/flutter_onnx/actions/runs/45509065218/job/138858328831)
+[Android player and waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45512632137/job/138863954041) · [iOS player and waveforms](https://github.com/kevmo314/flutter_onnx/actions/runs/45511382956/job/138859664657) · [Profiling script](../../../.github/scripts/profile-supertonic-device.sh)
 
 An early trace attributed 86% of graph execution time to the denoiser.
 That measurement guided the optimized convolution and activation kernels.
