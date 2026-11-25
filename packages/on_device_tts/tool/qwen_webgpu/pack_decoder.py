@@ -218,9 +218,9 @@ workgroupBarrier();for(var j=0u;j<16u;j++){{acc+=aa[t.y*16u+j]*bb[j*16u+t.x];}}w
         pad = attrs["pads"][0]
         per = channels // groups
         pos = (
-            f"i32(t*{stride}u+k*{dilation}u)-{pad}"
+            f"i32(t*{stride}u+k*{dilation}u)-({pad})"
             if op == "Conv"
-            else f"i32(t)+{pad}-i32(k*{dilation}u)"
+            else f"i32(t)+({pad})-i32(k*{dilation}u)"
         )
         ix = f"u32(p)" if op == "Conv" else f"u32(p)/{stride}u"
         wi = (
@@ -236,7 +236,7 @@ workgroupBarrier();for(var j=0u;j<16u;j++){{acc+=aa[t.y*16u+j]*bb[j*16u+t.x];}}w
             # Output samples in a transposed-convolution workgroup share their
             # stride phase. Only the matching kernel taps can contribute.
             phases = stride if op == "ConvTranspose" and dilation == 1 else 1
-            first = f"(group.z+{pad}u)%{phases}u" if phases > 1 else "0u"
+            first = f"(group.z+{pad % phases}u)%{phases}u" if phases > 1 else "0u"
             time = f"(x0+j*8u)*{phases}u+group.z"
             tile = f"""
 var<workgroup> activations:array<f32,256>;
@@ -315,6 +315,105 @@ def fuse_snake(ops, kinds, dims, constants, shaders):
     return result
 
 
+def waveform_windows(ops, kinds, attrs, dims, constants, shaders):
+    """Lower exact sample intervals through the convolutional synthesis stack."""
+    start = next(i for i, op in enumerate(ops) if op[3] == "conv1d_5")
+    late = {op[3] for op in ops[start:]}
+    variants = []
+    for first, last in [(0, 8), (8, 16), (16, 25)]:
+        needed = {ops[-1][3]: (first * 1920, last * 1920)}
+        for _, _, inputs, out, _ in reversed(ops[start:]):
+            lo, hi = needed[out]
+            kind, attr = kinds[out], attrs.get(out, {})
+            for j, name in enumerate(inputs):
+                if name not in late:
+                    continue
+                width = dims[name][-1]
+                left, right = lo, hi
+                if kind in ("Conv", "ConvTranspose") and j == 0:
+                    pad, stride = attr["pads"][0], attr["strides"][0]
+                    reach = (dims[inputs[1]][-1] - 1) * attr["dilations"][0]
+                    if kind == "Conv":
+                        left, right = (
+                            lo * stride - pad,
+                            (hi - 1) * stride - pad + reach + 1,
+                        )
+                    else:
+                        left, right = (
+                            -(-(lo + pad - reach) // stride),
+                            (hi - 1 + pad) // stride + 1,
+                        )
+                elif kind == "Slice":
+                    assert (
+                        j == 0
+                        and constants[inputs[1]].item() == 0
+                        and constants[inputs[4]].item() == 1
+                    )
+                else:
+                    assert kind in ("Snake", "Add", "Clip")
+                left, right = max(0, left), min(width, right)
+                old = needed.get(name, (width, 0))
+                needed[name] = min(old[0], left), max(old[1], right)
+        commands = []
+        for _, _, inputs, out, _ in ops[start:]:
+            lo, hi = needed[out]
+            target = [*dims[out][:-1], hi - lo]
+            spans = [needed.get(n, (0, dims[n][-1] if dims[n] else 1)) for n in inputs]
+            shapes = [
+                [*dims[n][:-1], b - a] if n in late else dims[n]
+                for n, (a, b) in zip(inputs, spans)
+            ]
+            kind = kinds[out]
+            if kind in ("Conv", "ConvTranspose"):
+                attr = dict(attrs[out])
+                pad = attr["pads"][0]
+                stride = attr["strides"][0]
+                src = spans[0][0]
+                pad += src - lo * stride if kind == "Conv" else lo - src * stride
+                attr["pads"] = [pad, 0]
+                code, groups = lower(
+                    kind, shapes, target, attr, [constants.get(n) for n in inputs]
+                )
+            else:
+
+                def get(j):
+                    n = inputs[j]
+                    if n in late:
+                        return f"a{j}[channel*{shapes[j][-1]}u+t+{lo - spans[j][0]}u]"
+                    return f"a{j}[{broadcast(dims[n], dims[out], 'full')}]"
+
+                x = get(0)
+                if kind == "Snake":
+                    body = f"let x={x};let v=sin(x*{get(1)});y[i]=x+{get(2)}*(v*v);"
+                elif kind == "Add":
+                    body = f"y[i]={x}+{get(1)};"
+                elif kind == "Slice":
+                    body = f"y[i]={x};"
+                elif kind == "Clip":
+                    body = f"y[i]=clamp({x},{get(1)},{get(2)});"
+                else:
+                    raise ValueError(kind)
+                count = math.prod(target)
+                fields = "".join(
+                    f"@group(0) @binding({j}) var<storage,read> a{j}:array<f32>;\n"
+                    for j in range(len(inputs))
+                )
+                code = (
+                    fields
+                    + f"""@group(0) @binding({len(inputs)}) var<storage,read_write> y:array<f32>;
+@compute @workgroup_size(128) fn main(@builtin(global_invocation_id) gid:vec3u){{
+let i=gid.x;if(i>={count}u){{return;}}let t=i%{hi - lo}u;let channel=i/{hi - lo}u;
+let full=channel*{dims[out][-1]}u+t+{lo}u;{body}
+}}"""
+                )
+                groups = [(count + 127) // 128, 1, 1]
+            if code not in shaders:
+                shaders.append(code)
+            commands.append([shaders.index(code), groups])
+        variants.append(dict(first=first, last=last, commands=commands))
+    return dict(start=start, variants=variants)
+
+
 def pack(source, target):
     model = onnx.load(source)
     graph = model.graph
@@ -328,6 +427,8 @@ def pack(source, target):
     shaders = []
     ops = []
     kinds = []
+    kinds_by_name = {}
+    attributes = {}
     aliases = {}
 
     def real(name):
@@ -356,6 +457,8 @@ def pack(source, target):
                     data = const[name].astype("<f4")
                     layout[name] = [blob.tell(), data.nbytes]
                     blob.write(data.tobytes())
+            kinds_by_name[out] = typ
+            attributes[out] = attrs
             kinds.append(typ)
             ops.append([shaders.index(code), dispatch, inp, out, math.prod(dims[out])])
     ops = fuse_snake(ops, kinds, dims, const, shaders)
@@ -364,7 +467,12 @@ def pack(source, target):
     for op in ops:
         op[0] = renumber[op[0]]
     shaders = [shaders[i] for i in used]
+    for op in ops:
+        if "let v=sin(x*" in shaders[op[0]]:
+            kinds_by_name[op[3]] = "Snake"
+    windows = waveform_windows(ops, kinds_by_name, attributes, dims, const, shaders)
     plan = dict(
+        windows=windows,
         layout=layout,
         ops=ops,
         shaders=shaders,

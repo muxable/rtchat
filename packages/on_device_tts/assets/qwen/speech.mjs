@@ -52,7 +52,9 @@ export async function loadSpeech(root) {
     );
     // Metal drivers can defer pipeline specialization until the first dispatch.
     // Finish codec initialization before reporting that the session is ready.
-    await decoder.decode([new Uint32Array(16)]);
+    const zeros = Array(25).fill(new Uint32Array(16));
+    for (const { first, last } of plan.windows.variants)
+      await decoder.decode(zeros.slice(0, last), first);
     if (failed.length) throw new Error(failed.join("\n"));
     const special = [
       cfg.tts_bos_token_id,
@@ -108,7 +110,8 @@ export async function loadSpeech(root) {
               lang,
               special,
             ),
-            pending = [];
+            pending = [],
+            emitted = 0;
           timings.prefillMs = performance.now() - stage;
           for (let i = 0; i < maxFrames; i++) {
             if (failed.length) throw new Error(failed.join("\n"));
@@ -119,14 +122,20 @@ export async function loadSpeech(root) {
             timings.predictorMs += performance.now() - stage;
             pending.push(codes);
             onCodes?.(codes);
-            if (pending.length === 25) {
+            // The 25-frame export is causal. Keep all preceding IDs, emit only
+            // the new sample interval and reset context at the export boundary.
+            if ([8, 16, 25].includes(pending.length)) {
               stage = performance.now();
-              const chunk = await decoder.decode(pending);
+              const chunk = await decoder.decode(pending, emitted);
               timings.decoderMs += performance.now() - stage;
               signal?.throwIfAborted();
               if (failed.length) throw new Error(failed.join("\n"));
               yield chunk;
-              pending = [];
+              emitted = pending.length;
+              if (emitted === 25) {
+                pending = [];
+                emitted = 0;
+              }
             }
             if (i + 1 === maxFrames)
               throw new Error("Qwen did not finish within the frame limit");
@@ -134,9 +143,9 @@ export async function loadSpeech(root) {
             frame = await talker.advance(codes);
             timings.talkerMs += performance.now() - stage;
           }
-          if (pending.length) {
+          if (pending.length > emitted) {
             stage = performance.now();
-            const chunk = await decoder.decode(pending);
+            const chunk = await decoder.decode(pending, emitted);
             timings.decoderMs += performance.now() - stage;
             signal?.throwIfAborted();
             if (failed.length) throw new Error(failed.join("\n"));
