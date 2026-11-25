@@ -13,6 +13,7 @@ import 'package:rtchat/components/chat_history/kick/events.dart';
 import 'package:rtchat/components/chat_history/kick/message.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
+import 'package:rtchat/components/chat_history/tokens.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
 import 'package:rtchat/components/chat_history/twitch/cheer_event.dart';
@@ -37,6 +38,7 @@ import 'package:rtchat/models/messages/chat.dart';
 import 'package:rtchat/models/messages/kick/event.dart';
 import 'package:rtchat/models/messages/kick/message.dart';
 import 'package:rtchat/models/messages/message.dart';
+import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
@@ -50,6 +52,7 @@ import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/share_channel.dart';
@@ -451,10 +454,42 @@ class _ModerationActions extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
-                                  child: Text(
-                                    m.message,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                                  child: Consumer<StyleModel>(
+                                    builder: (context, styleModel, child) {
+                                      final tokens = switch (m) {
+                                        TwitchMessageModel message =>
+                                          message.tokenized,
+                                        KickMessageModel message =>
+                                          message.tokenized,
+                                        _ => <MessageToken>[],
+                                      };
+
+                                      final compactTokens =
+                                          styleModel.compactMessages ==
+                                                  CompactMessages.none
+                                              ? tokens
+                                              : tokens.compacted;
+
+                                      return Text.rich(
+                                        TextSpan(
+                                          children: [
+                                            for (final token in compactTokens)
+                                              ...renderToken(
+                                                context,
+                                                styleModel,
+                                                token,
+                                              ),
+                                          ],
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium!.copyWith(
+                                          fontSize: styleModel.fontSize,
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ],
