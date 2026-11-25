@@ -2,7 +2,7 @@ import * as k from "./kernels.mjs";
 
 // Cached causal decoding of the five-layer Qwen3-TTS 0.6B residual predictor.
 // A complete codec frame uses one command buffer and one final readback.
-export async function createPredictor(device, layout, weights) {
+export async function createPredictor(device, w) {
   const allocated = [];
   function buffer(bytes, data) {
     const out = device.createBuffer({
@@ -19,11 +19,13 @@ export async function createPredictor(device, layout, weights) {
   const pipelines = {};
   const shaders = {
     ...k,
+    attend: k.attention(16),
     product1024: k.q4Product(1024),
     product2048: k.q4Product(2048),
     product3072: k.q4Product(3072),
   };
   delete shaders.q4Product;
+  delete shaders.attention;
   for (const [name, code] of Object.entries(shaders)) {
     const module = device.createShaderModule({ label: name, code });
     pipelines[name] = await device.createComputePipelineAsync({
@@ -33,12 +35,7 @@ export async function createPredictor(device, layout, weights) {
     });
   }
 
-  const w = Object.fromEntries(
-    Object.entries(layout).map(([key, [start, bytes]]) => [
-      key,
-      buffer(bytes, new Uint8Array(weights, start, bytes)),
-    ]),
-  );
+  allocated.push(...Object.values(w));
   const vectors = (lengths) => lengths.map((n) => buffer(n * 4));
   const [x, y, qkv, q, context, gateUp, act, tmp, logits, codes, hidden] =
     vectors([1024, 1024, 4096, 2048, 2048, 6144, 3072, 1024, 2048, 16, 1024]);
@@ -98,7 +95,9 @@ export async function createPredictor(device, layout, weights) {
     async predict(state, firstCode, { captureLogits = false } = {}) {
       if (busy) throw new Error("Predictor already in use");
       if (
-        state.length !== 1024 ||
+        (state instanceof Float32Array
+          ? state.length !== 1024
+          : state.size !== 4096) ||
         !Number.isInteger(firstCode) ||
         firstCode < 0 ||
         firstCode >= 2048
@@ -111,10 +110,17 @@ export async function createPredictor(device, layout, weights) {
         usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
       });
       try {
-        device.queue.writeBuffer(hidden, 0, state);
+        if (state instanceof Float32Array)
+          device.queue.writeBuffer(hidden, 0, state);
         device.queue.writeBuffer(codes, 0, new Uint32Array([firstCode]));
         const enc = device.createCommandEncoder();
-        enc.copyBufferToBuffer(hidden, 0, x, 0, 4096);
+        enc.copyBufferToBuffer(
+          state instanceof Float32Array ? hidden : state,
+          0,
+          x,
+          0,
+          4096,
+        );
         let cursor = 0;
         for (let pos = 0; pos < 16; pos++) {
           const pass = enc.beginComputePass();

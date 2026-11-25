@@ -101,20 +101,20 @@ fn main(@builtin(workgroup_id) group:vec3u,@builtin(local_invocation_index) i:u3
   }
 }`;
 
-export const attend =
+export const attention = (capacity) =>
   buffer(0, "q", "f32") +
   buffer(1, "keys", "f32") +
   buffer(2, "vals", "f32") +
   buffer(3, "step", "u32") +
   buffer(4, "outv", "f32", true) +
   `
-var<workgroup> scores:array<f32,16>;
+var<workgroup> scores:array<f32,${capacity}>;
 @compute @workgroup_size(128)
 fn main(@builtin(workgroup_id) group:vec3u,@builtin(local_invocation_index) lane:u32) {
   let pos=step[0]; let h=group.x; let offset=(h/2u)*128u;
-  if(lane<=pos) {
-    var dot=0.0; for(var i=0u;i<128u;i++){dot+=q[h*128u+i]*keys[lane*1024u+offset+i];}
-    scores[lane]=dot*inverseSqrt(128.0);
+  for(var token=lane;token<=pos;token+=128u) {
+    var dot=0.0; for(var i=0u;i<128u;i++){dot+=q[h*128u+i]*keys[token*1024u+offset+i];}
+    scores[token]=dot*inverseSqrt(128.0);
   }
   workgroupBarrier();
   if(lane==0u) {

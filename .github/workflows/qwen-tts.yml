@@ -22,11 +22,43 @@ jobs:
       - name: Prepare the pinned predictor and independent ONNX reference
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: |
-          python -m pip install onnx==1.23.2 onnxruntime==1.32.0 numpy
-          curl --fail --location --retry 3 https://huggingface.co/onnx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice/resolve/18b0bf898d211718bc33082fadc36a448e0cbc0c/cpu_int4/code_predictor.onnx -o "$RUNNER_TEMP/predictor.onnx"
-          echo "f0b3a431b90a56d2784599948bcff678d5188e38481d3a991d80c550d0d0bfa2  $RUNNER_TEMP/predictor.onnx" | shasum -a 256 -c -
-          python pack_predictor.py "$RUNNER_TEMP/predictor.onnx" data
-          python reference.py "$RUNNER_TEMP/predictor.onnx" data
+          python -m pip install onnx==1.23.2 onnxruntime==1.32.0 numpy transformers==4.57.3
+          model="$RUNNER_TEMP/qwen"
+          mkdir -p "$model" data
+          exports=https://huggingface.co/onnx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice/resolve/18b0bf898d211718bc33082fadc36a448e0cbc0c
+          original=https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice/resolve/85e237c12c027371202489a0ec509ded67b5e4b5
+          while read -r digest name; do
+            case "$name" in
+              *.onnx) url="$exports/cpu_int4/$name" ;;
+              inference.py) url="$exports/$name" ;;
+              *) url="$original/$name" ;;
+            esac
+            curl -fsSL --retry 3 "$url" -o "$model/$name"
+            echo "$digest  $model/$name" | shasum -a 256 -c -
+          done <<'FILES'
+          f0b3a431b90a56d2784599948bcff678d5188e38481d3a991d80c550d0d0bfa2 code_predictor.onnx
+          bd76cd6b77907c76b6d0055ea6cf7572468ab99dc3451c1176ea2189d1a55f70 codec_embed.onnx
+          910e1d556cd74f11bbb55fff9d509a962bfc43f23608b62fb0a8215c7acc882f talker_cache.onnx
+          eec76513b562f558e76eeeb9b0bfa982de512104cddac372ec368ab504b080a0 residual_embed.onnx
+          b2923edfce01344dea9bd719e2daf94bda0b45bfd05a307514e9dd5f793dcd09 text_embed.onnx
+          8ec10051735029f6e08b04834128c9108428885c39384f443e49a6790ccb129f tok_decoder.onnx
+          70d3911f6923000d776cd16d575bf6518f6a638ee0adf8c1b60d0e1d34fdeb75 inference.py
+          81aca2b6fac304944d8acf345272d8a9a727d5fc2e2e66b222ab4729340c7455 config.json
+          ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910 vocab.json
+          599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3 merges.txt
+          FILES
+          python - "$model" <<'PYTHON'
+          import json, sys
+          from pathlib import Path
+          root=Path(sys.argv[1])
+          (root/"manifest.json").write_text(json.dumps({"sub_models":{p.stem:{"filename":p.name} for p in root.glob("*.onnx")}}))
+          PYTHON
+          cp "$model/config.json" "$model/vocab.json" "$model/merges.txt" data/
+          python pack_predictor.py "$model/code_predictor.onnx" data
+          python pack_talker.py "$model" data
+          python pack_decoder.py "$model/tok_decoder.onnx" data
+          python reference.py "$model/code_predictor.onnx" data
+          python speech_reference.py "$model" data
       - name: Check all 15 residual codebooks on the GPU
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: |
@@ -48,6 +80,9 @@ jobs:
                 return qualifyPredictor();
               });
               console.log(JSON.stringify(report));
+              const speech = await page.evaluate(async () => (await import('/bench.mjs')).qualifySpeech());
+              console.log(JSON.stringify(speech));
+              if (speech.rows.some(row => row.rtf >= 1)) throw Error("Qwen speech exceeded real time");
               if (report.predictor.some(row => row.ms >= report.audioFrameMs)) {
                 throw Error("Residual prediction alone exceeds the 80 ms audio frame");
               }

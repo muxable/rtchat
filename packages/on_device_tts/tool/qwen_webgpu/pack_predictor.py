@@ -1,7 +1,6 @@
 """Pack the pinned ONNX predictor's constants for single-token WebGPU decoding."""
 
 import argparse
-import hashlib
 import json
 from pathlib import Path
 
@@ -11,6 +10,18 @@ from onnx import numpy_helper
 
 MODEL = "onnx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice"
 REVISION = "18b0bf898d211718bc33082fadc36a448e0cbc0c"
+
+
+def blocks(q, scales, zeros):
+    scales = scales.reshape(q.shape[0], -1)
+    rows, count = scales.shape
+    result = np.empty((rows, count, 6), dtype="<u4")
+    result[:, :, :4] = q.reshape(rows, count, 16).copy().view("<u4")
+    result[:, :, 4] = scales.astype("<f4").view("<u4")
+    zeros = zeros.reshape(rows, -1)
+    result[:, 0::2, 5] = zeros & 15
+    result[:, 1::2, 5] = zeros[:, :count//2] >> 4
+    return result
 
 
 def pack(source, output):
@@ -26,17 +37,6 @@ def pack(source, output):
             blob.write(data.tobytes())
 
         # A block contains 32 4-bit values, one FP32 scale and its zero point.
-        def blocks(q, scales, zeros):
-            scales = scales.reshape(q.shape[0], -1)
-            rows, count = scales.shape
-            result = np.empty((rows, count, 6), dtype="<u4")
-            result[:, :, :4] = q.reshape(rows, count, 16).copy().view("<u4")
-            result[:, :, 4] = scales.astype("<f4").view("<u4")
-            zeros = zeros.reshape(rows, -1)
-            result[:, 0::2, 5] = zeros & 15
-            result[:, 1::2, 5] = zeros[:, :count//2] >> 4
-            return result
-
         def matrix(name):
             n = matrices[name]
             attrs = {a.name: a.i for a in n.attribute}

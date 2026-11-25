@@ -1,3 +1,4 @@
+import { uploadWeights } from "./buffers.mjs";
 import { requestSpeechDevice } from "./device.mjs";
 import { createPredictor } from "./predictor.mjs";
 
@@ -16,11 +17,11 @@ export async function qualifyPredictor() {
     errors.push(e.error.message),
   );
   try {
-    const [layout, bytes] = await Promise.all([
-      file("layout.json").then((r) => r.json()),
-      file("predictor.bin").then((r) => r.arrayBuffer()),
-    ]);
-    const predictor = await createPredictor(device, layout, bytes);
+    const layout = await (await file("layout.json")).json();
+    const predictor = await createPredictor(
+      device,
+      await uploadWeights(device, layout, await file("predictor.bin")),
+    );
     const rows = [];
     for (let i = 0; i < 3; i++) {
       const input = new Float32Array(
@@ -64,5 +65,74 @@ export async function qualifyPredictor() {
     return { adapter: info, predictor: rows, audioFrameMs: 80 };
   } finally {
     device.destroy();
+  }
+}
+
+export async function qualifySpeech() {
+  const { loadSpeech } = await import("./speech.mjs");
+  const root = new URL("./data/", import.meta.url);
+  const cases = await (await file("utterances.json")).json();
+  const started = performance.now();
+  const engine = await loadSpeech(root);
+  const loadMs = performance.now() - started;
+  const rows = [];
+  try {
+    for (const [i, { text, codes }] of cases.entries()) {
+      const expected = new Float32Array(
+        await (await file("pcm" + i + ".bin")).arrayBuffer(),
+      );
+      const generated = [];
+      const chunks = [];
+      let firstMs;
+      const start = performance.now();
+      for await (const pcm of engine.synthesize(text, {
+        maxFrames: 128,
+        onCodes: (frame) => generated.push([...frame]),
+      })) {
+        firstMs ??= performance.now() - start;
+        chunks.push(pcm);
+      }
+      const elapsed = performance.now() - start;
+      if (JSON.stringify(generated) !== JSON.stringify(codes)) {
+        const mismatch = generated.findIndex(
+          (frame, j) => JSON.stringify(frame) !== JSON.stringify(codes[j]),
+        );
+        throw new Error(
+          JSON.stringify({
+            text,
+            mismatch,
+            actual: generated[mismatch],
+            expected: codes[mismatch],
+            frames: generated.length,
+            expectedFrames: codes.length,
+          }),
+        );
+      }
+      let offset = 0,
+        peak = 0;
+      for (const pcm of chunks) {
+        for (const sample of pcm)
+          peak = Math.max(peak, Math.abs(sample - expected[offset++]));
+      }
+      if (offset !== expected.length || !(peak < 0.003))
+        throw new Error(
+          JSON.stringify({ text, peak, offset, expected: expected.length }),
+        );
+      const audioMs = offset / 24;
+      const row = {
+        text,
+        firstMs,
+        elapsed,
+        audioMs,
+        rtf: elapsed / audioMs,
+        frames: generated.length,
+        peak,
+      };
+      rows.push(row);
+      console.log("Qwen PCM " + JSON.stringify(row));
+    }
+    return { adapter: engine.adapter, loadMs, rows };
+  } finally {
+    engine.destroy();
   }
 }
