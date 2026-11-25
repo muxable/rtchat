@@ -2,7 +2,7 @@
 set -euo pipefail
 model="$MODEL_DIR"
 reference="$RUNNER_TEMP/reference"
-token=
+target=integration_test/on_device_tts_test.dart
 if [[ "$1" == android ]]; then
   device=$(adb get-serialno)
   flutter build apk --debug
@@ -15,6 +15,9 @@ if [[ "$1" == android ]]; then
   done
   model=/data/user/0/com.rtirl.chat/files/model
   reference=/data/user/0/com.rtirl.chat/files/reference
+  flutter test "$target" -d "$device" --reporter expanded \
+    --dart-define=ON_DEVICE_TTS_MODEL_DIR="$model" \
+    --dart-define=ON_DEVICE_TTS_REFERENCE_DIR="$reference"
 else
   device=$(xcrun simctl list devices available -j | python3 -c '
 import json, sys
@@ -22,36 +25,31 @@ devices = json.load(sys.stdin)["devices"]
 print(next(d["udid"] for r in sorted(devices, reverse=True) if "iOS" in r for d in devices[r] if d["name"].startswith("iPhone")))')
   xcrun simctl boot "$device" || xcrun simctl bootstatus "$device" -b
   xcrun simctl bootstatus "$device" -b
-  token=$(uuidgen)
-  stage_ios_fixtures() {
-    local dir marker
-    while true; do
-      dir=$(xcrun simctl get_app_container "$device" com.rtirl.chat data 2>/dev/null || true)
-      marker="$dir/Documents/tts-fixtures-$token"
-      if [[ -n "$dir" && -f "$marker.request" ]]; then
-        mkdir -p "$dir/Documents/model" "$dir/Documents/reference"
-        cp -R "$MODEL_DIR/." "$dir/Documents/model/"
-        cp -R "$RUNNER_TEMP/reference/." "$dir/Documents/reference/"
-        touch "$marker.ready"
-        return
-      fi
-      sleep 2
-    done
-  }
-  stage_ios_fixtures &
-  staging=$!
-  trap 'kill "$staging" 2>/dev/null || true' EXIT
-  model=model
-  reference=reference
-fi
-status=0
-flutter test integration_test/on_device_tts_test.dart -d "$device" --reporter expanded \
-  --dart-define=ON_DEVICE_TTS_MODEL_DIR="$model" \
-  --dart-define=ON_DEVICE_TTS_REFERENCE_DIR="$reference" --dart-define=ON_DEVICE_TTS_FIXTURE_TOKEN="$token" || status=$?
-if [[ -n "${staging:-}" ]]; then
-  kill "$staging" 2>/dev/null || true
-  wait "$staging" 2>/dev/null || true
-  trap - EXIT
+  # Stage the fixtures in the installed app, then run the Flutter integration
+  # suite without a VM-service connection to the host.
+  report="tts-tests-$(uuidgen).json"
+  flutter build ios --simulator --debug -t "$target" \
+    --dart-define=ON_DEVICE_TTS_MODEL_DIR=model \
+    --dart-define=ON_DEVICE_TTS_REFERENCE_DIR=reference \
+    --dart-define=ON_DEVICE_TTS_REPORT="$report"
+  app=com.rtirl.chat
+  xcrun simctl install "$device" build/ios/iphonesimulator/Runner.app
+  dir="$(xcrun simctl get_app_container "$device" "$app" data)/Documents"
+  mkdir -p "$dir/model" "$dir/reference"
+  cp -R "$model/." "$dir/model/"
+  cp -R "$reference/." "$dir/reference/"
+  xcrun simctl launch --terminate-running-process "$device" "$app"
+  for ((attempt=0; attempt<180; ++attempt)); do
+    if [[ -f "$dir/$report" ]]; then break; fi
+    sleep 5
+  done
+  if [[ ! -f "$dir/$report" ]]; then
+    echo "::error::The simulator app did not report its integration test results"
+    exit 1
+  fi
+  cat "$dir/$report"
+  jq -e '.passed and (.failures | length == 0) and (.tests | length >= 9)
+         and (.tests | index("matches the reference implementation") != null)
+         and (.tests | index("streams a single chat message before its final PCM is ready") != null)' "$dir/$report"
 fi
 bash .github/scripts/profile-supertonic-device.sh "$1" "$device"
-exit "$status"

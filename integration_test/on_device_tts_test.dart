@@ -45,7 +45,28 @@ double rms(Float32List pcm) {
 }
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  const reportName = String.fromEnvironment('ON_DEVICE_TTS_REPORT');
+  if (reportName.isNotEmpty) {
+    unawaited(
+      binding.allTestsPassed.future.then((passed) async {
+        final documents = await getApplicationDocumentsDirectory();
+        final result = File('${documents.path}/$reportName');
+        final temporary = File('${result.path}.tmp');
+        await temporary.writeAsString(
+          jsonEncode({
+            'passed': passed,
+            'tests': binding.results.keys.toList(),
+            'failures': {
+              for (final failure in binding.failureMethodsDetails)
+                failure.methodName: failure.details,
+            },
+          }),
+        );
+        await temporary.rename(result.path);
+      }),
+    );
+  }
 
   var modelDir = configuredModelDir;
   var referenceDir = configuredReferenceDir;
@@ -61,23 +82,8 @@ void main() {
   late OnnxTts tts;
 
   setUpAll(() async {
-    // flutter test can replace the simulator app and its data container.
-    // Request fixtures from the running test so CI stages them in this install.
-    const token = String.fromEnvironment('ON_DEVICE_TTS_FIXTURE_TOKEN');
-    if (token.isNotEmpty) {
+    if (reportName.isNotEmpty) {
       final documents = await getApplicationDocumentsDirectory();
-      final marker = '${documents.path}/tts-fixtures-$token';
-      await File('$marker.request').writeAsString('');
-      final ready = File('$marker.ready');
-      final deadline = Stopwatch()..start();
-      while (!await ready.exists()) {
-        if (deadline.elapsed > const Duration(minutes: 3)) {
-          throw StateError(
-            'Timed out waiting for the speech model and reference PCM',
-          );
-        }
-        await Future<void>.delayed(const Duration(milliseconds: 250));
-      }
       modelDir = '${documents.path}/$modelDir';
       referenceDir = '${documents.path}/$referenceDir';
     }
