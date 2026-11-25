@@ -197,7 +197,7 @@ jobs:
       - name: Download the smaller voice pack
         if: runner.os == 'Linux'
         env:
-          PACK_VERSION: '2'
+          PACK_VERSION: "2"
           PACK_DIR: ${{ runner.temp }}/supertonic-2
         run: *download_pack
       - name: Compare the smaller voice pack through the Flutter worker
