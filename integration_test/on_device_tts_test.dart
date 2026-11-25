@@ -47,6 +47,7 @@ double rms(Float32List pcm) {
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   const reportName = String.fromEnvironment('ON_DEVICE_TTS_REPORT');
+  final waveformErrors = <String, double>{};
   if (reportName.isNotEmpty) {
     unawaited(
       binding.allTestsPassed.future.then((passed) async {
@@ -57,6 +58,7 @@ void main() {
           jsonEncode({
             'passed': passed,
             'tests': binding.results.keys.toList(),
+            'waveform_max_abs_errors': waveformErrors,
             'failures': {
               for (final failure in binding.failureMethodsDetails)
                 failure.methodName: failure.details,
@@ -227,6 +229,7 @@ void main() {
       for (var i = 0; i < reference.length; i++) {
         maxDiff = max(maxDiff, (reference[i] - audio.pcm[i]).abs());
       }
+      waveformErrors[c['name'] as String] = maxDiff;
       // ignore: avoid_print
       print('parity ${c['name']}: max abs diff $maxDiff');
       expect(

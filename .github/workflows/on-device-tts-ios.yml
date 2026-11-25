@@ -184,5 +184,7 @@ jobs:
         if: always()
         with:
           name: playback-profile-${{ runner.os }}
-          path: ${{ runner.temp }}/playback-*.jsonl
+          path: |
+            ${{ runner.temp }}/playback-*.jsonl
+            ${{ runner.temp }}/ios-speech-tests.json
           if-no-files-found: ignore

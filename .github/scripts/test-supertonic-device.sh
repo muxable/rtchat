@@ -47,8 +47,10 @@ print(next(d["udid"] for r in sorted(devices, reverse=True) if "iOS" in r for d 
     echo "::error::The simulator app did not report its integration test results"
     exit 1
   fi
+  cp "$dir/$report" "$RUNNER_TEMP/ios-speech-tests.json"
   cat "$dir/$report"
   jq -e '.passed and (.failures | length == 0) and (.tests | length >= 9)
+         and (.waveform_max_abs_errors | has("en_chat") and has("en_short") and has("es") and has("ru") and has("ko"))
          and (.tests | index("matches the reference implementation") != null)
          and (.tests | index("streams a single chat message before its final PCM is ready") != null)' "$dir/$report"
 fi
