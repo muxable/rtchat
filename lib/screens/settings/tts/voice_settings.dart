@@ -36,6 +36,14 @@ class VoiceSettings extends StatelessWidget {
                         : ListTile(
                           leading: const Icon(Icons.info_outline),
                           title: Text(reason),
+                          trailing: IconButton(
+                            onPressed: engine.retryQualification,
+                            tooltip:
+                                MaterialLocalizations.of(
+                                  context,
+                                ).refreshIndicatorSemanticLabel,
+                            icon: const Icon(Icons.refresh),
+                          ),
                         ),
           ),
         if (fallback != null && tts.isNeuralFallbackNoticePending)

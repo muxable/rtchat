@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+
+import 'qwen_asset_server.dart';
 
 /// Runs the bundled WebGPU kernels in the mobile WebView. Model files have
 /// already passed the voice pack installer's size and SHA-256 checks.
@@ -18,21 +17,6 @@ class QwenTtsEngine implements TtsEngine {
   Map<String, dynamic>? qualification;
   final unavailable = ValueNotifier<String?>(null);
   static final view = ValueNotifier<WebViewController?>(null);
-  static const _modules = {
-    'bridge.mjs',
-    'speech.mjs',
-    'player.mjs',
-    'device.mjs',
-    'source.mjs',
-    'weights.index',
-    'decoder.plan',
-    'kernels.mjs',
-    'talker.mjs',
-    'predictor.mjs',
-    'decoder.mjs',
-    'tokenizer.mjs',
-    'qualification.json',
-  };
   static const _languages = {
     'en': 'english',
     'zh': 'chinese',
@@ -48,86 +32,20 @@ class QwenTtsEngine implements TtsEngine {
   final _pending = <int, Completer<void>>{};
   int _sequence = 0, _epoch = 0, _stops = 0;
   bool _disposed = false;
-  HttpServer? _server;
+  QwenAssetServer? _server;
   WebViewController? _controller;
   Future<void>? _loading;
   Completer<void>? _ready;
 
-  Future<void> _serve(HttpRequest request, String token) async {
-    final res = request.response;
-    try {
-      final path = request.uri.pathSegments;
-      if (request.method != 'GET' ||
-          request.headers.host != '127.0.0.1' ||
-          path.length < 2 ||
-          path.first != token) {
-        res.statusCode = HttpStatus.notFound;
-      } else if (path.length == 2 && path.last == 'index.html') {
-        res.headers.contentType = ContentType.html;
-        res.headers.set(
-          'Content-Security-Policy',
-          "default-src 'none'; script-src 'self'; connect-src 'self'",
-        );
-        res.write(
-          '<!doctype html><meta charset="utf-8"><script type="module" src="./bridge.mjs"></script>',
-        );
-      } else if (path.length == 2 && _modules.contains(path.last)) {
-        res.headers.contentType =
-            path.last.endsWith('.mjs')
-                ? ContentType('text', 'javascript')
-                : ContentType.json;
-        res.write(
-          await rootBundle.loadString(
-            'packages/on_device_tts/assets/qwen/${path.last}',
-          ),
-        );
-      } else if (path.length == 3 &&
-          path[1] == 'model' &&
-          pack.pack.files.any((f) => f.path == path.last)) {
-        final file = File('${pack.directory}/${path.last}');
-        final length = await file.length();
-        final range = request.headers.value(HttpHeaders.rangeHeader);
-        if (range == null) {
-          res.contentLength = length;
-          await res.addStream(file.openRead());
-        } else {
-          final match = RegExp(r'^bytes=(\d+)-(\d+)$').firstMatch(range);
-          final start = int.tryParse(match?.group(1) ?? '');
-          final end = int.tryParse(match?.group(2) ?? '');
-          if (start == null || end == null || start > end || end >= length) {
-            res.statusCode = HttpStatus.requestedRangeNotSatisfiable;
-          } else {
-            res.statusCode = HttpStatus.partialContent;
-            res.headers.set(
-              HttpHeaders.contentRangeHeader,
-              'bytes $start-$end/$length',
-            );
-            res.contentLength = end - start + 1;
-            await res.addStream(file.openRead(start, end + 1));
-          }
-        }
-      } else {
-        res.statusCode = HttpStatus.notFound;
-      }
-    } on IOException {
-      // The WebView can abandon a streamed model during teardown.
-    } finally {
-      await res.close().catchError((Object _) {});
-    }
-  }
-
   Future<void> _open() async {
     final generation = _epoch;
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final server = await QwenAssetServer.open(pack);
     if (_disposed || generation != _epoch) {
-      await server.close(force: true);
+      await server.close();
       throw StateError('Qwen load cancelled');
     }
     _server = server;
-    final rng = Random.secure();
-    final token = base64Url.encode(List.generate(24, (_) => rng.nextInt(256)));
-    final page = Uri.parse('http://127.0.0.1:${server.port}/$token/index.html');
-    server.listen((request) => unawaited(_serve(request, token)));
+    final page = server.page;
     final controller =
         WebViewPlatform.instance is WebKitWebViewPlatform
             ? WebViewController.fromPlatformCreationParams(
@@ -212,6 +130,12 @@ class QwenTtsEngine implements TtsEngine {
     return _loading ??= _prepare();
   }
 
+  void retryQualification() {
+    if (_disposed || unavailable.value == null) return;
+    unavailable.value = null;
+    prepare().ignore(); // Errors are displayed through unavailable.
+  }
+
   Future<void> _prepare() async {
     final epoch = _epoch;
     try {
@@ -294,7 +218,7 @@ class QwenTtsEngine implements TtsEngine {
     try {
       await controller?.loadHtmlString('<!doctype html><title>Idle</title>');
     } finally {
-      await server?.close(force: true);
+      await server?.close();
     }
   }
 

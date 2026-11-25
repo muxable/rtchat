@@ -1,12 +1,15 @@
 name: Qwen speech on WebGPU
 on:
   pull_request:
-    paths:
+    paths: &qwen_paths
       - "packages/on_device_tts/tool/qwen_webgpu/**"
       - "packages/on_device_tts/assets/qwen/**"
-      - "lib/models/tts/qwen_engine.dart"
+      - "lib/models/tts/qwen*.dart"
       - "integration_test/qwen_webgpu_test.dart"
       - ".github/workflows/qwen-tts.yml"
+  push:
+    branches: [main]
+    paths: *qwen_paths
   workflow_dispatch:
 concurrency:
   group: qwen-speech-${{ github.ref }}
@@ -147,10 +150,11 @@ jobs:
           dir="$(xcrun simctl get_app_container "$device" "$app" data)/Documents"
           mkdir -p "$dir/qwen-models"
           cp -c "$RUNNER_TEMP/qwen/"* "$dir/qwen-models/"
-          xcrun simctl launch --terminate-running-process "$device" "$app"
+          xcrun simctl launch --console --terminate-running-process "$device" "$app" > "$RUNNER_TEMP/qwen-ios.log" 2>&1 &
           for ((i=0;i<90;i++)); do
             [[ -f "$dir/$report" ]] && break
             sleep 5
           done
+          tail -n 60 "$RUNNER_TEMP/qwen-ios.log" || true
           cat "$dir/$report" | tee -a "$GITHUB_STEP_SUMMARY"
           jq -e '.passed and (.failures|length==0) and (.outcome=="played" or .outcome=="no_hardware_adapter" or .outcome=="below_realtime")' "$dir/$report"
