@@ -15,6 +15,7 @@ on:
       - "pubspec.lock"
       - ".github/workflows/on-device-tts-ios.yml"
       - "integration_test/on_device_tts_test.dart"
+      - "integration_test/qwen_webgpu_test.dart"
       - "integration_test/profile_playback.dart"
   pull_request:
     paths:
@@ -25,6 +26,7 @@ on:
       - "pubspec.lock"
       - ".github/workflows/on-device-tts-ios.yml"
       - "integration_test/on_device_tts_test.dart"
+      - "integration_test/qwen_webgpu_test.dart"
       - "integration_test/profile_playback.dart"
   workflow_dispatch:
 
@@ -264,6 +266,9 @@ jobs:
             target=integration_test/on_device_tts_test.dart
             if [[ "$1" == android ]]; then
               device=$(adb get-serialno)
+              # A Flutter integration test uninstalls its APK on exit. Stage Supertonic
+              # fixtures only after the independent Qwen adapter test has finished.
+              flutter test integration_test/qwen_webgpu_test.dart -d "$device" --reporter expanded
               flutter build apk --debug
               adb install -r build/app/outputs/flutter-apk/app-debug.apk
               for pair in "$model|model" "$reference|reference"; do
@@ -272,8 +277,6 @@ jobs:
                 adb shell run-as com.rtirl.chat mkdir -p "files/$dest"
                 tar -C "$src" -cf - . | adb shell -T run-as com.rtirl.chat tar -xf - -C "files/$dest"
               done
-              # The CI Android emulator uses a software GPU; Qwen must reject it.
-              flutter test integration_test/qwen_webgpu_test.dart -d "$device" --reporter expanded
               model=/data/user/0/com.rtirl.chat/files/model
               reference=/data/user/0/com.rtirl.chat/files/reference
               flutter test "$target" -d "$device" --reporter expanded \
