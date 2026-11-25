@@ -104,10 +104,13 @@ export async function qualifySpeech() {
       );
       const generated = [];
       const chunks = [];
-      let firstMs;
+      let firstMs, stages;
       const start = performance.now();
       for await (const pcm of engine.synthesize(text, {
         maxFrames: 128,
+        onProfile: (report) => {
+          stages = report;
+        },
         onCodes: (frame) => generated.push([...frame]),
       })) {
         firstMs ??= performance.now() - start;
@@ -144,6 +147,7 @@ export async function qualifySpeech() {
         text,
         firstMs,
         elapsed,
+        stages,
         audioMs,
         rtf: elapsed / audioMs,
         frames: generated.length,

@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - "packages/on_device_tts/tool/qwen_webgpu/**"
+      - "packages/on_device_tts/assets/qwen/**"
       - ".github/workflows/qwen-tts.yml"
   workflow_dispatch:
 permissions:
@@ -19,7 +20,12 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Prepare the pinned predictor and independent ONNX reference
+      - uses: actions/cache@v4
+        id: oracle
+        with:
+          path: packages/on_device_tts/tool/qwen_webgpu/data/reference
+          key: qwen-18b0bf8-ort1.32.0-${{ runner.arch }}-${{ hashFiles('packages/on_device_tts/tool/qwen_webgpu/*reference.py') }}
+      - name: Prepare the pinned Qwen model and independent ONNX reference
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: |
           python -m pip install onnx==1.23.2 onnxruntime==1.32.0 numpy transformers==4.57.3
@@ -57,12 +63,17 @@ jobs:
           python pack_predictor.py "$model/code_predictor.onnx" data
           python pack_talker.py "$model" data
           python pack_decoder.py "$model/tok_decoder.onnx" data
-          python reference.py "$model/code_predictor.onnx" data
-          python speech_reference.py "$model" data
-      - name: Check all 15 residual codebooks on the GPU
+          if [[ "${{ steps.oracle.outputs.cache-hit }}" != true ]]; then
+            mkdir -p data/reference
+            python reference.py "$model/code_predictor.onnx" data/reference
+            python speech_reference.py "$model" data/reference
+          fi
+          cp data/reference/* data/
+      - name: Verify codebooks, streamed waveforms and real-time throughput on hardware
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: |
           npm install --prefix "$RUNNER_TEMP/browser" playwright@1.56.1
+          cp ../../assets/qwen/*.mjs .
           echo '<!doctype html><title>Qwen WebGPU qualification</title>' > index.html
           python3 -m http.server 18749 --bind 127.0.0.1 > "$RUNNER_TEMP/http.log" 2>&1 &
           curl -f --retry 8 --retry-connrefused http://127.0.0.1:18749/index.html

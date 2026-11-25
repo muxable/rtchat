@@ -66,6 +66,7 @@ export async function loadSpeech(root) {
           maxFrames = 256,
           signal,
           onCodes,
+          onProfile,
         } = {},
       ) {
         if (busy) throw new Error("A Qwen utterance is already in progress");
@@ -87,6 +88,13 @@ export async function loadSpeech(root) {
         busy = true;
         try {
           signal?.throwIfAborted();
+          const timings = {
+            prefillMs: 0,
+            talkerMs: 0,
+            predictorMs: 0,
+            decoderMs: 0,
+          };
+          let stage = performance.now();
           let frame = await talker.prefill(
               ids,
               [151644, ...encode("assistant\n")],
@@ -96,15 +104,20 @@ export async function loadSpeech(root) {
               special,
             ),
             pending = [];
+          timings.prefillMs = performance.now() - stage;
           for (let i = 0; i < maxFrames; i++) {
             if (failed.length) throw new Error(failed.join("\n"));
             signal?.throwIfAborted();
             if (frame.code === tc.codec_eos_token_id) break;
+            stage = performance.now();
             const { codes } = await predictor.predict(frame.hidden, frame.code);
+            timings.predictorMs += performance.now() - stage;
             pending.push(codes);
             onCodes?.(codes);
             if (pending.length === 25) {
+              stage = performance.now();
               const chunk = await decoder.decode(pending);
+              timings.decoderMs += performance.now() - stage;
               signal?.throwIfAborted();
               if (failed.length) throw new Error(failed.join("\n"));
               yield chunk;
@@ -112,14 +125,19 @@ export async function loadSpeech(root) {
             }
             if (i + 1 === maxFrames)
               throw new Error("Qwen did not finish within the frame limit");
+            stage = performance.now();
             frame = await talker.advance(codes);
+            timings.talkerMs += performance.now() - stage;
           }
           if (pending.length) {
+            stage = performance.now();
             const chunk = await decoder.decode(pending);
+            timings.decoderMs += performance.now() - stage;
             signal?.throwIfAborted();
             if (failed.length) throw new Error(failed.join("\n"));
             yield chunk;
           }
+          onProfile?.(timings);
         } finally {
           busy = false;
         }

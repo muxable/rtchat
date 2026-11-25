@@ -227,6 +227,39 @@ workgroupBarrier();for(var j=0u;j<16u;j++){{acc+=aa[t.y*16u+j]*bb[j*16u+t.x];}}w
         )
         extra = f" && u32(p)%{stride}u==0u" if op == "ConvTranspose" else ""
         init = "a2[f]" if len(shapes) == 3 else "0.0"
+        if groups == 1 and per % 8 == 0 and filters >= 32:
+            # 64 lanes share a tile of eight input channels. Each lane keeps
+            # 4 × 4 output samples in registers and reuses both input tiles.
+            tile = f"""
+var<workgroup> activations:array<f32,256>;
+var<workgroup> weights:array<f32,256>;
+@compute @workgroup_size(8,8) fn main(
+  @builtin(workgroup_id) group:vec3u, @builtin(local_invocation_id) lane:vec3u){{
+ let x0=group.x*32u+lane.x; let f0=group.y*32u+lane.y;
+ var sums:array<vec4f,4>;
+ for(var r=0u;r<4u;r++){{let f=f0+8u*r;if(f<{filters}u){{sums[r]=vec4f({init});}}}}
+ for(var k=0u;k<{kernel}u;k++){{
+  for(var base=0u;base<{per}u;base+=8u){{
+   for(var j=0u;j<4u;j++){{
+    let t=x0+j*8u;let p={pos};let src=lane.y*32u+lane.x+8u*j;
+    activations[src]=0.0;
+    if(p>=0 && {ix}<{width}u{extra}){{activations[src]=a0[(base+lane.y)*{width}u+{ix}];}}
+    let f=f0+j*8u;let c=base+lane.x;let ic=c;
+    let wt=(lane.y+8u*j)*8u+lane.x;weights[wt]=0.0;
+    if(f<{filters}u){{weights[wt]=a1[{wi}];}}
+   }}workgroupBarrier();
+   for(var channel=0u;channel<8u;channel++){{
+    let o=channel*32u+lane.x;
+    let v=vec4f(activations[o],activations[o+8u],activations[o+16u],activations[o+24u]);
+    for(var r=0u;r<4u;r++){{sums[r]+=v*weights[(lane.y+r*8u)*8u+channel];}}
+   }}workgroupBarrier();
+  }}
+ }}
+ for(var r=0u;r<4u;r++){{let f=f0+r*8u;if(f<{filters}u){{
+  for(var j=0u;j<4u;j++){{let t=x0+j*8u;if(t<{length}u){{y[f*{length}u+t]=sums[r][j];}}}}
+ }}}}
+}}"""
+            return fields + tile, [(length + 31) // 32, (filters + 31) // 32, 1]
         return simple(f"""let t=i%{length}u;let f=i/{length}u;var acc={init};
 for(var k=0u;k<{kernel}u;k++){{let p={pos};if(p>=0 && {ix}<{width}u{extra}){{
 for(var c=0u;c<{per}u;c++){{let ic=f/{filters // groups}u*{per}u+c;acc+=a0[ic*{width}u+{ix}]*a1[{wi}];}}
