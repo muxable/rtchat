@@ -3,9 +3,7 @@
 Text-to-speech that runs on the device, behind one `TtsEngine` interface:
 
 * `SystemTtsEngine`: the platform's voices, through `flutter_tts`.
-* `OnnxTts`: neural TTS models (Supertonic 3 today) run natively on the
-  official [ONNX Runtime](https://onnxruntime.ai) (MIT), in Kotlin on
-  Android and in Swift on iOS.
+* `OnnxTts` runs Supertonic 2 and 3 graphs with [flutter_onnx](https://github.com/kevmo314/flutter_onnx). Kotlin and Swift handle voice styles, text processing and playback.
 * `NeuralTtsEngine`: a `TtsEngine` that speaks with an installed voice pack
   on `OnnxTts`.
 
@@ -32,13 +30,13 @@ the previous one plays. `doc/native_contract.md` is the platform contract
 (channels, errors, events, the exact pipeline and the noise PRNG) that the
 Android and iOS implementations share.
 
-On Android the plugin depends on `com.microsoft.onnxruntime:onnxruntime-android`
-(pinned in `android/build.gradle.kts`), which adds its native library to
-every ABI. On iOS the app builds the plugin with CocoaPods only, so that
-ONNX Runtime (`onnxruntime-objc` 1.24.2, which needs iOS 15.1) is linked
-statically: through Flutter's Swift Package Manager integration it was
-embedded as an `onnxruntime.framework` that App Store Connect rejects
-(ITMS-90208). `doc/ios.md` describes the iOS side.
+Each graph lives in a background Dart isolate. The native engine sends its inputs
+over `on_device_tts/graphs` and receives typed results. The duration predictor uses
+the same Dart arithmetic on both platforms to keep PCM trimming consistent.
+For the encoder, denoiser and vocoder, dense CPU products use
+the package's native kernel on Android and Accelerate on iOS. Provider and
+thread-count arguments remain accepted for existing callers. The graph worker
+uses the CPU backend for every provider request.
 
 ## NeuralTtsEngine
 
@@ -51,9 +49,13 @@ await engine.release(); // frees the model; the next speak loads it again
 await engine.dispose();
 ```
 
-`speak` passes the whole message to the native `speak` as one segment; the
-native engine splits text over 300 code units (120 for Japanese and Korean)
-itself and streams the audio out as it is synthesized.
+`speak` calls `OnnxTts.speakText` to play a message in phrases. The native
+player starts with the first phrase and buffers subsequent PCM as inference
+finishes. All phrases share the same utterance ID and stop together.
+`OnnxTts.speak` also accepts explicit segments for callers that choose their own
+boundaries. Phrasing can affect the model’s prosody and predicted duration.
+For a custom audio output, `OnnxTts.synthesizeStream` yields each phrase as
+mono float32 PCM with its sample rate. Enqueue each chunk as it arrives.
 
 `rate` (0..1, 0.5 normal) maps to the native speed as `2 × rate` clamped to
 0.7..2.0, the way `flutter_tts` maps it to Android's speech rate. `pitch` is

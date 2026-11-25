@@ -1,7 +1,6 @@
 // The voice packs the package offers.
 //
-// PROVISIONAL. The engines (#1502 on Android, #1517 on iOS) run on ONNX
-// Runtime without a phonemizer, so the default model is Supertonic 3,
+// PROVISIONAL. The engines (#1502 on Android, #1517 on iOS) use flutter_onnx without a phonemizer, so the default model is Supertonic 3,
 // which needs none. Supertonic 2 is also available as a smaller five-language
 // alternative. Models requiring phonemes need a separate engine integration.
 //
