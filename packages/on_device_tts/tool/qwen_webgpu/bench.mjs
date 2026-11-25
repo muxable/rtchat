@@ -77,6 +77,27 @@ export async function qualifySpeech() {
   const loadMs = performance.now() - started;
   const rows = [];
   try {
+    const capped = await (await file("capped.json")).json();
+    const prefix = [];
+    let stoppedAtLimit = false;
+    try {
+      for await (const _ of engine.synthesize(capped.text, {
+        maxFrames: capped.codes.length,
+        onCodes: (row) => prefix.push([...row]),
+      }))
+        throw new Error("Unexpected audio from a capped three-frame input");
+    } catch (e) {
+      if (!e.message.includes("did not finish within the frame limit")) throw e;
+      stoppedAtLimit = true;
+    }
+    if (
+      !stoppedAtLimit ||
+      JSON.stringify(prefix) !== JSON.stringify(capped.codes)
+    )
+      throw new Error(
+        "Capped prefix mismatch " +
+          JSON.stringify({ prefix, expected: capped.codes }),
+      );
     for (const [i, { text, codes }] of cases.entries()) {
       const expected = new Float32Array(
         await (await file("pcm" + i + ".bin")).arrayBuffer(),

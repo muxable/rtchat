@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import onnxruntime as ort
 
+
 def reference(source, folder):
     opts = ort.SessionOptions()
     opts.intra_op_num_threads = 2
@@ -17,12 +18,15 @@ def reference(source, folder):
         codes[0, 0] = first
         logits = []
         for group in range(1, 16):
-            row = model.run(None, {"talker_hidden": state, "codec_ids": codes})[0][0, group-1]
+            row = model.run(None, {"talker_hidden": state, "codec_ids": codes})[0][
+                0, group - 1
+            ]
             logits.append(row)
             codes[0, group] = np.argmax(row)
         state.astype("<f4").tofile(folder / f"state{case}.bin")
         codes.astype("<u4").tofile(folder / f"codes{case}.bin")
         np.asarray(logits, dtype="<f4").tofile(folder / f"logits{case}.bin")
+
 
 if __name__ == "__main__":
     reference(Path(sys.argv[1]), Path(sys.argv[2]))

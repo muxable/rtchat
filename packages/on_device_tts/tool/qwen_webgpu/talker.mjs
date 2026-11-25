@@ -13,6 +13,25 @@ const gather = (width) =>
  let i=gid.x;let base=(id[0]*${width / 32}u+i/32u)*6u;let bits=w[base+i%32u/8u];
  outv[i]=(f32((bits>>(4u*(i%8u)))&15u)-f32(w[base+5u]))*bitcast<f32>(w[base+4u]);
 }`;
+// The first table has 3072 semantic rows. Each following table holds 2048
+// residual rows. Sum the 16 feedback embeddings in one GPU dispatch.
+const feedback =
+  read(0, "ids", "u32") +
+  read(1, "w", "u32") +
+  read(2, "pad") +
+  write(3, "outv") +
+  `
+@compute @workgroup_size(64) fn main(@builtin(global_invocation_id) gid:vec3u){
+ let i=gid.x;
+ var acc=0.0;
+ for(var j=0u;j<16u;j++){
+   let start=select(0u,1024u+j*2048u,j>0u);
+   let base=((start+ids[j])*32u+i/32u)*6u;
+   let nibble=(w[base+i%32u/8u]>>(4u*(i%8u)))&15u;
+   acc+=(f32(nibble)-f32(w[base+5u]))*bitcast<f32>(w[base+4u]);
+ }
+ outv[i]=acc+pad[i];
+}`;
 const withBias = (activate) =>
   write(0, "x") +
   read(1, "bias") +
@@ -22,7 +41,6 @@ const select =
   read(0, "scores") +
   write(1, "history", "u32") +
   write(2, "picked", "u32") +
-  read(3, "step", "u32") +
   `
 var<workgroup> best:array<f32,64>;var<workgroup> ids:array<u32,64>;
 @compute @workgroup_size(64) fn main(@builtin(local_invocation_index) lane:u32){
@@ -31,7 +49,7 @@ var<workgroup> best:array<f32,64>;var<workgroup> ids:array<u32,64>;
    var v=scores[i];if(history[i]!=0u){v=select(v/1.05,v*1.05,v<0.0);}
    if(v>mx){mx=v;token=i;}
  }
- if(lane==0u && step[0]>=2u && scores[2150]>mx){mx=scores[2150];token=2150u;}
+ if(lane==0u && scores[2150]>mx){mx=scores[2150];token=2150u;}
  best[lane]=mx;ids[lane]=token;workgroupBarrier();
  for(var s=32u;s>0u;s=s>>1u){
   if(lane<s && (best[lane+s]>best[lane] || (best[lane+s]==best[lane] && ids[lane+s]<ids[lane]))){
@@ -66,6 +84,7 @@ export async function createTalker(device, w, capacity = 512) {
     add: k.add,
     silu: k.silu,
     select,
+    feedback,
     lookup: gather(1024),
     lookupText: gather(2048),
     bias: withBias(false),
@@ -120,7 +139,6 @@ export async function createTalker(device, w, capacity = 512) {
     logits,
     hidden,
     position,
-    frame,
     token,
     picked,
     history,
@@ -131,10 +149,10 @@ export async function createTalker(device, w, capacity = 512) {
     eos,
     bos,
     codec,
-    lookup,
+    feedbackIds,
   ] = [
-    1024, 1024, 4096, 2048, 2048, 6144, 3072, 1024, 3072, 1024, 1, 1, 1, 1,
-    3072, 2048, 2048, 1024, 1024, 1024, 1024, 1024, 1024,
+    1024, 1024, 4096, 2048, 2048, 6144, 3072, 1024, 3072, 1024, 1, 1, 1, 3072,
+    2048, 2048, 1024, 1024, 1024, 1024, 1024, 16,
   ].map(buf);
   const caches = Array.from({ length: 28 }, () => [
     buf(capacity * 1024),
@@ -150,8 +168,7 @@ export async function createTalker(device, w, capacity = 512) {
     params[0] = value;
     device.queue.writeBuffer(target, 0, params);
   };
-  let pos = 0,
-    generated = 0;
+  let pos = 0;
   function pass(fn) {
     const enc = device.createCommandEncoder(),
       p = enc.beginComputePass();
@@ -192,7 +209,7 @@ export async function createTalker(device, w, capacity = 512) {
     if (final) {
       d("norm", 1, x, w.norm, hidden);
       d("qkv", 3072, hidden, w.head, logits);
-      d("select", 1, logits, history, picked, frame);
+      d("select", 1, logits, history, picked);
     }
     p.end();
     if (final) enc.copyBufferToBuffer(picked, 0, staging, 0, 4);
@@ -214,9 +231,9 @@ export async function createTalker(device, w, capacity = 512) {
       d("bias", 16, dst, w.bias2);
     });
   }
-  function code(id, index, dst) {
+  function code(id, dst) {
     set(token, id);
-    pass((d) => d("lookup", 16, token, w["codec" + index], dst));
+    pass((d) => d("lookup", 16, token, w.codecTables, dst));
   }
   const sum = (dst, src) => pass((d) => d("add", 16, dst, src));
   async function result() {
@@ -229,8 +246,7 @@ export async function createTalker(device, w, capacity = 512) {
   }
   return {
     async prefill(ids, role, tc, speaker, lang, specials) {
-      pos = generated = 0;
-      set(frame, 0);
+      pos = 0;
       const enc = device.createCommandEncoder();
       enc.clearBuffer(history);
       device.queue.submit([enc.finish()]);
@@ -251,14 +267,14 @@ export async function createTalker(device, w, capacity = 512) {
               tc.codec_think_eos_id,
             ];
       for (const id of [...tags, speaker]) {
-        code(id, 0, codec);
+        code(id, codec);
         sum(codec, pad);
         run(codec);
       }
-      code(tc.codec_pad_id, 0, codec);
+      code(tc.codec_pad_id, codec);
       sum(codec, bos);
       run(codec);
-      code(tc.codec_pad_id, 0, codec);
+      code(tc.codec_pad_id, codec);
       for (const id of ids) {
         text(id, textOut);
         sum(textOut, codec);
@@ -266,19 +282,14 @@ export async function createTalker(device, w, capacity = 512) {
       }
       sum(codec, eos);
       run(codec);
-      code(tc.codec_bos_id, 0, codec);
+      code(tc.codec_bos_id, codec);
       sum(codec, pad);
       run(codec, true);
       return result();
     },
     async advance(codes) {
-      set(frame, ++generated);
-      code(codes[0], 0, codec);
-      for (let j = 1; j < 16; j++) {
-        code(codes[j], j, lookup);
-        sum(codec, lookup);
-      }
-      sum(codec, pad);
+      device.queue.writeBuffer(feedbackIds, 0, codes);
+      pass((d) => d("feedback", 16, feedbackIds, w.codecTables, pad, codec));
       run(codec, true);
       return result();
     },
