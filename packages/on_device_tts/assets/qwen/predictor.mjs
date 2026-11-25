@@ -64,7 +64,8 @@ export async function createPredictor(device, w) {
     if (pos) add("embed", 16, codes, step, w["embed" + (pos - 1)], x);
     for (let l = 0; l < 5; l++) {
       const weight = (name) => w[l + "." + name];
-      add("norm", 1, x, weight("input_layernorm"), y);
+      if (l === 0) add("norm", 1, x, weight("input_layernorm"), y);
+      else add("residualNorm", 1, x, tmp, weight("input_layernorm"), y);
       add("product1024", 4096, y, weight("qkv"), qkv);
       add(
         "cache",
@@ -78,15 +79,13 @@ export async function createPredictor(device, w) {
       );
       add("attend", 16, q, ...caches[l], step, context);
       add("product2048", 1024, context, weight("o"), tmp);
-      add("add", 16, x, tmp);
-      add("norm", 1, x, weight("post_attention_layernorm"), y);
+      add("residualNorm", 1, x, tmp, weight("post_attention_layernorm"), y);
       add("product1024", 6144, y, weight("gateUp"), gateUp);
       add("silu", 48, gateUp, act);
       add("product3072", 1024, act, weight("down"), tmp);
-      add("add", 16, x, tmp);
     }
     if (pos) {
-      add("norm", 1, x, w.norm, y);
+      add("residualNorm", 1, x, tmp, w.norm, y);
       add("product1024", 2048, y, w["head" + (pos - 1)], logits);
       add("argmax", 1, logits, codes, step);
     }
@@ -94,15 +93,15 @@ export async function createPredictor(device, w) {
   }
   let busy = false;
   return {
-    async predict(state, firstCode, { captureLogits = false } = {}) {
+    async predict(state, firstCode, { captureLogits = false, submitted } = {}) {
       if (busy) throw new Error("Predictor already in use");
       if (
         (state instanceof Float32Array
           ? state.length !== 1024
           : state.size !== 4096) ||
-        !Number.isInteger(firstCode) ||
-        firstCode < 0 ||
-        firstCode >= 2048
+        (typeof firstCode === "number"
+          ? !Number.isInteger(firstCode) || firstCode < 0 || firstCode >= 2048
+          : firstCode.size !== 4)
       )
         throw new Error("Invalid talker result");
       busy = true;
@@ -114,8 +113,10 @@ export async function createPredictor(device, w) {
       try {
         if (state instanceof Float32Array)
           device.queue.writeBuffer(hidden, 0, state);
-        device.queue.writeBuffer(codes, 0, new Uint32Array([firstCode]));
         const enc = device.createCommandEncoder();
+        if (typeof firstCode === "number")
+          device.queue.writeBuffer(codes, 0, new Uint32Array([firstCode]));
+        else enc.copyBufferToBuffer(firstCode, 0, codes, 0, 4);
         enc.copyBufferToBuffer(
           state instanceof Float32Array ? hidden : state,
           0,
@@ -147,6 +148,7 @@ export async function createPredictor(device, w) {
         if (!captureLogits) pass.end();
         enc.copyBufferToBuffer(codes, 0, read, 0, 64);
         device.queue.submit([enc.finish()]);
+        submitted?.(codes);
         await read.mapAsync(GPUMapMode.READ);
         const bytes = read.getMappedRange().slice(0);
         return {

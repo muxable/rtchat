@@ -97,12 +97,11 @@ export async function loadSpeech(root) {
           signal?.throwIfAborted();
           const timings = {
             prefillMs: 0,
-            talkerMs: 0,
-            predictorMs: 0,
+            generationMs: 0,
             decoderMs: 0,
           };
           let stage = performance.now();
-          let frame = await talker.prefill(
+          let frame = talker.prefill(
               ids,
               [151644, ...encode("assistant\n")],
               tc,
@@ -112,14 +111,25 @@ export async function loadSpeech(root) {
             ),
             pending = [],
             emitted = 0;
+          await device.queue.onSubmittedWorkDone();
           timings.prefillMs = performance.now() - stage;
           for (let i = 0; i < maxFrames; i++) {
             if (failed.length) throw new Error(failed.join("\n"));
             signal?.throwIfAborted();
-            if (frame.code === tc.codec_eos_token_id) break;
             stage = performance.now();
-            const { codes } = await predictor.predict(frame.hidden, frame.code);
-            timings.predictorMs += performance.now() - stage;
+            // Submit semantic feedback from device storage while the previous
+            // frame IDs travel to the host. The host never fences between heads.
+            const { codes } = await predictor.predict(
+              frame.hidden,
+              frame.code,
+              {
+                submitted: (gpuCodes) => {
+                  frame = talker.advance(gpuCodes);
+                },
+              },
+            );
+            timings.generationMs += performance.now() - stage;
+            if (codes[0] === tc.codec_eos_token_id) break;
             pending.push(codes);
             onCodes?.(codes);
             // The 25-frame export is causal. Keep all preceding IDs, emit only
@@ -139,9 +149,6 @@ export async function loadSpeech(root) {
             }
             if (i + 1 === maxFrames)
               throw new Error("Qwen did not finish within the frame limit");
-            stage = performance.now();
-            frame = await talker.advance(codes);
-            timings.talkerMs += performance.now() - stage;
           }
           if (pending.length > emitted) {
             stage = performance.now();
@@ -151,6 +158,7 @@ export async function loadSpeech(root) {
             if (failed.length) throw new Error(failed.join("\n"));
             yield chunk;
           }
+          await device.queue.onSubmittedWorkDone();
           onProfile?.(timings);
         } finally {
           busy = false;

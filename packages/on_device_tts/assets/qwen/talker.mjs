@@ -77,6 +77,7 @@ export async function createTalker(device, w, capacity = 512) {
   }
   const shaders = {
     norm: k.norm,
+    residualNorm: k.residualNorm,
     qkv: k.q4Product(1024, device.features.has("subgroups")),
     out: k.q4Product(2048, device.features.has("subgroups")),
     down: k.q4Product(3072, device.features.has("subgroups")),
@@ -152,20 +153,14 @@ export async function createTalker(device, w, capacity = 512) {
     eos,
     bos,
     codec,
-    feedbackIds,
   ] = [
     1024, 1024, 4096, 2048, 2048, 6144, 3072, 1024, 3072, 1024, 1, 1, 1, 3072,
-    2048, 2048, 1024, 1024, 1024, 1024, 1024, 16,
+    2048, 2048, 1024, 1024, 1024, 1024, 1024,
   ].map(buf);
   const caches = Array.from({ length: 28 }, () => [
     buf(capacity * 1024),
     buf(capacity * 1024),
   ]);
-  const staging = device.createBuffer({
-    size: 4,
-    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-  });
-  allocated.push(staging);
   const params = new Uint32Array(1);
   const set = (target, value) => {
     params[0] = value;
@@ -188,7 +183,8 @@ export async function createTalker(device, w, capacity = 512) {
     const d = (...args) => dispatch(p, ...args);
     for (let l = 0; l < 28; l++) {
       const a = (name) => w[l + "." + name];
-      d("norm", 1, x, a("input_layernorm"), y);
+      if (l === 0) d("norm", 1, x, a("input_layernorm"), y);
+      else d("residualNorm", 1, x, tmp, a("input_layernorm"), y);
       d("qkv", 4096, y, a("qkv"), qkv);
       d(
         "cache",
@@ -202,20 +198,17 @@ export async function createTalker(device, w, capacity = 512) {
       );
       d("attend", 16, q, ...caches[l], position, context);
       d("out", 1024, context, a("o"), tmp);
-      d("add", 16, x, tmp);
-      d("norm", 1, x, a("post_attention_layernorm"), y);
+      d("residualNorm", 1, x, tmp, a("post_attention_layernorm"), y);
       d("qkv", 6144, y, a("gateUp"), pair);
       d("silu", 48, pair, act);
       d("down", 1024, act, a("down"), tmp);
-      d("add", 16, x, tmp);
     }
     if (final) {
-      d("norm", 1, x, w.norm, hidden);
+      d("residualNorm", 1, x, tmp, w.norm, hidden);
       d("qkv", 3072, hidden, w.head, logits);
       d("select", 1, logits, history, picked);
     }
     p.end();
-    if (final) enc.copyBufferToBuffer(picked, 0, staging, 0, 4);
     device.queue.submit([enc.finish()]);
   }
   function text(id, dst) {
@@ -239,18 +232,10 @@ export async function createTalker(device, w, capacity = 512) {
     pass((d) => d("lookup", 16, token, w.codecTables, dst));
   }
   const sum = (dst, src) => pass((d) => d("add", 16, dst, src));
-  async function result() {
-    await staging.mapAsync(GPUMapMode.READ);
-    try {
-      return { code: new Uint32Array(staging.getMappedRange())[0], hidden };
-    } finally {
-      staging.unmap();
-    }
-  }
   let prefixKey,
     prefixLength = 0;
   return {
-    async prefill(ids, role, tc, speaker, lang, specials) {
+    prefill(ids, role, tc, speaker, lang, specials) {
       pos = 0;
       const enc = device.createCommandEncoder();
       enc.clearBuffer(history);
@@ -303,13 +288,12 @@ export async function createTalker(device, w, capacity = 512) {
       code(tc.codec_bos_id, codec);
       sum(codec, pad);
       run(codec, true);
-      return result();
+      return { code: picked, hidden };
     },
-    async advance(codes) {
-      device.queue.writeBuffer(feedbackIds, 0, codes);
-      pass((d) => d("feedback", 16, feedbackIds, w.codecTables, pad, codec));
+    advance(codes) {
+      pass((d) => d("feedback", 16, codes, w.codecTables, pad, codec));
       run(codec, true);
-      return result();
+      return { code: picked, hidden };
     },
     destroy() {
       for (const b of allocated) b.destroy();
