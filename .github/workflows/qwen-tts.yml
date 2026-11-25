@@ -5,6 +5,9 @@ on:
       - "packages/on_device_tts/tool/qwen_webgpu/**"
       - "packages/on_device_tts/assets/qwen/**"
       - "lib/models/tts/qwen*.dart"
+      - "lib/models/tts.dart"
+      - "lib/models/tts/neural_engine_selector.dart"
+      - "packages/on_device_tts/lib/src/voice_packs/qwen_pack.dart"
       - "integration_test/qwen_webgpu_test.dart"
       - ".github/workflows/qwen-tts.yml"
   push:

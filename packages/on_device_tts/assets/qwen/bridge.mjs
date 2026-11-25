@@ -45,7 +45,13 @@ const checkDevice = async () => {
     peak,
     maxGapMs,
   };
-  if (elapsed >= offset / 24 || maxGapMs > 0)
+  if (maxGapMs > 0)
+    throw new Error(
+      "Qwen playback would underrun by " +
+        maxGapMs.toFixed(0) +
+        " ms on this device",
+    );
+  if (elapsed >= offset / 24)
     throw new Error(
       "Qwen is slower than playback on this device (" +
         metrics.rtf.toFixed(2) +

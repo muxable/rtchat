@@ -95,9 +95,9 @@ void main() {
             message.contains(
               'requires an identifiable hardware WebGPU adapter',
             );
-        final belowRate = message.contains(
-          'Qwen is slower than playback on this device',
-        );
+        final belowRate =
+            message.contains('Qwen is slower than playback on this device') ||
+            message.contains('Qwen playback would underrun by');
         expect(unavailable || belowRate, isTrue, reason: message);
         expect(engine.unavailable.value, isNotNull);
         result['outcome'] =

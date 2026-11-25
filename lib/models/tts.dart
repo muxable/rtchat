@@ -576,6 +576,7 @@ class TtsModel extends ChangeNotifier {
       try {
         await _releasing;
         if (_isDisposed) return;
+        final hardwareOnly = _neuralEngine is QwenTtsEngine;
         final route =
             _neuralFallback == null ? await _router.route(language) : null;
         if (route != null) {
@@ -588,7 +589,7 @@ class TtsModel extends ChangeNotifier {
             pitch: _pitch,
             language: route.language,
           );
-        } else if (_neuralEngine is! QwenTtsEngine) {
+        } else if (!hardwareOnly && _neuralEngine is! QwenTtsEngine) {
           await _systemEngine.speak(
             text,
             rate: _speed,
@@ -731,6 +732,7 @@ class TtsModel extends ChangeNotifier {
         model is ChatMessage
             ? languageFor(model).languageCode
             : localizations.localeName.replaceAll('_', '-');
+    final hardwareOnly = _neuralEngine is QwenTtsEngine;
     final route =
         _neuralFallback == null ? await _router.route(language) : null;
     if (route != null) {
@@ -762,7 +764,10 @@ class TtsModel extends ChangeNotifier {
         return;
       }
     }
-    if (_neuralEngine is QwenTtsEngine) return;
+    if (hardwareOnly ||
+        route?.engine is QwenTtsEngine ||
+        _neuralEngine is QwenTtsEngine)
+      return;
     try {
       // the system voices read chat in its channel's language, when known;
       // otherwise, and for alerts, they keep their default.
