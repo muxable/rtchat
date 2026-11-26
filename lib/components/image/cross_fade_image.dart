@@ -83,6 +83,7 @@ class CrossFadeImage extends StatelessWidget {
     this.alignment = Alignment.topCenter,
     this.repeat = ImageRepeat.noRepeat,
     this.matchTextDirection = false,
+    this.animate = true,
   });
 
   final ImageProvider? placeholder;
@@ -107,6 +108,10 @@ class CrossFadeImage extends StatelessWidget {
 
   final bool matchTextDirection;
 
+  /// Whether animated images should play.
+  /// Defaults to true to preserve existing behavior.
+  final bool animate;
+
   Image _image({
     required ImageProvider image,
     ImageErrorWidgetBuilder? errorBuilder,
@@ -129,6 +134,21 @@ class CrossFadeImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Static mode: decode and retain only the first frame.
+    if (!animate) {
+      return _FirstFrameImage(
+        image: image,
+        placeholder: placeholder,
+        placeholderErrorBuilder: placeholderErrorBuilder,
+        width: width,
+        height: height,
+        fit: fit,
+        alignment: alignment,
+        repeat: repeat,
+        matchTextDirection: matchTextDirection,
+      );
+    }
+
     if (placeholder == null) {
       return FadeInImage(
         placeholder: MemoryImage(kTransparentImage),
@@ -142,7 +162,7 @@ class CrossFadeImage extends StatelessWidget {
         excludeFromSemantics: true,
       );
     }
-    Widget result = _image(
+    return _image(
       image: image,
       errorBuilder: (context, error, stackTrace) {
         return _image(
@@ -168,6 +188,171 @@ class CrossFadeImage extends StatelessWidget {
         );
       },
     );
-    return result;
+  }
+}
+
+/// Displays only the first frame of an image, without continuing to listen
+/// for animation frames.
+class _FirstFrameImage extends StatefulWidget {
+  const _FirstFrameImage({
+    required this.image,
+    this.placeholder,
+    this.placeholderErrorBuilder,
+    this.width,
+    this.height,
+    this.fit,
+    required this.alignment,
+    required this.repeat,
+    required this.matchTextDirection,
+  });
+
+  final ImageProvider image;
+  final ImageProvider? placeholder;
+  final ImageErrorWidgetBuilder? placeholderErrorBuilder;
+  final double? width;
+  final double? height;
+  final BoxFit? fit;
+  final AlignmentGeometry alignment;
+  final ImageRepeat repeat;
+  final bool matchTextDirection;
+
+  @override
+  State<_FirstFrameImage> createState() => _FirstFrameImageState();
+}
+
+class _FirstFrameImageState extends State<_FirstFrameImage> {
+  ImageStream? _stream;
+  ImageStreamListener? _listener;
+
+  ImageInfo? _firstFrame;
+  bool _hasError = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadImage();
+  }
+
+  @override
+  void didUpdateWidget(covariant _FirstFrameImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.image != widget.image) {
+      _loadImage();
+    }
+  }
+
+  void _loadImage() {
+    _removeListener();
+    _firstFrame?.dispose();
+    _firstFrame = null;
+    _hasError = false;
+
+    final configuration = createLocalImageConfiguration(context);
+    final stream = widget.image.resolve(configuration);
+
+    _stream = stream;
+
+    late final ImageStreamListener listener;
+
+    listener = ImageStreamListener(
+      (ImageInfo info, bool synchronousCall) {
+        if (!mounted) {
+          info.dispose();
+          return;
+        }
+
+        // Keep our own reference to the first frame.
+        final firstFrame = ImageInfo(
+          image: info.image.clone(),
+          scale: info.scale,
+        );
+
+        // Stop receiving subsequent animation frames.
+        _stream?.removeListener(listener);
+        _listener = null;
+
+        info.dispose();
+
+        setState(() {
+          _firstFrame?.dispose();
+          _firstFrame = firstFrame;
+          _hasError = false;
+        });
+      },
+      onError: (Object error, StackTrace? stackTrace) {
+        if (!mounted) return;
+
+        _removeListener();
+
+        setState(() {
+          _hasError = true;
+        });
+      },
+    );
+
+    _listener = listener;
+    stream.addListener(listener);
+  }
+
+  void _removeListener() {
+    final stream = _stream;
+    final listener = _listener;
+
+    if (stream != null && listener != null) {
+      stream.removeListener(listener);
+    }
+
+    _listener = null;
+    _stream = null;
+  }
+
+  @override
+  void dispose() {
+    _removeListener();
+    _firstFrame?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final frame = _firstFrame;
+
+    if (frame != null) {
+      return RawImage(
+        image: frame.image,
+        scale: frame.scale,
+        width: widget.width,
+        height: widget.height,
+        fit: widget.fit,
+        alignment: widget.alignment,
+        repeat: widget.repeat,
+        matchTextDirection: widget.matchTextDirection,
+      );
+    }
+
+    if (widget.placeholder != null) {
+      return Image(
+        image: widget.placeholder!,
+        width: widget.width,
+        height: widget.height,
+        fit: widget.fit,
+        alignment: widget.alignment,
+        repeat: widget.repeat,
+        matchTextDirection: widget.matchTextDirection,
+        errorBuilder: widget.placeholderErrorBuilder,
+        excludeFromSemantics: true,
+      );
+    }
+
+    if (_hasError) {
+      return SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: const Icon(Icons.broken_image),
+      );
+    }
+
+    return SizedBox(width: widget.width, height: widget.height);
   }
 }

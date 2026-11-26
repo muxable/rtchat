@@ -1,10 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
+import 'package:rtchat/models/style.dart';
 import 'package:sticky_headers/sticky_headers/widget.dart';
 
 class EmotesList extends StatelessWidget {
@@ -21,6 +23,7 @@ class EmotesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final styleModel = context.watch<StyleModel>();
     final globalEmotes = AppLocalizations.of(context)!.globalEmotes;
     final byCategory = emotes.fold<Map<String, List<Emote>>>({}, (map, emote) {
       final category = emote.category ?? globalEmotes;
@@ -108,6 +111,9 @@ class EmotesList extends StatelessWidget {
                                 image: emote.image,
                                 width: 36,
                                 height: 36,
+                                animate: styleModel.shouldAnimateEmotesFor(
+                                  context,
+                                ),
                               ),
                             ),
                           ),
