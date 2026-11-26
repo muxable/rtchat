@@ -111,7 +111,9 @@ class EmotesList extends StatelessWidget {
                                 image: emote.image,
                                 width: 36,
                                 height: 36,
-                                animate: styleModel.shouldAnimateEmotesFor(context),
+                                animate: styleModel.shouldAnimateEmotesFor(
+                                  context,
+                                ),
                               ),
                             ),
                           ),

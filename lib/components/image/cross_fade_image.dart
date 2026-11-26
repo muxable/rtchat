@@ -353,9 +353,6 @@ class _FirstFrameImageState extends State<_FirstFrameImage> {
       );
     }
 
-    return SizedBox(
-      width: widget.width,
-      height: widget.height,
-    );
+    return SizedBox(width: widget.width, height: widget.height);
   }
 }

@@ -131,8 +131,7 @@ class StyleModel extends ChangeNotifier {
   }
 
   bool shouldAnimateEmotesFor(BuildContext context) {
-    return animatedEmotesEnabled &&
-        !MediaQuery.disableAnimationsOf(context);
+    return animatedEmotesEnabled && !MediaQuery.disableAnimationsOf(context);
   }
 
   StyleModel.fromJson(Map<String, dynamic> json) {
