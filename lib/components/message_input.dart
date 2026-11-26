@@ -7,6 +7,7 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/autocomplete.dart';
 import 'package:rtchat/components/emote_picker.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
@@ -63,10 +64,10 @@ class EmoteTextEditingController extends TextEditingController {
           child: Tooltip(
             message: token.code,
             preferBelow: false,
-            child: Image(
+            child: CrossFadeImage(
               height: styleModel.fontSize,
               image: CachedNetworkImageProvider(token.url.toString()),
-              errorBuilder: (context, error, stackTrace) => Text(token.code),
+              animate: styleModel.shouldAnimateEmotesFor(context),
             ),
           ),
         ),

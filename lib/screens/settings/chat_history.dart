@@ -150,6 +150,18 @@ class ChatHistoryScreen extends StatelessWidget {
                 },
               ),
               SwitchListTile.adaptive(
+                title: const Text('Animated emotes'),
+                subtitle: Text(
+                  styleModel.animatedEmotesEnabled
+                      ? 'Animated emotes are enabled'
+                      : 'Animated emotes are displayed as static images',
+                ),
+                value: styleModel.animatedEmotesEnabled,
+                onChanged: (value) {
+                  styleModel.animatedEmotesEnabled = value;
+                },
+              ),
+              SwitchListTile.adaptive(
                 title: Text(AppLocalizations.of(context)!.showDeletedMessages),
                 subtitle:
                     styleModel.isDeletedMessagesVisible

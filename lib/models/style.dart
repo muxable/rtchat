@@ -56,6 +56,7 @@ class StyleModel extends ChangeNotifier {
   CompactMessages _compactMessages = CompactMessages.none;
   bool _isDiscoModeAvailable = false;
   bool _isLoginShown = true;
+  bool _animatedEmotesEnabled = true;
 
   double get fontSize {
     return _fontSize;
@@ -122,6 +123,18 @@ class StyleModel extends ChangeNotifier {
 
   bool get isDiscoModeAvailable => _isDiscoModeAvailable;
 
+  bool get animatedEmotesEnabled => _animatedEmotesEnabled;
+
+  set animatedEmotesEnabled(bool value) {
+    _animatedEmotesEnabled = value;
+    notifyListeners();
+  }
+
+  bool shouldAnimateEmotesFor(BuildContext context) {
+    return animatedEmotesEnabled &&
+        !MediaQuery.disableAnimationsOf(context);
+  }
+
   StyleModel.fromJson(Map<String, dynamic> json) {
     if (json['fontSize'] != null) {
       _fontSize = json['fontSize'];
@@ -141,6 +154,9 @@ class StyleModel extends ChangeNotifier {
     if (json['isLoginShown'] != null) {
       _isLoginShown = json['isLoginShown'];
     }
+    if (json['animatedEmotesEnabled'] != null) {
+      _animatedEmotesEnabled = json['animatedEmotesEnabled'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -150,5 +166,6 @@ class StyleModel extends ChangeNotifier {
     "compactMessages": _compactMessages.toJson(),
     "isDiscoModeEnabled": _isDiscoModeAvailable,
     "isLoginShown": _isLoginShown,
+    "animatedEmotesEnabled": _animatedEmotesEnabled,
   };
 }

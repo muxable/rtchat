@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/style.dart';
@@ -46,10 +47,10 @@ Iterable<InlineSpan> renderToken(
       child: Tooltip(
         message: token.code,
         preferBelow: false,
-        child: Image(
+        child: CrossFadeImage(
           height: styleModel.fontSize,
           image: CachedNetworkImageProvider(token.url.toString()),
-          errorBuilder: (context, error, stackTrace) => Text(token.code),
+          animate: styleModel.shouldAnimateEmotesFor(context),
         ),
       ),
     );
