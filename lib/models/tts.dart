@@ -766,8 +766,9 @@ class TtsModel extends ChangeNotifier {
     }
     if (hardwareOnly ||
         route?.engine is QwenTtsEngine ||
-        _neuralEngine is QwenTtsEngine)
+        _neuralEngine is QwenTtsEngine) {
       return;
+    }
     try {
       // the system voices read chat in its channel's language, when known;
       // otherwise, and for alerts, they keep their default.
