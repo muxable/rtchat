@@ -187,7 +187,16 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                         return ListTile(
                           title: Text(e.title),
                           subtitle: Text(e.subtitle),
-                          onTap: () => widget.onSend(e.title),
+                          onTap: () {
+                            widget.controller.text = '${e.title} ';
+                            widget
+                                .controller
+                                .selection = TextSelection.fromPosition(
+                              TextPosition(
+                                offset: widget.controller.text.length,
+                              ),
+                            );
+                          },
                         );
                       })
                       .toList(),
