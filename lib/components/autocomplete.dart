@@ -225,6 +225,7 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
             },
           );
         } else {
+          // Portrait mode: original ListView of ListTiles
           return Container(
             constraints: const BoxConstraints(maxHeight: 200),
             child: ListView(
