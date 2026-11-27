@@ -144,7 +144,7 @@ jobs:
         if: ${{ !cancelled() && steps.oracle.outcome == 'success' }}
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: python compare_cpu.py "$RUNNER_TEMP/qwen" data "$RUNNER_TEMP/cpu-comparison.json"
-      - name: Check full-speech wall and process CPU medians against ONNX Runtime CPU
+      - name: Check wall and process CPU medians against ONNX Runtime
         if: ${{ !cancelled() && steps.oracle.outcome == 'success' }}
         working-directory: ${{ runner.temp }}
         run: |
@@ -165,6 +165,17 @@ jobs:
               for metric in ('wall_ms', 'cpu_ms'):
                   actual, reference = (medians(rows, text, metric) for rows in (web, cpu))
                   print(f'{text} {metric}: RTChat WebGPU {actual:.1f}, ORT CPU {reference:.1f}')
+                  assert actual < reference
+
+          predictor = json.loads(Path('predictor-comparison.json').read_text())
+          for state in range(3):
+              for metric in ('wall_ms', 'cpu_ms'):
+                  def samples(engine):
+                      values = [r[metric] for r in predictor['rows'] if r['case'] == state and r['engine'] == engine]
+                      assert len(values) == 3 and all(v > 0 for v in values), values
+                      return median(values)
+                  actual, reference = samples('rtchat'), samples('onnxruntime')
+                  print(f'Predictor state {state} {metric}: RTChat WebGPU {actual:.1f}, ORT {predictor["provider"]} {reference:.1f}')
                   assert actual < reference
           PYTHON
       - uses: actions/upload-artifact@v4
@@ -205,3 +216,52 @@ jobs:
           tail -n 60 "$RUNNER_TEMP/qwen-ios.log" || true
           cat "$dir/$report" | tee -a "$GITHUB_STEP_SUMMARY"
           jq -e '.passed and (.outcome=="played" or .outcome=="no_hardware_adapter" or .outcome=="below_realtime")' "$dir/$report"
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Download and verify the pinned Qwen3-TTS export
+        run: *fetch_qwen
+      - name: Build the Android WebView probe
+        run: |
+          flutter pub get
+          flutter build apk --profile --target-platform android-x64 -t integration_test/qwen_webgpu_test.dart
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Exercise RTChat speech and hardware qualification in Android WebView
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          ram-size: 4096M
+          script: bash -c "$PROBE"
+        env:
+          PROBE: |
+            set -euo pipefail
+            app=com.rtirl.chat
+            dir=/data/user/0/$app/app_flutter
+            adb root
+            adb wait-for-device
+            adb install build/app/outputs/flutter-apk/app-profile.apk
+            adb shell mkdir -p "$dir"
+            adb push "$RUNNER_TEMP/qwen" "$dir/qwen-models"
+            uid=$(adb shell stat -c %u "/data/user/0/$app" | tr -d '\r')
+            adb shell chown -R "$uid:$uid" "$dir"
+            adb shell restorecon -RF "$dir"
+            adb shell am start -n "$app/.MainActivity"
+            for ((i=0;i<90;i++)); do adb shell ls "$dir/qwen.json" >/dev/null 2>&1 && break; sleep 5; done
+            adb pull "$dir/qwen.json" "$RUNNER_TEMP/qwen-android.json"
+            cat "$RUNNER_TEMP/qwen-android.json" | tee -a "$GITHUB_STEP_SUMMARY"
+            jq -e '.passed and (.outcome=="played" or .outcome=="no_hardware_adapter" or .outcome=="below_realtime")' "$RUNNER_TEMP/qwen-android.json"
