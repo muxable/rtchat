@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/models/chat_commands.dart';
 import 'package:rtchat/models/chat_mode.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/messages.dart';
@@ -129,77 +130,169 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
             );
           },
         );
+
       case _AutocompleteMode.slashCommand:
+        final existingCommands =
+            ChatMode.values
+                .where(
+                  (element) => element.title.toLowerCase().startsWith(
+                    text.toLowerCase(),
+                  ),
+                )
+                .toList();
+
+        final additionalCommands =
+            chatCommands.where((command) {
+              return text.length > 1 &&
+                  command.name.toLowerCase().startsWith(text.toLowerCase()) &&
+                  !existingCommands.any(
+                    (existing) =>
+                        existing.title.toLowerCase() ==
+                        command.name.toLowerCase(),
+                  );
+            }).toList();
+
         if (MediaQuery.of(context).orientation == Orientation.landscape) {
           return LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children:
-                      ChatMode.values
-                          .where(
-                            (element) => element.title.toLowerCase().startsWith(
-                              text.toLowerCase(),
+                  children: [
+                    ...existingCommands
+                        .take((constraints.maxWidth ~/ 80).clamp(1, 5))
+                        .map((command) {
+                          return TextButton(
+                            onPressed: () {
+                              widget.controller.text = '${command.title} ';
+                              widget
+                                  .controller
+                                  .selection = TextSelection.collapsed(
+                                offset: widget.controller.text.length,
+                              );
+                            },
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(text: command.title),
+                                  if (command.arguments.isNotEmpty)
+                                    TextSpan(
+                                      text:
+                                          ' ${command.arguments.map((e) => '[$e]').join(' ')}',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall?.copyWith(
+                                        color: Theme.of(context).hintColor,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
-                          )
-                          .take(
-                            (constraints.maxWidth ~/ 80).clamp(1, 5),
-                          ) // Adjust width per button
-                          .map((command) {
-                            return TextButton(
-                              onPressed: () => widget.onSend(command.title),
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                          );
+                        }),
+                    ...additionalCommands.map((command) {
+                      return TextButton(
+                        onPressed: () {
+                          widget.controller.text = '${command.name} ';
+                          widget.controller.selection = TextSelection.collapsed(
+                            offset: widget.controller.text.length,
+                          );
+                        },
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(text: command.name),
+                              if (command.arguments.isNotEmpty)
+                                TextSpan(
+                                  text:
+                                      ' ${command.arguments.map((e) => '[$e]').join(' ')}',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).hintColor,
+                                    fontStyle: FontStyle.italic,
+                                  ),
                                 ),
-                                minimumSize: const Size(0, 0),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: Text(
-                                command.title,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            );
-                          })
-                          .toList(),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
                 ),
               );
             },
           );
         } else {
-          // Portrait mode: original ListView of ListTiles
           return Container(
             constraints: const BoxConstraints(maxHeight: 200),
             child: ListView(
               shrinkWrap: true,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              children:
-                  ChatMode.values
-                      .where(
-                        (element) => element.title.toLowerCase().startsWith(
-                          text.toLowerCase(),
-                        ),
-                      )
-                      .map((e) {
-                        return ListTile(
-                          title: Text(e.title),
-                          subtitle: Text(e.subtitle),
-                          onTap: () {
-                            widget.controller.text = '${e.title} ';
-                            widget
-                                .controller
-                                .selection = TextSelection.fromPosition(
-                              TextPosition(
-                                offset: widget.controller.text.length,
+              children: [
+                ...existingCommands.map((command) {
+                  return ListTile(
+                    title: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(text: command.title),
+                          if (command.arguments.isNotEmpty)
+                            TextSpan(
+                              text:
+                                  ' ${command.arguments.map((e) => '[$e]').join(' ')}',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context).hintColor,
+                                fontStyle: FontStyle.italic,
                               ),
-                            );
-                          },
-                        );
-                      })
-                      .toList(),
+                            ),
+                        ],
+                      ),
+                    ),
+                    subtitle: Text(command.subtitle),
+                    onTap: () {
+                      widget.controller.text = '${command.title} ';
+                      widget.controller.selection = TextSelection.collapsed(
+                        offset: widget.controller.text.length,
+                      );
+                    },
+                  );
+                }),
+                ...additionalCommands.map((command) {
+                  return ListTile(
+                    title: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(text: command.name),
+                          if (command.arguments.isNotEmpty)
+                            TextSpan(
+                              text:
+                                  ' ${command.arguments.map((e) => '[$e]').join(' ')}',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context).hintColor,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    subtitle:
+                        command.description.isNotEmpty
+                            ? Text(command.description)
+                            : null,
+                    onTap: () {
+                      widget.controller.text = '${command.name} ';
+                      widget.controller.selection = TextSelection.collapsed(
+                        offset: widget.controller.text.length,
+                      );
+                    },
+                  );
+                }),
+              ],
             ),
           );
         }

@@ -3,6 +3,7 @@ enum ChatMode {
     title: "/followers",
     subtitle:
         "Restrict the chat to followers-only mode; optionally, specify a time duration (e.g., 30 minutes, 1 week)",
+    arguments: ["duration"],
   ),
   followersoff(title: "/followersoff", subtitle: "Disable followers-only mode"),
   subscribers(title: "/subscribers", subtitle: "Restrict Chat to subscribers"),
@@ -23,11 +24,17 @@ enum ChatMode {
   slow(
     title: "/slow",
     subtitle: "Limit the rate at which users can send messages",
+    arguments: ["duration"],
   ),
   slowoff(title: "/slowoff", subtitle: "Disable slow mode");
 
-  const ChatMode({required this.title, required this.subtitle});
+  const ChatMode({
+    required this.title,
+    required this.subtitle,
+    this.arguments = const [],
+  });
 
   final String title;
   final String subtitle;
+  final List<String> arguments;
 }
