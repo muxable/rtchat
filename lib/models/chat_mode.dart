@@ -24,7 +24,9 @@ enum ChatMode {
     title: "/slow",
     subtitle: "Limit the rate at which users can send messages",
   ),
-  slowoff(title: "/slowoff", subtitle: "Disable slow mode");
+  slowoff(title: "/slowoff", subtitle: "Disable slow mode"),
+  shield(title: '/shield', subtitle: 'Restrict chatand ban harrasing chatters'),
+  sieldoff(title: '/shieldoff', subtitle: 'Deactivate Shield Mode');
 
   const ChatMode({required this.title, required this.subtitle});
 
