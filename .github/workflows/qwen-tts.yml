@@ -246,6 +246,7 @@ jobs:
           target: google_apis
           arch: x86_64
           ram-size: 4096M
+          disk-size: 8192M
           script: bash -c "$PROBE"
         env:
           PROBE: |
@@ -255,8 +256,10 @@ jobs:
             adb root
             adb wait-for-device
             adb install build/app/outputs/flutter-apk/app-profile.apk
-            adb shell mkdir -p "$dir"
-            adb push "$RUNNER_TEMP/qwen" "$dir/qwen-models"
+            owner=()
+            if adb shell run-as "$app" id >/dev/null 2>&1; then owner=(run-as "$app"); fi
+            adb shell "${owner[@]}" mkdir -p "$dir/qwen-models"
+            tar -C "$RUNNER_TEMP/qwen" -cf - . | adb shell -T "${owner[@]}" tar -xf - -C "$dir/qwen-models"
             uid=$(adb shell stat -c %u "/data/user/0/$app" | tr -d '\r')
             adb shell chown -R "$uid:$uid" "$dir"
             adb shell restorecon -RF "$dir"
