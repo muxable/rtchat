@@ -126,12 +126,12 @@ jobs:
               console.log(JSON.stringify(report));
               const speech = await page.evaluate(async () => (await import('/bench.mjs')).qualifySpeech());
               console.log(JSON.stringify(speech));
-              if (speech.rows.some(row => row.rtf >= 1 || row.gaps.some(ms => ms > 0))) throw Error("Qwen speech exceeded real time");
               for (const [name,fn] of [['speech','measureSpeech'],['predictor','comparePredictors']]) {
                 const result = await page.evaluate(async fn => (await import('/compare.mjs'))[fn](),fn);
                 require('node:fs').writeFileSync(process.env.RUNNER_TEMP+'/'+name+'-comparison.json',JSON.stringify(result));
                 console.log('WebGPU '+name+' comparison',JSON.stringify(result));
               }
+              if (speech.rows.some(row => row.rtf >= 1 || row.gaps.some(ms => ms > 0))) throw Error("Qwen speech exceeded real time");
               if (report.predictor.some(row => row.ms >= report.audioFrameMs)) {
                 throw Error("Residual prediction alone exceeds the 80 ms audio frame");
               }
@@ -144,6 +144,29 @@ jobs:
         if: ${{ !cancelled() && steps.oracle.outcome == 'success' }}
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: python compare_cpu.py "$RUNNER_TEMP/qwen" data "$RUNNER_TEMP/cpu-comparison.json"
+      - name: Check full-speech wall and process CPU medians against ONNX Runtime CPU
+        if: ${{ !cancelled() && steps.oracle.outcome == 'success' }}
+        working-directory: ${{ runner.temp }}
+        run: |
+          python - <<'PYTHON'
+          import json
+          from pathlib import Path
+          from statistics import median
+
+          web = json.loads(Path('speech-comparison.json').read_text())['rows']
+          cpu = json.loads(Path('cpu-comparison.json').read_text())
+          def medians(rows, text, metric):
+              samples = [r[metric] for r in rows if r['text'] == text]
+              assert len(samples) == 3 and all(v > 0 for v in samples), samples
+              return median(samples)
+          texts = {r['text'] for r in cpu}
+          assert texts and texts == {r['text'] for r in web}
+          for text in sorted(texts):
+              for metric in ('wall_ms', 'cpu_ms'):
+                  actual, reference = (medians(rows, text, metric) for rows in (web, cpu))
+                  print(f'{text} {metric}: RTChat WebGPU {actual:.1f}, ORT CPU {reference:.1f}')
+                  assert actual < reference
+          PYTHON
       - uses: actions/upload-artifact@v4
         if: always()
         with:
