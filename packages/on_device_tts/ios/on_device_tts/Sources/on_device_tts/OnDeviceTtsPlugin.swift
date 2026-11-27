@@ -4,22 +4,26 @@ import Foundation
 // The engine (OnDeviceTtsCore's sources) is compiled into this module by
 // Package.swift (or the podspec), so there is nothing to import.
 
-/// The iOS side of `on_device_tts`'s ONNX Runtime engine: the
+/// The iOS side of `on_device_tts`'s neural speech engine: the
 /// `on_device_tts/onnx` method channel and the `on_device_tts/onnx/events`
 /// event channel. See `doc/native_contract.md`; the engine itself is
 /// `OnnxTtsEngine` in `ios/on_device_tts/OnDeviceTtsCore`.
 public class OnDeviceTtsPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
-  let engine = OnnxTtsEngine()
+  let engine: OnnxTtsEngine
+  private let graphs: FlutterGraphs
   private var eventSink: FlutterEventSink?
 
-  public override init() {
+  private init(messenger: FlutterBinaryMessenger) {
+    let graphs = FlutterGraphs(messenger)
+    self.graphs = graphs
+    engine = OnnxTtsEngine(openGraph: graphs.open)
     super.init()
     engine.onEvent = { [weak self] event in self?.eventSink?(event) }
   }
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     SystemTtsPlugin.register(with: registrar)
-    let instance = OnDeviceTtsPlugin()
+    let instance = OnDeviceTtsPlugin(messenger: registrar.messenger())
     let channel = FlutterMethodChannel(
       name: "on_device_tts/onnx", binaryMessenger: registrar.messenger())
     registrar.addMethodCallDelegate(instance, channel: channel)
@@ -29,6 +33,7 @@ public class OnDeviceTtsPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   }
 
   public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
+    graphs.detach()
     engine.shutdown()
   }
 

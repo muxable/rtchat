@@ -105,6 +105,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "moderator:read:followers",
       "moderator:read:shoutouts",
       "user:bot",
+      "user:manage:chat_color",
       "user:read:email",
       "user:read:emotes",
       "user:read:follows",

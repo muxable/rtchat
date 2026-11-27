@@ -26,14 +26,6 @@
 
 import Foundation
 
-// The Swift package gets ONNX Runtime's Objective-C API from Microsoft's
-// Swift package; the CocoaPods build from the onnxruntime-objc pod.
-#if canImport(OnnxRuntimeBindings)
-  import OnnxRuntimeBindings
-#else
-  import onnxruntime_objc
-#endif
-
 public enum SupertonicError: Error, LocalizedError {
   case missingFile(String)
   case invalidModel(String)
@@ -57,11 +49,11 @@ public enum SupertonicError: Error, LocalizedError {
 /// One of a model's voices: a voice style file's two style tensors.
 public struct SupertonicVoice {
   public let id: String
-  let ttl: ORTValue
-  let dp: ORTValue
+  let ttl: GraphTensor
+  let dp: GraphTensor
 }
 
-/// A loaded Supertonic 3 model: four ONNX Runtime sessions (duration
+/// A loaded Supertonic 3 model: four graph sessions (duration
 /// predictor, text encoder, vector estimator, vocoder), the text processor
 /// and the voice styles.
 ///
@@ -77,8 +69,7 @@ public final class SupertonicModel {
   public let sampleRate: Int
   /// The voices, sorted by id.
   public let voices: [SupertonicVoice]
-  /// The execution provider each of the four models runs on, after any
-  /// fallback, e.g. `["coreml", "coreml", "cpu", "cpu"]`.
+  /// The execution provider used by each graph, in model order.
   public let providers: [String]
   public let textProcessor: SupertonicTextProcessor
 
@@ -90,26 +81,12 @@ public final class SupertonicModel {
   private let baseChunkSize: Int
   private let chunkCompressFactor: Int
   private let latentDim: Int
-  private let durationPredictor: ORTSession
-  private let textEncoder: ORTSession
-  private let vectorEstimator: ORTSession
-  private let vocoder: ORTSession
+  private let durationPredictor: GraphSession
+  private let textEncoder: GraphSession
+  private let vectorEstimator: GraphSession
+  private let vocoder: GraphSession
 
-  private static let env: ORTEnv? = try? ORTEnv(loggingLevel: .warning)
-
-  /// Loads the model in `modelDir`, laid out as the Hugging Face repository
-  /// `Supertone/supertonic-3`: `onnx/` with `tts.json`,
-  /// `unicode_indexer.json` and the four models (`<name>.onnx`, or
-  /// `<name>.int8.onnx`), and `voice_styles/*.json`. Without `onnx/`, the
-  /// files are looked up in `modelDir` itself.
-  ///
-  /// `provider` is `cpu`, `coreml` or `xnnpack`. Anything else, or a
-  /// provider that fails to take one of the models, falls back to `cpu`
-  /// (for that model and the ones after it), reported through `log`.
-  public init(
-    modelDir: String, numThreads: Int = 2, provider: String = "cpu",
-    log: (String) -> Void = { NSLog("%@", $0) }
-  ) throws {
+  init(modelDir: String, openGraph: OpenGraph) throws {
     let root = URL(fileURLWithPath: modelDir, isDirectory: true)
     let fm = FileManager.default
     var isDirectory: ObjCBool = false
@@ -166,92 +143,12 @@ public final class SupertonicModel {
 
     voices = try SupertonicModel.loadVoices(root.appendingPathComponent("voice_styles"))
 
-    guard let env = SupertonicModel.env else {
-      throw SupertonicError.invalidModel("ONNX Runtime failed to initialize")
-    }
-
-    // The providers to try, best first. CoreML tries the newer ML Program
-    // format, then the older NeuralNetwork format. Once one fails for a
-    // model, the models after it skip it too.
-    var attempts: [(provider: String, variant: String?)] = []
-    switch provider {
-    case "coreml": attempts = [("coreml", "MLProgram"), ("coreml", "NeuralNetwork")]
-    case "xnnpack": attempts = [("xnnpack", nil)]
-    case "cpu": break
-    default: log("provider \(provider) isn't available on iOS, using cpu")
-    }
-    attempts.append(("cpu", nil))
-    var sessions = [ORTSession]()
-    var providers = [String]()
-    for url in modelURLs {
-      while true {
-        let attempt = attempts[0]
-        do {
-          let options = try SupertonicModel.sessionOptions(
-            numThreads: numThreads, provider: attempt.provider, variant: attempt.variant)
-          sessions.append(try ORTSession(env: env, modelPath: url.path, sessionOptions: options))
-          providers.append(attempt.provider)
-          break
-        } catch {
-          if attempts.count == 1 {
-            throw SupertonicError.invalidModel("\(url.lastPathComponent): \(error.localizedDescription)")
-          }
-          let name = [attempt.provider, attempt.variant].compactMap { $0 }.joined(separator: " ")
-          log("provider \(name) failed for \(url.lastPathComponent) (\(error.localizedDescription)), trying \(attempts[1].provider)")
-          attempts.removeFirst()
-        }
-      }
-    }
-    self.providers = providers
+    let sessions = try modelURLs.map(openGraph)
+    providers = modelURLs.map { _ in "cpu" }
     durationPredictor = sessions[0]
     textEncoder = sessions[1]
     vectorEstimator = sessions[2]
     vocoder = sessions[3]
-  }
-
-  /// Session config entries set for every provider. ONNX Runtime's
-  /// intra-op threads busy-wait for work by default, after each parallel
-  /// section and for a while after a run. Chat arrives a message at a time
-  /// with idle gaps, so spinning only burns the battery; blocking costs
-  /// little latency (see `doc/native_contract.md`). Sessions run
-  /// sequentially, so there is no inter-op pool to configure.
-  static let sessionConfig = ["session.intra_op.allow_spinning": "0"]
-
-  /// The options for a session on `provider`. `configEntry` sees each
-  /// config entry set (ONNX Runtime can't read them back), for tests.
-  static func sessionOptions(
-    numThreads: Int, provider: String, variant: String?,
-    configEntry: ((String, String) -> Void)? = nil
-  ) throws -> ORTSessionOptions {
-    let options = try ORTSessionOptions()
-    try options.setGraphOptimizationLevel(.all)
-    for (key, value) in sessionConfig.sorted(by: { $0.key < $1.key }) {
-      try options.addConfigEntry(withKey: key, value: value)
-      configEntry?(key, value)
-    }
-    switch provider {
-    case "cpu":
-      try options.setIntraOpNumThreads(Int32(numThreads))
-    case "coreml":
-      guard ORTIsCoreMLExecutionProviderAvailable() else {
-        throw SupertonicError.invalidModel("CoreML execution provider not built in")
-      }
-      try options.setIntraOpNumThreads(Int32(numThreads))
-      try options.appendCoreMLExecutionProvider(withOptionsV2: [
-        "ModelFormat": variant ?? "MLProgram",
-        "MLComputeUnits": "ALL",
-      ])
-    case "xnnpack":
-      // As ONNX Runtime recommends: XNNPACK gets the threads, the session's
-      // own pool one thread.
-      try options.setIntraOpNumThreads(1)
-      let xnnpack = ORTXnnpackExecutionProviderOptions()
-      xnnpack.intra_op_num_threads = Int32(numThreads)
-      try options.appendXnnpackExecutionProvider(with: xnnpack)
-    default:
-      throw SupertonicError.invalidModel("unknown provider \(provider)")
-    }
-    return options
   }
 
   /// Every `*.json` file in `dir`, sorted by id (the file name without
@@ -279,7 +176,7 @@ public final class SupertonicModel {
     guard let dict = json as? [String: Any] else {
       throw SupertonicError.invalidModel("\(name) is not an object")
     }
-    func tensor(_ key: String) throws -> ORTValue {
+    func tensor(_ key: String) throws -> GraphTensor {
       guard let component = dict[key] as? [String: Any], let dims = component["dims"] as? [Int],
         let data = component["data"]
       else {
@@ -364,7 +261,7 @@ public final class SupertonicModel {
   /// One chunk through the four models (supertonic/core.py
   /// `Supertonic.__call__`), trimmed to the predicted duration.
   func infer(
-    _ text: String, language: String, style: (ttl: ORTValue, dp: ORTValue), speed: Float,
+    _ text: String, language: String, style: (ttl: GraphTensor, dp: GraphTensor), speed: Float,
     steps: Int, noise: inout NoiseGenerator, isCancelled: () -> Bool
   ) throws -> [Float] {
     func check() throws {
@@ -424,31 +321,9 @@ public final class SupertonicModel {
     return Array(wav.prefix(wavLength))
   }
 
-  private func run(_ session: ORTSession, _ inputs: [String: ORTValue], output: String) throws
-    -> ORTValue
+  private func run(_ session: GraphSession, _ inputs: [String: GraphTensor], output: String) throws
+    -> GraphTensor
   {
-    let outputs = try session.run(withInputs: inputs, outputNames: [output], runOptions: nil)
-    guard let value = outputs[output] else {
-      throw SupertonicError.inference("missing output \(output)")
-    }
-    return value
+    try session.run(inputs, output: output)
   }
-}
-
-func floatTensor(_ values: [Float], shape: [Int]) throws -> ORTValue {
-  let data = values.withUnsafeBufferPointer { NSMutableData(bytes: $0.baseAddress, length: $0.count * 4) }
-  return try ORTValue(tensorData: data, elementType: .float, shape: shape.map { NSNumber(value: $0) })
-}
-
-func int64Tensor(_ values: [Int64], shape: [Int]) throws -> ORTValue {
-  let data = values.withUnsafeBufferPointer { NSMutableData(bytes: $0.baseAddress, length: $0.count * 8) }
-  return try ORTValue(tensorData: data, elementType: .int64, shape: shape.map { NSNumber(value: $0) })
-}
-
-func floats(_ value: ORTValue) throws -> [Float] {
-  let data = try value.tensorData()
-  let count = data.length / MemoryLayout<Float>.size
-  var result = [Float](repeating: 0, count: count)
-  result.withUnsafeMutableBytes { $0.copyMemory(from: UnsafeRawBufferPointer(start: data.bytes, count: count * 4)) }
-  return result
 }

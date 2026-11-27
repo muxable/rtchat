@@ -1,4 +1,4 @@
-// Runs the on_device_tts native ONNX Runtime engine on a device with a real
+// Runs the on_device_tts flutter_onnx speech engine on a device with a real
 // Supertonic 3 model. It skips itself unless ON_DEVICE_TTS_MODEL_DIR is set,
 // so the regular integration run (which has no model) passes over it. See
 // packages/on_device_tts/README.md for how to push the model and run it:
@@ -20,10 +20,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:on_device_tts/on_device_tts.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// The model directory on the device; the tests skip themselves without it.
-const modelDir = String.fromEnvironment('ON_DEVICE_TTS_MODEL_DIR');
-const referenceDir = String.fromEnvironment('ON_DEVICE_TTS_REFERENCE_DIR');
+const configuredModelDir = String.fromEnvironment('ON_DEVICE_TTS_MODEL_DIR');
+const configuredReferenceDir = String.fromEnvironment(
+  'ON_DEVICE_TTS_REFERENCE_DIR',
+);
 
 /// Max abs diff allowed against the reference audio. The fp32 model stays
 /// within 1e-3 across ONNX Runtime builds; int8 kernels differ between builds
@@ -42,8 +45,33 @@ double rms(Float32List pcm) {
 }
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  const reportName = String.fromEnvironment('ON_DEVICE_TTS_REPORT');
+  final waveformErrors = <String, double>{};
+  if (reportName.isNotEmpty) {
+    unawaited(
+      binding.allTestsPassed.future.then((passed) async {
+        final documents = await getApplicationDocumentsDirectory();
+        final result = File('${documents.path}/$reportName');
+        final temporary = File('${result.path}.tmp');
+        await temporary.writeAsString(
+          jsonEncode({
+            'passed': passed,
+            'tests': binding.results.keys.toList(),
+            'waveform_max_abs_errors': waveformErrors,
+            'failures': {
+              for (final failure in binding.failureMethodsDetails)
+                failure.methodName: failure.details,
+            },
+          }),
+        );
+        await temporary.rename(result.path);
+      }),
+    );
+  }
 
+  var modelDir = configuredModelDir;
+  var referenceDir = configuredReferenceDir;
   if (modelDir.isEmpty) {
     testWidgets(
       'on-device TTS (needs ON_DEVICE_TTS_MODEL_DIR)',
@@ -56,15 +84,19 @@ void main() {
   late OnnxTts tts;
 
   setUpAll(() async {
+    if (reportName.isNotEmpty) {
+      final documents = await getApplicationDocumentsDirectory();
+      modelDir = '${documents.path}/$modelDir';
+      referenceDir = '${documents.path}/$referenceDir';
+    }
     expect(
       Directory(modelDir).existsSync(),
       isTrue,
       reason: 'push the model to $modelDir first',
     );
     tts = await OnnxTts.load(modelDir: modelDir);
+    addTearDown(tts.unload);
   });
-
-  tearDownAll(() => tts.unload());
 
   testWidgets('load fails on a missing model', (_) async {
     await expectLater(
@@ -168,10 +200,15 @@ void main() {
 
   testWidgets('matches the reference implementation', (_) async {
     final manifestFile = File('$referenceDir/manifest.json');
-    if (referenceDir.isEmpty || !manifestFile.existsSync()) {
+    if (referenceDir.isEmpty) {
       markTestSkipped('no SUPERTONIC_REFERENCE_DIR');
       return;
     }
+    expect(
+      manifestFile.existsSync(),
+      isTrue,
+      reason: 'Missing reference manifest',
+    );
     final manifest =
         jsonDecode(manifestFile.readAsStringSync()) as Map<String, dynamic>;
     for (final c in manifest['cases'] as List) {
@@ -192,6 +229,7 @@ void main() {
       for (var i = 0; i < reference.length; i++) {
         maxDiff = max(maxDiff, (reference[i] - audio.pcm[i]).abs());
       }
+      waveformErrors[c['name'] as String] = maxDiff;
       // ignore: avoid_print
       print('parity ${c['name']}: max abs diff $maxDiff');
       expect(
@@ -202,7 +240,9 @@ void main() {
     }
   });
 
-  testWidgets('speaks segments and completes after playback', (_) async {
+  testWidgets('streams a single chat message before its final PCM is ready', (
+    _,
+  ) async {
     const segments = [
       'Daisy said,',
       'that was the cleanest clutch I have seen all week,',
@@ -219,8 +259,8 @@ void main() {
     final events = <OnnxTtsEvent>[];
     final sub = tts.events.listen(events.add);
     final stopwatch = Stopwatch()..start();
-    await tts.speak(
-      segments,
+    await tts.speakText(
+      segments.join(' '),
       language: 'en',
       voiceId: 'M2',
       utteranceId: 'three',
@@ -236,7 +276,9 @@ void main() {
     expect(events.every((e) => e.utteranceId == 'three'), isTrue);
     final firstAudio = events[0].elapsed;
     final done = events[1].elapsed;
-    expect(firstAudio, lessThan(done));
+    final lastPcmReady = events[1].lastPcmReady!;
+    expect(firstAudio, lessThan(lastPcmReady));
+    expect(lastPcmReady, lessThan(done));
     // Completion follows the playback head, so it can't come before the
     // audio has played.
     expect(done, greaterThan(audioLength - const Duration(milliseconds: 50)));

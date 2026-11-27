@@ -1,6 +1,7 @@
 import 'onnx_tts_platform.dart';
+import 'playback_phrases.dart';
 
-/// A neural TTS model running natively on ONNX Runtime.
+/// A loaded neural speech model backed by flutter_onnx.
 ///
 /// ```dart
 /// final tts = await OnnxTts.load(modelDir: '/path/to/supertonic-3');
@@ -40,6 +41,24 @@ class OnnxTts {
   }
 
   Future<List<OnnxVoice>> voices() => _platform.voices(handle);
+
+  /// Streams a message in phrases under a single utterance ID. The player
+  /// starts with the first phrase while inference continues on the rest.
+  Future<void> speakText(
+    String text, {
+    required String language,
+    required String voiceId,
+    double speed = 1.0,
+    int steps = 5,
+    String? utteranceId,
+  }) => speak(
+    playbackPhrases(text.trim(), language),
+    language: language,
+    voiceId: voiceId,
+    speed: speed,
+    steps: steps,
+    utteranceId: utteranceId,
+  );
 
   /// Speaks [segments] (e.g. the clauses of a message) back to back, and
   /// completes when the last one has finished playing or [stop] cut it off.
@@ -82,6 +101,32 @@ class OnnxTts {
     steps: steps,
     noiseSeed: noiseSeed,
   );
+
+  /// Yields mono float PCM as each phrase finishes. Enqueue each chunk in
+  /// the audio sink so synthesis can continue during playback. Pausing or
+  /// cancelling the subscription prevents subsequent phrase requests.
+  /// A supplied [noiseSeed] advances by one per phrase.
+  Stream<OnnxSynthesis> synthesizeStream(
+    String text, {
+    required String language,
+    required String voiceId,
+    double speed = 1.0,
+    int steps = 5,
+    int? noiseSeed,
+  }) async* {
+    var seed = noiseSeed;
+    for (final phrase in playbackPhrases(text.trim(), language)) {
+      yield await synthesize(
+        phrase,
+        language: language,
+        voiceId: voiceId,
+        speed: speed,
+        steps: steps,
+        noiseSeed: seed,
+      );
+      if (seed != null) seed++;
+    }
+  }
 
   /// Stops the utterance being spoken, if any.
   Future<void> stop() => _platform.stop();
