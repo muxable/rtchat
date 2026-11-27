@@ -5,6 +5,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/tts/qwen_engine.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
@@ -372,6 +373,7 @@ class TtsModel extends ChangeNotifier {
       return;
     }
     _mode = mode;
+    _prepareQwen();
     localizations = _announcementLocalizations(localizations);
     switch (mode) {
       case TtsMode.alertsOnly:
@@ -574,6 +576,7 @@ class TtsModel extends ChangeNotifier {
       try {
         await _releasing;
         if (_isDisposed) return;
+        final hardwareOnly = _neuralEngine is QwenTtsEngine;
         final route =
             _neuralFallback == null ? await _router.route(language) : null;
         if (route != null) {
@@ -586,7 +589,7 @@ class TtsModel extends ChangeNotifier {
             pitch: _pitch,
             language: route.language,
           );
-        } else {
+        } else if (!hardwareOnly && _neuralEngine is! QwenTtsEngine) {
           await _systemEngine.speak(
             text,
             rate: _speed,
@@ -729,6 +732,7 @@ class TtsModel extends ChangeNotifier {
         model is ChatMessage
             ? languageFor(model).languageCode
             : localizations.localeName.replaceAll('_', '-');
+    final hardwareOnly = _neuralEngine is QwenTtsEngine;
     final route =
         _neuralFallback == null ? await _router.route(language) : null;
     if (route != null) {
@@ -760,6 +764,10 @@ class TtsModel extends ChangeNotifier {
         return;
       }
     }
+    if (hardwareOnly ||
+        route?.engine is QwenTtsEngine ||
+        _neuralEngine is QwenTtsEngine)
+      return;
     try {
       // the system voices read chat in its channel's language, when known;
       // otherwise, and for alerts, they keep their default.
@@ -810,6 +818,7 @@ class TtsModel extends ChangeNotifier {
       _neuralFallback = null;
       _isNeuralFallbackNoticePending = false;
     }
+    _prepareQwen();
     // the voices and languages on offer changed.
     notifyListeners();
     if (previous == null) {
@@ -818,6 +827,16 @@ class TtsModel extends ChangeNotifier {
     _retiredEngines.add(previous);
     // in case nothing else is queued.
     _afterQueue(_disposeRetiredEngines);
+  }
+
+  void _prepareQwen() {
+    final engine = _neuralEngine;
+    if (engine is QwenTtsEngine &&
+        _mode != TtsMode.disabled &&
+        _neuralFallback == null &&
+        engine.unavailable.value == null) {
+      unawaited(engine.prepare().catchError(_reportError));
+    }
   }
 
   /// Runs [action] once everything queued so far has been read, holding

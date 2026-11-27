@@ -1,0 +1,303 @@
+import * as k from "./kernels.mjs";
+
+const read = (i, name, t = "f32") =>
+  `@group(0) @binding(${i}) var<storage,read> ${name}:array<${t}>;\n`;
+const write = (i, name, t = "f32") =>
+  `@group(0) @binding(${i}) var<storage,read_write> ${name}:array<${t}>;\n`;
+const gather = (width) =>
+  read(0, "id", "u32") +
+  read(1, "w", "u32") +
+  write(2, "outv") +
+  `
+@compute @workgroup_size(64) fn main(@builtin(global_invocation_id) gid:vec3u){
+ let i=gid.x;let base=(id[0]*${width / 32}u+i/32u)*6u;let bits=w[base+i%32u/8u];
+ outv[i]=(f32((bits>>(4u*(i%8u)))&15u)-f32(w[base+5u]))*bitcast<f32>(w[base+4u]);
+}`;
+// The first table has 3072 semantic rows. Each following table holds 2048
+// residual rows. Sum the 16 feedback embeddings in one GPU dispatch.
+const feedback =
+  read(0, "ids", "u32") +
+  read(1, "w", "u32") +
+  read(2, "pad") +
+  write(3, "outv") +
+  `
+@compute @workgroup_size(64) fn main(@builtin(global_invocation_id) gid:vec3u){
+ let i=gid.x;
+ var acc=0.0;
+ for(var j=0u;j<16u;j++){
+   let start=select(0u,1024u+j*2048u,j>0u);
+   let base=((start+ids[j])*32u+i/32u)*6u;
+   let nibble=(w[base+i%32u/8u]>>(4u*(i%8u)))&15u;
+   acc+=(f32(nibble)-f32(w[base+5u]))*bitcast<f32>(w[base+4u]);
+ }
+ outv[i]=acc+pad[i];
+}`;
+const withBias = (activate) =>
+  write(0, "x") +
+  read(1, "bias") +
+  `@compute @workgroup_size(64)
+fn main(@builtin(global_invocation_id) gid:vec3u){let i=gid.x;let v=x[i]+bias[i];x[i]=${activate ? "v/(1.0+exp(-v))" : "v"};}`;
+const select =
+  read(0, "scores") +
+  write(1, "history", "u32") +
+  write(2, "picked", "u32") +
+  `
+var<workgroup> best:array<f32,64>;var<workgroup> ids:array<u32,64>;
+@compute @workgroup_size(64) fn main(@builtin(local_invocation_index) lane:u32){
+ var mx=-3.402823e38;var token=0u;
+ for(var i=lane;i<2048u;i+=64u){
+   var v=scores[i];if(history[i]!=0u){v=select(v/1.05,v*1.05,v<0.0);}
+   if(v>mx){mx=v;token=i;}
+ }
+ if(lane==0u && scores[2150]>mx){mx=scores[2150];token=2150u;}
+ best[lane]=mx;ids[lane]=token;workgroupBarrier();
+ for(var s=32u;s>0u;s=s>>1u){
+  if(lane<s && (best[lane+s]>best[lane] || (best[lane+s]==best[lane] && ids[lane+s]<ids[lane]))){
+   best[lane]=best[lane+s];ids[lane]=ids[lane+s];
+  }workgroupBarrier();
+ }
+ if(lane==0u){picked[0]=ids[0];history[ids[0]]=1u;}
+}`;
+
+export async function createTalker(device, w, capacity = 512) {
+  const allocated = [],
+    bindings = new Map(),
+    bufferIds = new Map();
+  let nextId = 0;
+  function buf(n) {
+    const b = device.createBuffer({
+      size: n * 4,
+      usage:
+        GPUBufferUsage.STORAGE |
+        GPUBufferUsage.COPY_SRC |
+        GPUBufferUsage.COPY_DST,
+    });
+    allocated.push(b);
+    return b;
+  }
+  const shaders = {
+    norm: k.norm,
+    residualNorm: k.residualNorm,
+    qkv: k.q4Product(1024, device.features.has("subgroups")),
+    out: k.q4Product(2048, device.features.has("subgroups")),
+    down: k.q4Product(3072, device.features.has("subgroups")),
+    cache: k.cache,
+    add: k.add,
+    silu: k.silu,
+    select,
+    feedback,
+    lookup: gather(1024),
+    lookupText: gather(2048),
+    bias: withBias(false),
+    biasSilu: withBias(true),
+    attend: k.attention(capacity, device.features.has("subgroups")),
+  };
+  const pipes = {};
+  for (const [name, code] of Object.entries(shaders)) {
+    pipes[name] = await device.createComputePipelineAsync({
+      layout: "auto",
+      label: "talker " + name,
+      compute: {
+        entryPoint: "main",
+        module: device.createShaderModule({ code }),
+      },
+    });
+  }
+  function dispatch(pass, op, n, ...args) {
+    const key =
+      op +
+      ":" +
+      args
+        .map((b) => {
+          if (!bufferIds.has(b)) bufferIds.set(b, nextId++);
+          return bufferIds.get(b);
+        })
+        .join(",");
+    let group = bindings.get(key);
+    if (!group) {
+      group = device.createBindGroup({
+        layout: pipes[op].getBindGroupLayout(0),
+        entries: args.map((b, binding) => ({
+          binding,
+          resource: { buffer: b },
+        })),
+      });
+      bindings.set(key, group);
+    }
+    pass.setPipeline(pipes[op]);
+    pass.setBindGroup(0, group);
+    const tiled =
+      device.features.has("subgroups") &&
+      (op === "qkv" || op === "out" || op === "down");
+    pass.dispatchWorkgroups(tiled ? n / 4 : n);
+  }
+  const [
+    x,
+    y,
+    qkv,
+    q,
+    context,
+    pair,
+    act,
+    tmp,
+    logits,
+    hidden,
+    position,
+    token,
+    picked,
+    history,
+    textRaw,
+    textMid,
+    textOut,
+    pad,
+    eos,
+    bos,
+    codec,
+  ] = [
+    1024, 1024, 4096, 2048, 2048, 6144, 3072, 1024, 3072, 1024, 1, 1, 1, 3072,
+    2048, 2048, 1024, 1024, 1024, 1024, 1024,
+  ].map(buf);
+  const caches = Array.from({ length: 28 }, () => [
+    buf(capacity * 1024),
+    buf(capacity * 1024),
+  ]);
+  const params = new Uint32Array(1);
+  const set = (target, value) => {
+    params[0] = value;
+    device.queue.writeBuffer(target, 0, params);
+  };
+  let pos = 0;
+  function pass(fn) {
+    const enc = device.createCommandEncoder(),
+      p = enc.beginComputePass();
+    fn((op, n, ...args) => dispatch(p, op, n, ...args));
+    p.end();
+    device.queue.submit([enc.finish()]);
+  }
+  function run(src, final = false) {
+    if (pos >= capacity) throw new Error("Qwen talker context limit exceeded");
+    set(position, pos++);
+    const enc = device.createCommandEncoder();
+    enc.copyBufferToBuffer(src, 0, x, 0, 4096);
+    const p = enc.beginComputePass();
+    const d = (...args) => dispatch(p, ...args);
+    for (let l = 0; l < 28; l++) {
+      const a = (name) => w[l + "." + name];
+      if (l === 0) d("norm", 1, x, a("input_layernorm"), y);
+      else d("residualNorm", 1, x, tmp, a("input_layernorm"), y);
+      d("qkv", 4096, y, a("qkv"), qkv);
+      d(
+        "cache",
+        24,
+        qkv,
+        a("self_attn.q_norm"),
+        a("self_attn.k_norm"),
+        position,
+        q,
+        ...caches[l],
+      );
+      d("attend", 16, q, ...caches[l], position, context);
+      d("out", 1024, context, a("o"), tmp);
+      d("residualNorm", 1, x, tmp, a("post_attention_layernorm"), y);
+      d("qkv", 6144, y, a("gateUp"), pair);
+      d("silu", 48, pair, act);
+      d("down", 1024, act, a("down"), tmp);
+    }
+    if (final) {
+      d("residualNorm", 1, x, tmp, w.norm, hidden);
+      d("qkv", 3072, hidden, w.head, logits);
+      d("select", 1, logits, history, picked);
+    }
+    p.end();
+    device.queue.submit([enc.finish()]);
+  }
+  function text(id, dst) {
+    set(token, id % 16384);
+    pass((d) => {
+      d(
+        "lookupText",
+        32,
+        token,
+        w["textTable" + Math.floor(id / 16384)],
+        textRaw,
+      );
+      d("out", 2048, textRaw, w.project1, textMid);
+      d("biasSilu", 32, textMid, w.bias1);
+      d("out", 1024, textMid, w.project2, dst);
+      d("bias", 16, dst, w.bias2);
+    });
+  }
+  function code(id, dst) {
+    set(token, id);
+    pass((d) => d("lookup", 16, token, w.codecTables, dst));
+  }
+  const sum = (dst, src) => pass((d) => d("add", 16, dst, src));
+  let prefixKey,
+    prefixLength = 0;
+  return {
+    prefill(ids, role, tc, speaker, lang, specials) {
+      pos = 0;
+      const enc = device.createCommandEncoder();
+      enc.clearBuffer(history);
+      device.queue.submit([enc.finish()]);
+      // The role, language, speaker and BOS occupy the same causal prefix on
+      // every chat message using this voice. Later tokens never change its KV.
+      const key = JSON.stringify([role, speaker, lang, specials]);
+      if (key === prefixKey) {
+        pos = prefixLength;
+      } else {
+        text(specials[0], bos);
+        text(specials[1], eos);
+        text(specials[2], pad);
+        for (const id of role) {
+          text(id, textOut);
+          run(textOut);
+        }
+        const tags =
+          lang == null
+            ? [
+                tc.codec_nothink_id,
+                tc.codec_think_bos_id,
+                tc.codec_think_eos_id,
+              ]
+            : [
+                tc.codec_think_id,
+                tc.codec_think_bos_id,
+                lang,
+                tc.codec_think_eos_id,
+              ];
+        for (const id of [...tags, speaker]) {
+          code(id, codec);
+          sum(codec, pad);
+          run(codec);
+        }
+        code(tc.codec_pad_id, codec);
+        sum(codec, bos);
+        run(codec);
+        prefixLength = pos;
+        prefixKey = key;
+      }
+      code(tc.codec_pad_id, codec);
+      for (const id of ids) {
+        text(id, textOut);
+        sum(textOut, codec);
+        run(textOut);
+      }
+      sum(codec, eos);
+      run(codec);
+      code(tc.codec_bos_id, codec);
+      sum(codec, pad);
+      run(codec, true);
+      return { code: picked, hidden };
+    },
+    advance(codes) {
+      pass((d) => d("feedback", 16, codes, w.codecTables, pad, codec));
+      run(codec, true);
+      return { code: picked, hidden };
+    },
+    destroy() {
+      for (const b of allocated) b.destroy();
+      for (const b of Object.values(w)) b.destroy();
+    },
+  };
+}

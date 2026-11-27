@@ -15,6 +15,7 @@
 // `attribution` are shown to users, so keep notes like these out of them.
 
 import 'voice_pack.dart';
+import 'qwen_pack.dart';
 
 const _revision = '3cadd1ee6394adea1bd021217a0e650ede09a323';
 const _base =
@@ -382,4 +383,5 @@ final bundledVoicePacks = List<VoicePack>.unmodifiable([
       ],
     },
   ),
+  qwenVoicePack(),
 ]);

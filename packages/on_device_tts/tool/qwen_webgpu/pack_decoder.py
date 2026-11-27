@@ -1,0 +1,486 @@
+"""Lower the fixed-shape 25-frame Qwen ONNX waveform decoder to WebGPU."""
+
+import json
+from collections import Counter
+import math
+import sys
+from pathlib import Path
+
+import numpy as np
+import onnx
+from onnx import numpy_helper
+
+
+def coord(shape, axis, idx="i"):
+    return f"(({idx}/{math.prod(shape[axis + 1 :])}u)%{shape[axis]}u)"
+
+
+def address(shape, coords):
+    return (
+        "("
+        + "+".join(f"({c})*{math.prod(shape[i + 1 :])}u" for i, c in enumerate(coords))
+        + ")"
+        if coords
+        else "0u"
+    )
+
+
+def broadcast(source, target, idx="i"):
+    if source == target:
+        return idx
+    offset = len(target) - len(source)
+    return address(
+        source,
+        [
+            "0u" if d == 1 else coord(target, j + offset, idx)
+            for j, d in enumerate(source)
+        ],
+    )
+
+
+def lower(op, shapes, out, attrs, arrays):
+    """Return WGSL and dispatch geometry. Each input is one storage binding."""
+    count = math.prod(out)
+    fields = "".join(
+        f"@group(0) @binding({j}) var<storage,read> a{j}:array<f32>;\n"
+        for j in range(len(shapes))
+    )
+    fields += (
+        f"@group(0) @binding({len(shapes)}) var<storage,read_write> y:array<f32>;\n"
+    )
+
+    def get(j):
+        return f"a{j}[{broadcast(shapes[j], out)}]"
+
+    def simple(body):
+        groups = (count + 127) // 128
+        stride = min(groups, 65535)
+        return (
+            fields
+            + f"""@compute @workgroup_size(128)
+fn main(@builtin(global_invocation_id) id:vec3u){{
+let i=id.x+id.y*{stride * 128}u;if(i>={count}u){{return;}}
+{body}
+}}""",
+            [stride, (groups + stride - 1) // stride, 1],
+        )
+
+    if op == "Snake":
+        return simple(f"let x={get(0)};let v=sin(x*{get(1)});y[i]=x+{get(2)}*(v*v);")
+    if op in (
+        "Add",
+        "Mul",
+        "Div",
+        "Pow",
+        "Sqrt",
+        "Reciprocal",
+        "Neg",
+        "Sin",
+        "Sigmoid",
+        "Clip",
+        "Gelu",
+    ):
+        x = get(0)
+        if op in ("Add", "Mul", "Div"):
+            expr = x + {"Add": "+", "Mul": "*", "Div": "/"}[op] + get(1)
+        elif op == "Pow":
+            expr = (
+                f"pow({x},{get(1)})"
+                if arrays[1] is None or arrays[1].size != 1 or arrays[1].item() != 2
+                else f"{x}*{x}"
+            )
+        elif op == "Sqrt":
+            expr = f"sqrt({x})"
+        elif op == "Reciprocal":
+            expr = f"1.0/{x}"
+        elif op == "Neg":
+            expr = f"-{x}"
+        elif op == "Sin":
+            expr = f"sin({x})"
+        elif op == "Sigmoid":
+            expr = f"1.0/(1.0+exp(-{x}))"
+        elif op == "Clip":
+            expr = f"max({x},{get(1)})"
+            if len(shapes) == 3:
+                expr = f"min({expr},{get(2)})"
+        elif op == "Gelu":
+            return simple(f"""let z={x}*0.70710678118;let t=1.0/(1.0+0.3275911*abs(z));
+let p=(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t;
+y[i]=0.5*{x}*(1.0+sign(z)*(1.0-p*exp(-z*z)));""")
+        return simple("y[i]=" + expr + ";")
+    if op == "Transpose":
+        perm = attrs["perm"]
+        return simple(
+            "y[i]=a0["
+            + address(shapes[0], [coord(out, perm.index(j)) for j in range(len(out))])
+            + "];"
+        )
+    if op == "Slice":
+        src = shapes[0]
+        coords = [coord(out, j) for j in range(len(out))]
+        starts = arrays[1].flatten()
+        ends = arrays[2].flatten()
+        axes = arrays[3].flatten() if len(arrays) > 3 else range(len(starts))
+        steps = arrays[4].flatten() if len(arrays) > 4 else [1] * len(starts)
+        for start, end, axis, step in zip(starts, ends, axes, steps):
+            lo, _, inc = slice(int(start), int(end), int(step)).indices(src[axis])
+            coords[axis] = f"u32({lo}+i32({coords[axis]})*{inc})"
+        return simple("y[i]=a0[" + address(src, coords) + "];")
+    if op == "Gather":
+        axis = attrs.get("axis", 0)
+        if axis != 0:
+            raise ValueError(f"Unexpected gather axis {axis}")
+        width = math.prod(shapes[0][1:])
+        return simple(f"y[i]=a0[u32(a1[i/{width}u])*{width}u+i%{width}u];")
+    if op == "Concat":
+        axis = attrs["axis"] % len(out)
+        after = math.prod(out[axis + 1 :])
+        start = 0
+        parts = []
+        for j, s in enumerate(shapes):
+            end = start + s[axis]
+            parts.append(
+                f"if(c<{end}u){{y[i]=a{j}[(outer*{s[axis]}u+c-{start}u)*{after}u+i%{after}u];return;}}"
+            )
+            start = end
+        return simple(
+            f"let c={coord(out, axis)};let outer=i/{after * out[axis]}u;"
+            + "".join(parts)
+        )
+    if op in ("LayerNormalization", "Softmax", "ReduceMean"):
+        src = shapes[0]
+        width = src[-1]
+        outer = math.prod(src[:-1])
+        axis = int(arrays[1].item()) if op == "ReduceMean" else attrs.get("axis", -1)
+        if axis % len(src) != len(src) - 1:
+            raise ValueError(f"Unexpected {op} axis")
+        # One workgroup reduces a row. Keep intermediate reductions synchronized.
+        fields += "var<workgroup> scratch:array<f32,64>;\n"
+
+        def reduce(expr, combine, init):
+            return f"""{{var acc:f32={init}; for(var j=lane;j<{width}u;j+=64u){{acc={expr};}}
+scratch[lane]=acc;workgroupBarrier();
+for(var s=32u;s>0u;s=s>>1u){{if(lane<s){{scratch[lane]={combine};}}workgroupBarrier();}}}}"""
+
+        sumop = "scratch[lane]+scratch[lane+s]"
+        if op == "Softmax":
+            body = reduce(
+                "max(acc,a0[base+j])",
+                "max(scratch[lane],scratch[lane+s])",
+                "-3.402823e38",
+            )
+            body += "let mx=scratch[0];workgroupBarrier();" + reduce(
+                "acc+exp(a0[base+j]-mx)", sumop, "0.0"
+            )
+            body += f"for(var j=lane;j<{width}u;j+=64u){{y[base+j]=exp(a0[base+j]-mx)/scratch[0];}}"
+        else:
+            body = (
+                reduce("acc+a0[base+j]", sumop, "0.0")
+                + f"let mean=scratch[0]/{width}.0;"
+            )
+            if op == "ReduceMean":
+                body += "if(lane==0u){y[g.x]=mean;}"
+            else:
+                body += "workgroupBarrier();" + reduce(
+                    "acc+(a0[base+j]-mean)*(a0[base+j]-mean)", sumop, "0.0"
+                )
+                body += f"let inv=inverseSqrt(scratch[0]/{width}.0+{attrs['epsilon']});for(var j=lane;j<{width}u;j+=64u){{y[base+j]=(a0[base+j]-mean)*inv*a1[j]+a2[j];}}"
+        return (
+            fields
+            + f"@compute @workgroup_size(64) fn main(@builtin(workgroup_id) g:vec3u,@builtin(local_invocation_index) lane:u32){{let base=g.x*{width}u;{body}}}",
+            [outer, 1, 1],
+        )
+    if op == "MatMul":
+        a, b = shapes
+        m, k = a[-2:]
+        n = b[-1]
+        batch = math.prod(out[:-2])
+        ao = broadcast(a[:-2], out[:-2], "g.z")
+        bo = broadcast(b[:-2], out[:-2], "g.z")
+        code = f"""
+var<workgroup> aa:array<f32,256>;var<workgroup> bb:array<f32,256>;
+@compute @workgroup_size(16,16) fn main(@builtin(workgroup_id) g:vec3u,@builtin(local_invocation_id) t:vec3u){{
+let row=g.y*16u+t.y;let col=g.x*16u+t.x;let lane=t.y*16u+t.x;var acc=0.0;
+for(var s=0u;s<{k}u;s+=16u){{
+aa[lane]=0.0;bb[lane]=0.0;
+if(row<{m}u && s+t.x<{k}u){{aa[lane]=a0[({ao}*{m}u+row)*{k}u+s+t.x];}}
+if(col<{n}u && s+t.y<{k}u){{bb[lane]=a1[({bo}*{k}u+s+t.y)*{n}u+col];}}
+workgroupBarrier();for(var j=0u;j<16u;j++){{acc+=aa[t.y*16u+j]*bb[j*16u+t.x];}}workgroupBarrier();
+}}if(row<{m}u && col<{n}u){{y[(g.z*{m}u+row)*{n}u+col]=acc;}}}}"""
+        return fields + code, [(n + 15) // 16, (m + 15) // 16, batch]
+    if op in ("Conv", "ConvTranspose"):
+        _, channels, width = shapes[0]
+        _, filters, length = out
+        kernel = shapes[1][2]
+        groups = attrs.get("group", 1)
+        stride = attrs["strides"][0]
+        dilation = attrs["dilations"][0]
+        pad = attrs["pads"][0]
+        per = channels // groups
+        pos = (
+            f"i32(t*{stride}u+k*{dilation}u)-({pad})"
+            if op == "Conv"
+            else f"i32(t)+({pad})-i32(k*{dilation}u)"
+        )
+        ix = f"u32(p)" if op == "Conv" else f"u32(p)/{stride}u"
+        wi = (
+            f"(f*{per}u+c)*{kernel}u+k"
+            if op == "Conv"
+            else f"(ic*{filters // groups}u+f%{filters // groups}u)*{kernel}u+k"
+        )
+        extra = f" && u32(p)%{stride}u==0u" if op == "ConvTranspose" else ""
+        init = "a2[f]" if len(shapes) == 3 else "0.0"
+        if groups == 1 and per % 8 == 0 and filters >= 32:
+            # 64 lanes share a tile of eight input channels. Each lane keeps
+            # 4 × 4 output samples in registers and reuses both input tiles.
+            # Output samples in a transposed-convolution workgroup share their
+            # stride phase. Only the matching kernel taps can contribute.
+            phases = stride if op == "ConvTranspose" and dilation == 1 else 1
+            first = f"(group.z+{pad % phases}u)%{phases}u" if phases > 1 else "0u"
+            time = f"(x0+j*8u)*{phases}u+group.z"
+            tile = f"""
+var<workgroup> activations:array<f32,256>;
+var<workgroup> weights:array<f32,256>;
+@compute @workgroup_size(8,8) fn main(
+  @builtin(workgroup_id) group:vec3u, @builtin(local_invocation_id) lane:vec3u){{
+ let x0=group.x*32u+lane.x; let f0=group.y*32u+lane.y;
+ var sums:array<vec4f,4>;
+ for(var r=0u;r<4u;r++){{let f=f0+8u*r;if(f<{filters}u){{sums[r]=vec4f({init});}}}}
+ for(var k={first};k<{kernel}u;k+={phases}u){{
+  for(var base=0u;base<{per}u;base+=8u){{
+   for(var j=0u;j<4u;j++){{
+    let t={time};let p={pos};let src=lane.y*32u+lane.x+8u*j;
+    activations[src]=0.0;
+    if(p>=0 && {ix}<{width}u{extra}){{activations[src]=a0[(base+lane.y)*{width}u+{ix}];}}
+    let f=f0+j*8u;let c=base+lane.x;let ic=c;
+    let wt=(lane.y+8u*j)*8u+lane.x;weights[wt]=0.0;
+    if(f<{filters}u){{weights[wt]=a1[{wi}];}}
+   }}workgroupBarrier();
+   for(var channel=0u;channel<8u;channel++){{
+    let o=channel*32u+lane.x;
+    let v=vec4f(activations[o],activations[o+8u],activations[o+16u],activations[o+24u]);
+    for(var r=0u;r<4u;r++){{sums[r]+=v*weights[(lane.y+r*8u)*8u+channel];}}
+   }}workgroupBarrier();
+  }}
+ }}
+ for(var r=0u;r<4u;r++){{let f=f0+r*8u;if(f<{filters}u){{
+  for(var j=0u;j<4u;j++){{let t={time};if(t<{length}u){{y[f*{length}u+t]=sums[r][j];}}}}
+ }}}}
+}}"""
+            return fields + tile, [
+                (length + phases * 32 - 1) // (phases * 32),
+                (filters + 31) // 32,
+                phases,
+            ]
+        return simple(f"""let t=i%{length}u;let f=i/{length}u;var acc={init};
+for(var k=0u;k<{kernel}u;k++){{let p={pos};if(p>=0 && {ix}<{width}u{extra}){{
+for(var c=0u;c<{per}u;c++){{let ic=f/{filters // groups}u*{per}u+c;acc+=a0[ic*{width}u+{ix}]*a1[{wi}];}}
+}}}}y[i]=acc;""")
+    raise ValueError(f"Unsupported decoder operation {op}")
+
+
+def fuse_snake(ops, kinds, dims, constants, shaders):
+    # The codec's 29 Snake activations would each round-trip five full PCM
+    # feature maps through memory. Only fuse private, connected intermediates.
+    uses = Counter(name for _, _, inputs, _, _ in ops for name in inputs)
+    result = []
+    i = 0
+    while i < len(ops):
+        if kinds[i : i + 5] == ["Mul", "Sin", "Pow", "Mul", "Add"]:
+            mul, sin, power, scale, add = ops[i : i + 5]
+            data, alpha = mul[2]
+            beta = scale[2][0]
+            exponent = constants.get(power[2][1])
+            if (
+                sin[2] == [mul[3]]
+                and power[2][0] == sin[3]
+                and exponent is not None
+                and exponent.size == 1
+                and exponent.item() == 2
+                and scale[2][1] == power[3]
+                and add[2] == [data, scale[3]]
+                and all(uses[op[3]] == 1 for op in (mul, sin, power, scale))
+            ):
+                inputs = [data, alpha, beta]
+                code, groups = lower(
+                    "Snake", [dims[k] for k in inputs], dims[add[3]], {}, []
+                )
+                if code not in shaders:
+                    shaders.append(code)
+                result.append([shaders.index(code), groups, inputs, add[3], add[4]])
+                i += 5
+                continue
+        result.append(ops[i])
+        i += 1
+    return result
+
+
+def waveform_windows(ops, kinds, attrs, dims, constants, shaders):
+    """Lower exact sample intervals through the convolutional synthesis stack."""
+    start = next(i for i, op in enumerate(ops) if op[3] == "conv1d_5")
+    late = {op[3] for op in ops[start:]}
+    variants = []
+    for first, last in [(0, 8), (8, 16), (16, 25)]:
+        needed = {ops[-1][3]: (first * 1920, last * 1920)}
+        for _, _, inputs, out, _ in reversed(ops[start:]):
+            lo, hi = needed[out]
+            kind, attr = kinds[out], attrs.get(out, {})
+            for j, name in enumerate(inputs):
+                if name not in late:
+                    continue
+                width = dims[name][-1]
+                left, right = lo, hi
+                if kind in ("Conv", "ConvTranspose") and j == 0:
+                    pad, stride = attr["pads"][0], attr["strides"][0]
+                    reach = (dims[inputs[1]][-1] - 1) * attr["dilations"][0]
+                    if kind == "Conv":
+                        left, right = (
+                            lo * stride - pad,
+                            (hi - 1) * stride - pad + reach + 1,
+                        )
+                    else:
+                        left, right = (
+                            -(-(lo + pad - reach) // stride),
+                            (hi - 1 + pad) // stride + 1,
+                        )
+                elif kind == "Slice":
+                    assert (
+                        j == 0
+                        and constants[inputs[1]].item() == 0
+                        and constants[inputs[4]].item() == 1
+                    )
+                else:
+                    assert kind in ("Snake", "Add", "Clip")
+                left, right = max(0, left), min(width, right)
+                old = needed.get(name, (width, 0))
+                needed[name] = min(old[0], left), max(old[1], right)
+        commands = []
+        for _, _, inputs, out, _ in ops[start:]:
+            lo, hi = needed[out]
+            target = [*dims[out][:-1], hi - lo]
+            spans = [needed.get(n, (0, dims[n][-1] if dims[n] else 1)) for n in inputs]
+            shapes = [
+                [*dims[n][:-1], b - a] if n in late else dims[n]
+                for n, (a, b) in zip(inputs, spans)
+            ]
+            kind = kinds[out]
+            if kind in ("Conv", "ConvTranspose"):
+                attr = dict(attrs[out])
+                pad = attr["pads"][0]
+                stride = attr["strides"][0]
+                src = spans[0][0]
+                pad += src - lo * stride if kind == "Conv" else lo - src * stride
+                attr["pads"] = [pad, 0]
+                code, groups = lower(
+                    kind, shapes, target, attr, [constants.get(n) for n in inputs]
+                )
+            else:
+
+                def get(j):
+                    n = inputs[j]
+                    if n in late:
+                        return f"a{j}[channel*{shapes[j][-1]}u+t+{lo - spans[j][0]}u]"
+                    return f"a{j}[{broadcast(dims[n], dims[out], 'full')}]"
+
+                x = get(0)
+                if kind == "Snake":
+                    body = f"let x={x};let v=sin(x*{get(1)});y[i]=x+{get(2)}*(v*v);"
+                elif kind == "Add":
+                    body = f"y[i]={x}+{get(1)};"
+                elif kind == "Slice":
+                    body = f"y[i]={x};"
+                elif kind == "Clip":
+                    body = f"y[i]=clamp({x},{get(1)},{get(2)});"
+                else:
+                    raise ValueError(kind)
+                count = math.prod(target)
+                fields = "".join(
+                    f"@group(0) @binding({j}) var<storage,read> a{j}:array<f32>;\n"
+                    for j in range(len(inputs))
+                )
+                code = (
+                    fields
+                    + f"""@group(0) @binding({len(inputs)}) var<storage,read_write> y:array<f32>;
+@compute @workgroup_size(128) fn main(@builtin(global_invocation_id) gid:vec3u){{
+let i=gid.x;if(i>={count}u){{return;}}let t=i%{hi - lo}u;let channel=i/{hi - lo}u;
+let full=channel*{dims[out][-1]}u+t+{lo}u;{body}
+}}"""
+                )
+                groups = [(count + 127) // 128, 1, 1]
+            if code not in shaders:
+                shaders.append(code)
+            commands.append([shaders.index(code), groups])
+        variants.append(dict(first=first, last=last, commands=commands))
+    return dict(start=start, variants=variants)
+
+
+def pack(source, target):
+    model = onnx.load(source)
+    graph = model.graph
+    dims = {
+        v.name: [d.dim_value for d in v.type.tensor_type.shape.dim]
+        for v in [*graph.input, *graph.output, *graph.value_info]
+    }
+    const = {i.name: numpy_helper.to_array(i) for i in graph.initializer}
+    dims.update({k: list(v.shape) for k, v in const.items()})
+    layout = {}
+    shaders = []
+    ops = []
+    kinds = []
+    kinds_by_name = {}
+    attributes = {}
+    aliases = {}
+
+    def real(name):
+        return aliases.get(name, name)
+
+    with (target / "decoder.bin").open("wb") as blob:
+        for node in graph.node:
+            typ = node.op_type
+            out = node.output[0]
+            inp = [real(k) for k in node.input if k]
+            if typ in ("Squeeze", "Reshape"):
+                aliases[out] = inp[0]
+                continue
+            attrs = {a.name: onnx.helper.get_attribute_value(a) for a in node.attribute}
+            shapes = [dims[k] for k in node.input if k]
+            arrays = [const.get(k) for k in inp]
+            # These static codebook normalizations can be resolved once at pack time.
+            if typ == "Div" and all(a is not None for a in arrays):
+                const[out] = arrays[0] / arrays[1]
+                continue
+            code, dispatch = lower(typ, shapes, dims[out], attrs, arrays)
+            if code not in shaders:
+                shaders.append(code)
+            for name in inp:
+                if name in const and name not in layout:
+                    data = const[name].astype("<f4")
+                    layout[name] = [blob.tell(), data.nbytes]
+                    blob.write(data.tobytes())
+            kinds_by_name[out] = typ
+            attributes[out] = attrs
+            kinds.append(typ)
+            ops.append([shaders.index(code), dispatch, inp, out, math.prod(dims[out])])
+    ops = fuse_snake(ops, kinds, dims, const, shaders)
+    used = sorted({op[0] for op in ops})
+    renumber = {original: i for i, original in enumerate(used)}
+    for op in ops:
+        op[0] = renumber[op[0]]
+    shaders = [shaders[i] for i in used]
+    for op in ops:
+        if "let v=sin(x*" in shaders[op[0]]:
+            kinds_by_name[op[3]] = "Snake"
+    windows = waveform_windows(ops, kinds_by_name, attributes, dims, const, shaders)
+    plan = dict(
+        windows=windows,
+        layout=layout,
+        ops=ops,
+        shaders=shaders,
+        input=graph.input[0].name,
+        output=real(graph.output[0].name),
+    )
+    (target / "decoder.json").write_text(json.dumps(plan, separators=(",", ":")))
+
+
+if __name__ == "__main__":
+    pack(Path(sys.argv[1]), Path(sys.argv[2]))

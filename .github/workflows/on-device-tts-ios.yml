@@ -15,6 +15,7 @@ on:
       - "pubspec.lock"
       - ".github/workflows/on-device-tts-ios.yml"
       - "integration_test/on_device_tts_test.dart"
+      - "integration_test/qwen_webgpu_test.dart"
       - "integration_test/profile_playback.dart"
   pull_request:
     paths:
@@ -25,6 +26,7 @@ on:
       - "pubspec.lock"
       - ".github/workflows/on-device-tts-ios.yml"
       - "integration_test/on_device_tts_test.dart"
+      - "integration_test/qwen_webgpu_test.dart"
       - "integration_test/profile_playback.dart"
   workflow_dispatch:
 
@@ -264,6 +266,20 @@ jobs:
             target=integration_test/on_device_tts_test.dart
             if [[ "$1" == android ]]; then
               device=$(adb get-serialno)
+              # SwiftShader must be rejected before the app requests model weights.
+              app=com.rtirl.chat
+              report=qwen-$(uuidgen).json
+              flutter build apk --debug -t integration_test/qwen_webgpu_test.dart --dart-define=QWEN_DEVICE_REPORT="$report"
+              adb -s "$device" install -r build/app/outputs/flutter-apk/app-debug.apk
+              adb -s "$device" shell am start -n "$app/.MainActivity"
+              for ((i=0; i<90; i++)); do
+                adb -s "$device" shell run-as "$app" ls "app_flutter/$report" >/dev/null 2>&1 && break
+                sleep 5
+              done
+              adb -s "$device" exec-out run-as "$app" cat "app_flutter/$report" > "$RUNNER_TEMP/qwen-android.json"
+              cat "$RUNNER_TEMP/qwen-android.json" | tee -a "$GITHUB_STEP_SUMMARY"
+              jq -e '.passed and .outcome=="no_hardware_adapter"' "$RUNNER_TEMP/qwen-android.json"
+              adb -s "$device" shell am force-stop "$app"
               flutter build apk --debug
               adb install -r build/app/outputs/flutter-apk/app-debug.apk
               for pair in "$model|model" "$reference|reference"; do

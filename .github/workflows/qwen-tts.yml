@@ -1,0 +1,270 @@
+name: Qwen speech on WebGPU
+on:
+  pull_request:
+    paths: &qwen_paths
+      - "packages/on_device_tts/tool/qwen_webgpu/**"
+      - "packages/on_device_tts/assets/qwen/**"
+      - "lib/models/tts/qwen*.dart"
+      - "lib/models/tts.dart"
+      - "lib/models/tts/neural_engine_selector.dart"
+      - "packages/on_device_tts/lib/src/voice_packs/qwen_pack.dart"
+      - "integration_test/qwen_webgpu_test.dart"
+      - ".github/workflows/qwen-tts.yml"
+  push:
+    branches: [main]
+    paths: *qwen_paths
+  workflow_dispatch:
+concurrency:
+  group: qwen-speech-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  hardware:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --test packages/on_device_tts/tool/qwen_webgpu/device.test.mjs
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        id: oracle
+        with:
+          path: packages/on_device_tts/tool/qwen_webgpu/data/reference
+          key: qwen-18b0bf8-ort1.32.0-${{ runner.arch }}-${{ hashFiles('packages/on_device_tts/tool/qwen_webgpu/*reference.py') }}
+      - name: Download and verify the pinned Qwen3-TTS export
+        run: &fetch_qwen |
+          model="$RUNNER_TEMP/qwen"
+          mkdir -p "$model"
+          exports=https://huggingface.co/onnx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice/resolve/18b0bf898d211718bc33082fadc36a448e0cbc0c
+          original=https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice/resolve/85e237c12c027371202489a0ec509ded67b5e4b5
+          while read -r digest name; do
+            case "$name" in
+              *.onnx) url="$exports/cpu_int4/$name" ;;
+              inference.py) url="$exports/$name" ;;
+              *) url="$original/$name" ;;
+            esac
+            curl -fsSL --retry 3 "$url" -o "$model/$name"
+            echo "$digest  $model/$name" | shasum -a 256 -c -
+          done <<'FILES'
+          f0b3a431b90a56d2784599948bcff678d5188e38481d3a991d80c550d0d0bfa2 code_predictor.onnx
+          bd76cd6b77907c76b6d0055ea6cf7572468ab99dc3451c1176ea2189d1a55f70 codec_embed.onnx
+          910e1d556cd74f11bbb55fff9d509a962bfc43f23608b62fb0a8215c7acc882f talker_cache.onnx
+          eec76513b562f558e76eeeb9b0bfa982de512104cddac372ec368ab504b080a0 residual_embed.onnx
+          b2923edfce01344dea9bd719e2daf94bda0b45bfd05a307514e9dd5f793dcd09 text_embed.onnx
+          8ec10051735029f6e08b04834128c9108428885c39384f443e49a6790ccb129f tok_decoder.onnx
+          70d3911f6923000d776cd16d575bf6518f6a638ee0adf8c1b60d0e1d34fdeb75 inference.py
+          81aca2b6fac304944d8acf345272d8a9a727d5fc2e2e66b222ab4729340c7455 config.json
+          ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910 vocab.json
+          599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3 merges.txt
+          FILES
+      - name: Prepare the model kernels and independent ONNX reference
+        working-directory: packages/on_device_tts/tool/qwen_webgpu
+        run: |
+          python -m pip install onnx==1.23.2 onnxruntime==1.32.0 numpy transformers==4.57.3
+          model="$RUNNER_TEMP/qwen"
+          mkdir -p data
+          python - "$model" <<'PYTHON'
+          import json, sys
+          from pathlib import Path
+          root=Path(sys.argv[1])
+          (root/"manifest.json").write_text(json.dumps({"sub_models":{p.stem:{"filename":p.name} for p in root.glob("*.onnx")}}))
+          PYTHON
+          cp "$model/config.json" "$model/vocab.json" "$model/merges.txt" data/
+          python pack_predictor.py "$model/code_predictor.onnx" data
+          python pack_talker.py "$model" data
+          ln -s "$model/"*.onnx data/
+          python pack_decoder.py "$model/tok_decoder.onnx" data
+          cmp data/decoder.json ../../assets/qwen/decoder.plan
+          python source_index.py "$model" data/decoder.json data/weights.index
+          cmp data/weights.index ../../assets/qwen/weights.index
+          node check_weights.mjs "$model" data
+          if [[ "${{ steps.oracle.outputs.cache-hit }}" != true ]]; then
+            mkdir -p data/reference
+            python reference.py "$model/code_predictor.onnx" data/reference
+            python speech_reference.py "$model" data/reference
+          fi
+          cp data/reference/* data/
+      - uses: actions/cache/save@v4
+        if: steps.oracle.outputs.cache-hit != 'true'
+        with:
+          path: packages/on_device_tts/tool/qwen_webgpu/data/reference
+          key: ${{ steps.oracle.outputs.cache-primary-key }}
+      - name: Verify codebooks, streamed waveforms and real-time throughput on hardware
+        working-directory: packages/on_device_tts/tool/qwen_webgpu
+        run: |
+          npm install --prefix "$RUNNER_TEMP/browser" playwright@1.56.1 send@1.2.0 onnxruntime-web@1.31.1
+          cp ../../assets/qwen/* .
+          ln -s "$RUNNER_TEMP/browser/node_modules/onnxruntime-web/dist" ort
+          ln -s "$RUNNER_TEMP/qwen" original
+          echo '<!doctype html><title>Qwen WebGPU qualification</title>' > index.html
+          export NODE_PATH="$RUNNER_TEMP/browser/node_modules"
+          node -e 'const send=require("send");require("node:http").createServer((req,res)=>send(req,req.url,{root:process.cwd()}).pipe(res)).listen(18749,"127.0.0.1")' > "$RUNNER_TEMP/http.log" 2>&1 &
+          curl -f --retry 8 --retry-connrefused http://127.0.0.1:18749/index.html
+          node <<'JS'
+          const {chromium} = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({channel: 'chrome',args:['--autoplay-policy=no-user-gesture-required']});
+            try {
+              const page = await browser.newPage();
+              const system = await browser.newBrowserCDPSession();
+              await page.exposeFunction('browserCpu', async () => {
+                const {processInfo} = await system.send('SystemInfo.getProcessInfo');
+                return Object.fromEntries(processInfo.map(p => [p.id,p.cpuTime]));
+              });
+              page.on('console', msg => console.log(msg.type(), msg.text()));
+              await page.goto('http://127.0.0.1:18749/index.html', {waitUntil:'commit',timeout:90000});
+              const report = await page.evaluate(async () => {
+                const {qualifyPredictor} = await import('/bench.mjs');
+                return qualifyPredictor();
+              });
+              console.log(JSON.stringify(report));
+              const speech = await page.evaluate(async () => (await import('/bench.mjs')).qualifySpeech());
+              console.log(JSON.stringify(speech));
+              for (const [name,fn] of [['speech','measureSpeech'],['predictor','comparePredictors']]) {
+                const result = await page.evaluate(async fn => (await import('/compare.mjs'))[fn](),fn);
+                require('node:fs').writeFileSync(process.env.RUNNER_TEMP+'/'+name+'-comparison.json',JSON.stringify(result));
+                console.log('WebGPU '+name+' comparison',JSON.stringify(result));
+              }
+              if (speech.rows.some(row => row.rtf >= 1 || row.gaps.some(ms => ms > 0))) throw Error("Qwen speech exceeded real time");
+              if (report.predictor.some(row => row.ms >= report.audioFrameMs)) {
+                throw Error("Residual prediction alone exceeds the 80 ms audio frame");
+              }
+            } finally {
+              await browser.close();
+            }
+          })().catch(e => { console.error(e); process.exitCode = 1; });
+          JS
+      - name: Measure full speech on ONNX Runtime CPU with matching inputs
+        if: ${{ !cancelled() && steps.oracle.outcome == 'success' }}
+        working-directory: packages/on_device_tts/tool/qwen_webgpu
+        run: python compare_cpu.py "$RUNNER_TEMP/qwen" data "$RUNNER_TEMP/cpu-comparison.json"
+      - name: Check wall and process CPU medians against ONNX Runtime
+        if: ${{ !cancelled() && steps.oracle.outcome == 'success' }}
+        working-directory: ${{ runner.temp }}
+        run: |
+          python - <<'PYTHON'
+          import json
+          from pathlib import Path
+          from statistics import median
+
+          web = json.loads(Path('speech-comparison.json').read_text())['rows']
+          cpu = json.loads(Path('cpu-comparison.json').read_text())
+          def medians(rows, text, metric):
+              samples = [r[metric] for r in rows if r['text'] == text]
+              assert len(samples) == 3 and all(v > 0 for v in samples), samples
+              return median(samples)
+          texts = {r['text'] for r in cpu}
+          assert texts and texts == {r['text'] for r in web}
+          for text in sorted(texts):
+              for metric in ('wall_ms', 'cpu_ms'):
+                  actual, reference = (medians(rows, text, metric) for rows in (web, cpu))
+                  print(f'{text} {metric}: RTChat WebGPU {actual:.1f}, ORT CPU {reference:.1f}')
+                  assert actual < reference
+
+          predictor = json.loads(Path('predictor-comparison.json').read_text())
+          for state in range(3):
+              for metric in ('wall_ms', 'cpu_ms'):
+                  def samples(engine):
+                      values = [r[metric] for r in predictor['rows'] if r['case'] == state and r['engine'] == engine]
+                      assert len(values) == 3 and all(v > 0 for v in values), values
+                      return median(values)
+                  actual, reference = samples('rtchat'), samples('onnxruntime')
+                  print(f'Predictor state {state} {metric}: RTChat WebGPU {actual:.1f}, ORT {predictor["provider"]} {reference:.1f}')
+                  assert actual < reference
+          PYTHON
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qwen-engine-comparison
+          path: ${{ runner.temp }}/*-comparison.json
+  ios:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Download and verify the pinned Qwen3-TTS export
+        run: *fetch_qwen
+      - name: Exercise RTChat speech in WKWebView
+        run: |
+          set -euo pipefail
+          device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; devices=json.load(sys.stdin)["devices"]; print(next(d["udid"] for r in sorted(devices,reverse=True) if "iOS" in r for d in devices[r] if d["name"].startswith("iPhone")))')
+          xcrun simctl boot "$device" || true
+          xcrun simctl bootstatus "$device" -b
+          report="qwen-$(uuidgen).json"
+          flutter pub get
+          flutter build ios --simulator --debug -t integration_test/qwen_webgpu_test.dart --dart-define=QWEN_DEVICE_REPORT="$report"
+          app=com.rtirl.chat
+          xcrun simctl install "$device" build/ios/iphonesimulator/Runner.app
+          dir="$(xcrun simctl get_app_container "$device" "$app" data)/Documents"
+          mkdir -p "$dir/qwen-models"
+          cp -c "$RUNNER_TEMP/qwen/"* "$dir/qwen-models/"
+          xcrun simctl launch --console --terminate-running-process "$device" "$app" > "$RUNNER_TEMP/qwen-ios.log" 2>&1 &
+          for ((i=0;i<90;i++)); do
+            [[ -f "$dir/$report" ]] && break
+            sleep 5
+          done
+          tail -n 60 "$RUNNER_TEMP/qwen-ios.log" || true
+          cat "$dir/$report" | tee -a "$GITHUB_STEP_SUMMARY"
+          jq -e '.passed and (.outcome=="played" or .outcome=="no_hardware_adapter" or .outcome=="below_realtime")' "$dir/$report"
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Download and verify the pinned Qwen3-TTS export
+        run: *fetch_qwen
+      - name: Build the Android WebView probe
+        run: |
+          flutter pub get
+          flutter build apk --profile --target-platform android-x64 -t integration_test/qwen_webgpu_test.dart
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Exercise RTChat speech and hardware qualification in Android WebView
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          ram-size: 4096M
+          disk-size: 8192M
+          script: bash -c "$PROBE"
+        env:
+          PROBE: |
+            set -euo pipefail
+            app=com.rtirl.chat
+            dir=/data/user/0/$app/app_flutter
+            adb root
+            adb wait-for-device
+            adb install build/app/outputs/flutter-apk/app-profile.apk
+            owner=()
+            if adb shell run-as "$app" id >/dev/null 2>&1; then owner=(run-as "$app"); fi
+            adb shell "${owner[@]}" mkdir -p "$dir/qwen-models"
+            tar -C "$RUNNER_TEMP/qwen" -cf - . | adb shell -T "${owner[@]}" tar -xf - -C "$dir/qwen-models"
+            uid=$(adb shell stat -c %u "/data/user/0/$app" | tr -d '\r')
+            adb shell chown -R "$uid:$uid" "$dir"
+            adb shell restorecon -RF "$dir"
+            adb shell am start -n "$app/.MainActivity"
+            for ((i=0;i<90;i++)); do adb shell ls "$dir/qwen.json" >/dev/null 2>&1 && break; sleep 5; done
+            adb pull "$dir/qwen.json" "$RUNNER_TEMP/qwen-android.json"
+            cat "$RUNNER_TEMP/qwen-android.json" | tee -a "$GITHUB_STEP_SUMMARY"
+            jq -e '.passed and (.outcome=="played" or .outcome=="no_hardware_adapter" or .outcome=="below_realtime")' "$RUNNER_TEMP/qwen-android.json"

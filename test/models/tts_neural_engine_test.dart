@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +8,8 @@ import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:on_device_tts/on_device_tts.dart';
+import 'package:rtchat/models/tts/qwen_engine.dart';
 import 'package:rtchat/models/tts/language.dart';
 
 import '../fakes/fake_chat.dart';
@@ -17,6 +21,25 @@ FakeChatMessage chat(String text, int i) => FakeChatMessage(
   author: FakeChatUser(userId: '$i', login: 'user$i'),
   message: text,
 );
+
+class _PendingQwen extends QwenTtsEngine {
+  _PendingQwen(super.pack);
+  final started = Completer<void>();
+  final result = Completer<void>();
+  @override
+  Future<void> prepare() async {}
+  @override
+  Future<void> speak(
+    String text, {
+    TtsVoice? voice,
+    double rate = TtsEngine.normalRate,
+    double pitch = TtsEngine.normalPitch,
+    String? language,
+  }) {
+    started.complete();
+    return result.future;
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +81,58 @@ void main() {
     }
   }
 
+  test('Qwen rejection never sends the message to the system voice', () async {
+    await drain();
+    final count = system.spoken.length;
+    final pack = bundledVoicePacks.singleWhere(
+      (p) => p.modelType == VoicePackModelType.qwen3Tts,
+    );
+    final engine = QwenTtsEngine(
+      InstalledVoicePack(
+        pack: pack,
+        directory: '',
+        sizeOnDisk: 0,
+        installedAt: DateTime(2024),
+      ),
+    );
+    engine.unavailable.value = 'WebGPU unavailable';
+    model.neuralEngine = engine;
+    model.say(l10n, chat('hola', 31));
+    await drain();
+    await model.previewVoice('el', null, 'unsupported language');
+    expect(system.spoken, hasLength(count));
+    expect(
+      errors.map((e) => e.toString()),
+      contains(contains('WebGPU unavailable')),
+    );
+    model.dispose();
+  });
+  test(
+    'switching packs while Qwen is speaking cannot reroute a failed message to CPU',
+    () async {
+      await drain();
+      final count = system.spoken.length;
+      final pack = bundledVoicePacks.singleWhere(
+        (p) => p.modelType == VoicePackModelType.qwen3Tts,
+      );
+      final qwen = _PendingQwen(
+        InstalledVoicePack(
+          pack: pack,
+          directory: '',
+          sizeOnDisk: 0,
+          installedAt: DateTime(2024),
+        ),
+      );
+      model.neuralEngine = qwen;
+      model.say(l10n, chat('hola', 32));
+      await qwen.started.future;
+      model.neuralEngine = null;
+      qwen.result.completeError(StateError('GPU device lost'));
+      await drain();
+      expect(system.spoken, hasLength(count));
+      model.dispose();
+    },
+  );
   test("speaks with the neural engine in the message's language", () async {
     final japanese = Channel(Providers.kick, '9', 'jp');
     model.setChannelLanguage(japanese, Language('ja'));
