@@ -106,7 +106,7 @@ export async function comparePredictors() {
     } catch (e) {
       const reason = String(e);
       if (
-        !/not assigned|CPU EP fallback|not supported|could not find an implementation|not implemented/i.test(
+        !/not assigned|fallback to CPU EP|CPU EP fallback|not supported|could not find an implementation|not implemented/i.test(
           reason,
         )
       )

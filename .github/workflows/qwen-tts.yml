@@ -127,12 +127,11 @@ jobs:
               const speech = await page.evaluate(async () => (await import('/bench.mjs')).qualifySpeech());
               console.log(JSON.stringify(speech));
               if (speech.rows.some(row => row.rtf >= 1 || row.gaps.some(ms => ms > 0))) throw Error("Qwen speech exceeded real time");
-              const comparison = await page.evaluate(async () => {
-                const {measureSpeech,comparePredictors} = await import('/compare.mjs');
-                return {speech:await measureSpeech(),predictor:await comparePredictors()};
-              });
-              require('node:fs').writeFileSync(process.env.RUNNER_TEMP+'/webgpu-comparison.json',JSON.stringify(comparison));
-              console.log('WebGPU comparison',JSON.stringify(comparison));
+              for (const [name,fn] of [['speech','measureSpeech'],['predictor','comparePredictors']]) {
+                const result = await page.evaluate(async fn => (await import('/compare.mjs'))[fn](),fn);
+                require('node:fs').writeFileSync(process.env.RUNNER_TEMP+'/'+name+'-comparison.json',JSON.stringify(result));
+                console.log('WebGPU '+name+' comparison',JSON.stringify(result));
+              }
               if (report.predictor.some(row => row.ms >= report.audioFrameMs)) {
                 throw Error("Residual prediction alone exceeds the 80 ms audio frame");
               }
@@ -142,6 +141,7 @@ jobs:
           })().catch(e => { console.error(e); process.exitCode = 1; });
           JS
       - name: Measure full speech on ONNX Runtime CPU with matching inputs
+        if: ${{ !cancelled() && steps.oracle.outcome == 'success' }}
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: python compare_cpu.py "$RUNNER_TEMP/qwen" data "$RUNNER_TEMP/cpu-comparison.json"
       - uses: actions/upload-artifact@v4
