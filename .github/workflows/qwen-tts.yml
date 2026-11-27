@@ -98,8 +98,10 @@ jobs:
       - name: Verify codebooks, streamed waveforms and real-time throughput on hardware
         working-directory: packages/on_device_tts/tool/qwen_webgpu
         run: |
-          npm install --prefix "$RUNNER_TEMP/browser" playwright@1.56.1 send@1.2.0
+          npm install --prefix "$RUNNER_TEMP/browser" playwright@1.56.1 send@1.2.0 onnxruntime-web@1.31.1
           cp ../../assets/qwen/* .
+          ln -s "$RUNNER_TEMP/browser/node_modules/onnxruntime-web/dist" ort
+          ln -s "$RUNNER_TEMP/qwen" original
           echo '<!doctype html><title>Qwen WebGPU qualification</title>' > index.html
           export NODE_PATH="$RUNNER_TEMP/browser/node_modules"
           node -e 'const send=require("send");require("node:http").createServer((req,res)=>send(req,req.url,{root:process.cwd()}).pipe(res)).listen(18749,"127.0.0.1")' > "$RUNNER_TEMP/http.log" 2>&1 &
@@ -110,6 +112,11 @@ jobs:
             const browser = await chromium.launch({channel: 'chrome',args:['--autoplay-policy=no-user-gesture-required']});
             try {
               const page = await browser.newPage();
+              const system = await browser.newBrowserCDPSession();
+              await page.exposeFunction('browserCpu', async () => {
+                const {processInfo} = await system.send('SystemInfo.getProcessInfo');
+                return Object.fromEntries(processInfo.map(p => [p.id,p.cpuTime]));
+              });
               page.on('console', msg => console.log(msg.type(), msg.text()));
               await page.goto('http://127.0.0.1:18749/index.html', {waitUntil:'commit',timeout:90000});
               const report = await page.evaluate(async () => {
@@ -120,6 +127,12 @@ jobs:
               const speech = await page.evaluate(async () => (await import('/bench.mjs')).qualifySpeech());
               console.log(JSON.stringify(speech));
               if (speech.rows.some(row => row.rtf >= 1 || row.gaps.some(ms => ms > 0))) throw Error("Qwen speech exceeded real time");
+              const comparison = await page.evaluate(async () => {
+                const {measureSpeech,comparePredictors} = await import('/compare.mjs');
+                return {speech:await measureSpeech(),predictor:await comparePredictors()};
+              });
+              require('node:fs').writeFileSync(process.env.RUNNER_TEMP+'/webgpu-comparison.json',JSON.stringify(comparison));
+              console.log('WebGPU comparison',JSON.stringify(comparison));
               if (report.predictor.some(row => row.ms >= report.audioFrameMs)) {
                 throw Error("Residual prediction alone exceeds the 80 ms audio frame");
               }
@@ -128,6 +141,14 @@ jobs:
             }
           })().catch(e => { console.error(e); process.exitCode = 1; });
           JS
+      - name: Measure full speech on ONNX Runtime CPU with matching inputs
+        working-directory: packages/on_device_tts/tool/qwen_webgpu
+        run: python compare_cpu.py "$RUNNER_TEMP/qwen" data "$RUNNER_TEMP/cpu-comparison.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qwen-engine-comparison
+          path: ${{ runner.temp }}/*-comparison.json
   ios:
     runs-on: macos-26
     timeout-minutes: 45

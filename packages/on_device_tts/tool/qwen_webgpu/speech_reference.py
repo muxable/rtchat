@@ -9,7 +9,7 @@ import numpy as np
 from transformers import Qwen2Tokenizer
 
 
-def reference(root, dest):
+def pipeline(root):
     spec = importlib.util.spec_from_file_location(
         "upstream_qwen_tts", root / "inference.py"
     )
@@ -25,6 +25,11 @@ def reference(root, dest):
     role = pipe._ids("<|im_start|>assistant\n")[0].tolist()
     if role != [151644, 77091, 198]:
         raise ValueError(f"Incorrect chat-template tokenizer: {role}")
+    return pipe
+
+
+def reference(root, dest):
+    pipe = pipeline(root)
     cases = []
     for i, text in enumerate(("Hello chat!", "Thank you!")):
         codes = pipe.generate(
