@@ -38,7 +38,7 @@ import WebKit
       (call: FlutterMethodCall, result: @escaping FlutterResult) in
       switch call.method {
       case "set":
-        configureBackgroundAudio()
+        self.configureBackgroundAudio()
         guard let args = call.arguments as? [String: Any],
           let urls = args["urls"] as? [String],
           let window = self.keyWindow
