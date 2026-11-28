@@ -6,25 +6,25 @@ import WebKit
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   var sharedText = ""
-  
+
   private func configureBackgroundAudio() {
     do {
-        let audioSession = AVAudioSession.sharedInstance()
+      let audioSession = AVAudioSession.sharedInstance()
 
-        try audioSession.setCategory(
-            .playback,
-            mode: .default,
-            options: [.mixWithOthers]
-        )
+      try audioSession.setCategory(
+        .playback,
+        mode: .default,
+        options: [.mixWithOthers]
+      )
 
-        try audioSession.setActive(true)
+      try audioSession.setActive(true)
 
-        print("Background audio session activated")
+      print("Background audio session activated")
 
     } catch {
-        print("Audio session error: \(error.localizedDescription)")
+      print("Audio session error: \(error.localizedDescription)")
     }
-}
+  }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     var views = [String: WKWebView]()
@@ -38,7 +38,7 @@ import WebKit
       (call: FlutterMethodCall, result: @escaping FlutterResult) in
       switch call.method {
       case "set":
-      configureBackgroundAudio()
+        configureBackgroundAudio()
         guard let args = call.arguments as? [String: Any],
           let urls = args["urls"] as? [String],
           let window = self.keyWindow
